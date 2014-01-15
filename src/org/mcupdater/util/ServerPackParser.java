@@ -1,5 +1,17 @@
 package org.mcupdater.util;
 
+import org.mcupdater.Version;
+import org.mcupdater.model.*;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -9,27 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
-import org.mcupdater.Version;
-import org.mcupdater.model.ConfigFile;
-import org.mcupdater.model.GenericModule;
-import org.mcupdater.model.ModType;
-import org.mcupdater.model.Module;
-import org.mcupdater.model.PrioritizedURL;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 public class ServerPackParser {
 
@@ -380,11 +371,7 @@ public class ServerPackParser {
 		if (attribute.isEmpty()) {
 			return defaultValue;
 		}
-		if (attribute.equalsIgnoreCase("false")) {
-			return false;
-		} else {
-			return true;
-		}
+		return !attribute.equalsIgnoreCase("false");
 	}
 
 }

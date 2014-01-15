@@ -41,9 +41,8 @@ public class AssetIndex {
 			
 			Asset that = (Asset) o;
 			if (this.size != that.size) { return false; }
-			if (!this.hash.equals(that.hash)) { return false; }
-			
-			return true;
+			return this.hash.equals(that.hash);
+
 		}
 		
 		@Override

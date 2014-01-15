@@ -9,12 +9,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="commons-codec-1.6" level="application" />
     <orderEntry type="library" name="commons-io-2.1" level="application" />
-    <orderEntry type="library" name="commons-lang3-3.1" level="application" />
     <orderEntry type="library" name="gson-2.2.4" level="application" />
-    <orderEntry type="library" name="jopt-simple-4.5" level="application" />
-    <orderEntry type="library" name="MCU-DownloadLib" level="application" />
-    <orderEntry type="library" name="MCU-Yggdrasil" level="application" />
-    <orderEntry type="library" name="xz-1.4" level="application" />
+    <orderEntry type="module" module-name="MCU-DownloadLib" />
   </component>
 </module>
 

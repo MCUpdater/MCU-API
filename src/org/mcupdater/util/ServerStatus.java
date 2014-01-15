@@ -136,7 +136,6 @@ public class ServerStatus {
 		}
 		catch (Throwable throwable)
 		{
-			;
 		}
 
 		return j;

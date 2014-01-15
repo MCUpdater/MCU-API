@@ -15,7 +15,7 @@ public class Rule {
 	public static enum Action
 	{
 		ALLOW,
-		DISALLOW;
+		DISALLOW
 	}
 	
 	public class OSRestriction {
