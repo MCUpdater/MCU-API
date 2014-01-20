@@ -20,23 +20,6 @@ public class Module extends GenericModule {
 		this.submodules.addAll(submodules);
 	}
 
-	@Deprecated
-	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta){
-		this(name,id,url,depends,required,inJar,jarOrder,keepMeta,extract,inRoot,isDefault,coreMod,md5,configs,side,path,meta,false,false,null,null,null);
-	}
-
-	@Deprecated
-	public Module(String name, String id, String url, String depends, boolean required, boolean inJar, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs)
-	{
-		this(name, id, makeList(url), depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, configs, null, null, null);
-	}
-	
-	private static List<PrioritizedURL> makeList(String url) {
-		List<PrioritizedURL> urls = new ArrayList<>();
-		urls.add(new PrioritizedURL(url, 0));
-		return urls;
-	}
-
 	public List<ConfigFile> getConfigs()
 	{
 		return configs;
