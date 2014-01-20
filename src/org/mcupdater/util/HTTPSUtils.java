@@ -1,18 +1,12 @@
 package org.mcupdater.util;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import javax.net.ssl.HttpsURLConnection;
+import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Map;
-
-import javax.net.ssl.HttpsURLConnection;
 
 public class HTTPSUtils {
 
@@ -25,7 +19,7 @@ public class HTTPSUtils {
 			}
 			try
 			{
-				localStringBuilder.append(URLEncoder.encode((String)localEntry.getKey(), "UTF-8"));
+				localStringBuilder.append(URLEncoder.encode(localEntry.getKey(), "UTF-8"));
 			} catch (UnsupportedEncodingException localUnsupportedEncodingException1) {
 				localUnsupportedEncodingException1.printStackTrace();
 			}
@@ -92,7 +86,7 @@ public class HTTPSUtils {
 			InputStream localInputStream = localHttpsURLConnection.getInputStream();
 			BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(localInputStream));
 
-			StringBuffer localStringBuffer = new StringBuffer();
+			StringBuilder localStringBuffer = new StringBuilder();
 			String str1;
 			while ((str1 = localBufferedReader.readLine()) != null) {
 				localStringBuffer.append(str1);

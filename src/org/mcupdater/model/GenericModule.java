@@ -11,7 +11,7 @@ import java.util.Locale;
 public class GenericModule {
 	protected String name = "";
 	protected String id = "";
-	protected List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+	protected List<PrioritizedURL> urls = new ArrayList<>();
 	protected String path = "";
 	protected String depends = "";
 	protected boolean required = false;
@@ -25,7 +25,7 @@ public class GenericModule {
 	protected boolean litemod = false;
 	protected String md5 = "";
 	protected ModSide side = ModSide.BOTH;
-	protected HashMap<String,String> meta = new HashMap<String,String>();
+	protected HashMap<String,String> meta = new HashMap<>();
 	protected boolean isLibrary = false;
 	protected String launchArgs = "";
 	protected String jreArgs = "";
@@ -74,7 +74,7 @@ public class GenericModule {
 	
 	public List<URL> getUrls()
 	{
-		List<URL> result = new ArrayList<URL>();
+		List<URL> result = new ArrayList<>();
 		for (PrioritizedURL entry : urls) {
 			try {
 				result.add(new URL(entry.getUrl()));

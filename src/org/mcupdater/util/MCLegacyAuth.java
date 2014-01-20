@@ -1,21 +1,19 @@
 package org.mcupdater.util;
 
-import java.util.HashMap;
-import java.util.logging.Level;
-
 import org.mcupdater.Version;
 import org.mcupdater.model.LoginData;
-import org.mcupdater.util.HTTPSUtils;
-import org.mcupdater.util.MCLoginException;
 import org.mcupdater.util.MCLoginException.ResponseType;
+
+import java.util.HashMap;
+import java.util.logging.Level;
 
 public class MCLegacyAuth {
 	public static LoginData login(String username, String password) throws Exception {
 		try {
-			HashMap<String, Object> localHashMap = new HashMap<String, Object>();
+			HashMap<String, Object> localHashMap = new HashMap<>();
 			localHashMap.put("user", username);
 			localHashMap.put("password", password);
-			localHashMap.put("version", Integer.valueOf(13));
+			localHashMap.put("version", 13);
 			String str = HTTPSUtils.executePost("https://login.minecraft.net/", localHashMap);
 			if (str == null) {
 				//showError("Can't connect to minecraft.net");

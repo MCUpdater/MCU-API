@@ -9,9 +9,9 @@ import java.util.Map;
 public class Instance {
 	private String mcversion;
 	private String revision;
-	private List<FileInfo> instanceFiles = new ArrayList<FileInfo>();
-	private List<FileInfo> jarMods = new ArrayList<FileInfo>();
-	private Map<String, Boolean> optionalMods = new HashMap<String, Boolean>();
+	private List<FileInfo> instanceFiles = new ArrayList<>();
+	private List<FileInfo> jarMods = new ArrayList<>();
+	private Map<String, Boolean> optionalMods = new HashMap<>();
 	
 	public List<FileInfo> getInstanceFiles() {
 		return instanceFiles;
@@ -58,9 +58,7 @@ public class Instance {
 	}
 	
 	public FileInfo findJarMod(String id) {
-		Iterator<FileInfo> it = this.jarMods.iterator();
-		while (it.hasNext()) {
-			FileInfo entry = it.next();
+		for (FileInfo entry : this.jarMods) {
 			if (entry.getModId().equals(id)) {
 				return entry;
 			}

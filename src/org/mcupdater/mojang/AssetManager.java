@@ -1,13 +1,6 @@
 package org.mcupdater.mojang;
 
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.mcupdater.DownloadQueue;
@@ -15,7 +8,14 @@ import org.mcupdater.Downloadable;
 import org.mcupdater.Downloadable.HashAlgorithm;
 import org.mcupdater.TrackerListener;
 import org.mcupdater.util.MCUpdater;
-import com.google.gson.Gson;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class AssetManager {
 	public static DownloadQueue downloadAssets(String queueName, String parent, File baseDirectory, TrackerListener listener, MinecraftVersion version) {
@@ -25,7 +25,7 @@ public class AssetManager {
 	
 	private static Set<Downloadable> getAssets(File baseDirectory, MinecraftVersion version){
 		Gson gson = new Gson();
-		Set<Downloadable> assets = new HashSet<Downloadable>();
+		Set<Downloadable> assets = new HashSet<>();
 		String indexName = version.getAssets();
 		if (indexName == null) {
 			indexName = "legacy";
@@ -41,13 +41,13 @@ public class AssetManager {
 			InputStream indexStream = indexUrl.openConnection().getInputStream();
 			String json = IOUtils.toString(indexStream);
 			FileUtils.writeStringToFile(indexFile, json);
-			AssetIndex index = (AssetIndex)gson.fromJson(json, AssetIndex.class);
+			AssetIndex index = gson.fromJson(json, AssetIndex.class);
 			
 			for (AssetIndex.Asset object : index.getUniqueObjects()) {
 				String assetName = object.getHash().substring(0, 2) + "/" + object.getHash();
 				File asset = new File(objectsPath, assetName);
 				if ((!asset.isFile()) || (FileUtils.sizeOf(asset) != object.getSize())) {
-	    			List<URL> urls = new ArrayList<URL>();
+	    			List<URL> urls = new ArrayList<>();
 	    			File localAsset = MCUpdater.getInstance().getMCFolder().resolve("assets").resolve("objects").resolve(object.getHash().substring(0, 2)).resolve(object.getHash()).toFile();
 	    			if ((localAsset.isFile()) && (FileUtils.sizeOf(localAsset) == object.getSize())) {
 	    				urls.add(new URL(localUrl + "objects" + "/" + assetName));

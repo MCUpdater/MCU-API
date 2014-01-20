@@ -12,7 +12,7 @@ public class ModuleComparator implements Comparator<Module> {
 		if (o1weight.equals(o2weight) && !o1.getInJar() && !o2.getInJar() && !o1.getIsLibrary() && !o2.getIsLibrary()) {
 			return o1.getName().compareToIgnoreCase(o2.getName());
 		} else if ((o1.getInJar() && o2.getInJar()) || (o1.getIsLibrary() && o2.getIsLibrary())) {
-			return Integer.valueOf(o1.getJarOrder()).compareTo(Integer.valueOf(o2.getJarOrder()));
+			return Integer.valueOf(o1.getJarOrder()).compareTo(o2.getJarOrder());
 		}
 		else {
 			return o1weight.compareTo(o2weight);

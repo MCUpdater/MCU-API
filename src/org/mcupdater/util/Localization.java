@@ -9,7 +9,7 @@ public enum Localization {
 	private Map<String,String> dict;
 	
 	private Localization() {
-		dict = new HashMap<String,String>();
+		dict = new HashMap<>();
 		// TODO: read loc from a properties file
 		// TODO: localize all the strings
 		

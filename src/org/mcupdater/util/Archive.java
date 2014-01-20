@@ -1,23 +1,22 @@
 package org.mcupdater.util;
 
-import java.io.BufferedInputStream;
-//import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-//import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.jar.*;
-import java.util.logging.Level;
-import java.util.zip.*;
-
 import org.apache.commons.io.FileUtils;
 import org.mcupdater.MCUApp;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+//import java.io.BufferedOutputStream;
+//import java.util.ArrayList;
 
 public class Archive {
 
@@ -79,14 +78,12 @@ public class Archive {
 		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(archive));
 		int fileCount = files.size();
 		int filePos = 0;
-		Iterator<File> iter = files.iterator();
-		while(iter.hasNext()) {
-			File entry = iter.next();
+		for (File entry : files) {
 			filePos++;
 			parent.setStatus("Writing backup: (" + filePos + "/" + fileCount + ")");
 			String relPath = entry.getPath().replace(mCFolder.toString(), "");
 			MCUpdater.apiLogger.finest(relPath);
-			if(entry.isDirectory()) {
+			if (entry.isDirectory()) {
 				out.putNextEntry(new ZipEntry(relPath + "/"));
 				out.closeEntry();
 			} else {
@@ -96,7 +93,7 @@ public class Archive {
 				byte[] buf = new byte[1024];
 				int count;
 				while ((count = in.read(buf)) > 0) {
-					out.write(buf,0,count);
+					out.write(buf, 0, count);
 				}
 				in.close();
 				out.closeEntry();
@@ -132,10 +129,7 @@ public class Archive {
 		{
 			String name = entry.getName();
 			boolean notInFiles = true;
-			Iterator<File> iterator = files.iterator();
-			while (iterator.hasNext())
-			{
-				File f = iterator.next();
+			for (File f : files) {
 				if (f.getName().equals(name)) {
 					notInFiles = false;
 					break;
@@ -151,11 +145,8 @@ public class Archive {
 			entry = zis.getNextEntry();
 		}
 		zis.close();
-		Iterator<File> iterator = files.iterator();
-		while (iterator.hasNext())
-		{
-			File f = iterator.next();
-			if(f.isDirectory()) {
+		for (File f : files) {
+			if (f.isDirectory()) {
 				MCUpdater.apiLogger.finer("addToZip: " + f.getPath().replace(basePath.getPath(), "") + "/");
 				zos.putNextEntry(new ZipEntry(f.getPath().replace(basePath.getPath(), "") + "/"));
 				zos.closeEntry();
@@ -186,13 +177,11 @@ public class Archive {
 				jos = new JarOutputStream(new FileOutputStream(outJar));
 			}
 			BufferedInputStream in;
-			Iterator<File> it = inputFiles.iterator();
-			while(it.hasNext()) {
-				File entry = it.next();
+			for (File entry : inputFiles) {
 				String path = entry.getPath().replace(basePath, "").replace("\\", "/");
-				if(entry.isDirectory()) {
+				if (entry.isDirectory()) {
 					if (!path.isEmpty()) {
-						if(!path.endsWith("/")) {
+						if (!path.endsWith("/")) {
 							path += "/";
 						}
 						JarEntry jEntry = new JarEntry(path);
@@ -202,7 +191,7 @@ public class Archive {
 					}
 				} else {
 					if (path.contains("mojangDerpyClass1.class")) {
-						path = path.replace("mojangDerpyClass1.class","aux.class");
+						path = path.replace("mojangDerpyClass1.class", "aux.class");
 					}
 					JarEntry jEntry = new JarEntry(path);
 					jEntry.setTime(entry.lastModified());
@@ -210,7 +199,7 @@ public class Archive {
 					in = new BufferedInputStream(new FileInputStream(entry));
 					byte[] buffer = new byte[1024];
 					int count;
-					while((count = in.read(buffer)) > -1) {
+					while ((count = in.read(buffer)) > -1) {
 						jos.write(buffer, 0, count);
 					}
 					jos.closeEntry();
@@ -265,19 +254,19 @@ public class Archive {
        // Close the streams        
        zin.close();
        // Compress the files
-       for (int i = 0; i < files.length; i++) {
-           InputStream in = new FileInputStream(files[i]);
-           // Add ZIP entry to output stream.
-           out.putNextEntry(new ZipEntry(files[i].getName()));
-           // Transfer bytes from the file to the ZIP file
-           int len;
-           while ((len = in.read(buf)) > 0) {
-               out.write(buf, 0, len);
-           }
-           // Complete the entry
-           out.closeEntry();
-           in.close();
-       }
+	    for (File file : files) {
+		    InputStream in = new FileInputStream(file);
+		    // Add ZIP entry to output stream.
+		    out.putNextEntry(new ZipEntry(file.getName()));
+		    // Transfer bytes from the file to the ZIP file
+		    int len;
+		    while ((len = in.read(buf)) > 0) {
+			    out.write(buf, 0, len);
+		    }
+		    // Complete the entry
+		    out.closeEntry();
+		    in.close();
+	    }
        // Complete the ZIP file
        out.close();
        tempFile.delete();

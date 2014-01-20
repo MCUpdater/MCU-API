@@ -1,74 +1,15 @@
 package org.mcupdater.util;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-//import j7compat.Files;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-//import java.nio.file.StandardCopyOption;
-//import java.nio.file.StandardOpenOption;
-//import j7compat.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
-import javax.swing.ImageIcon;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.mcupdater.DownloadQueue;
-import org.mcupdater.Downloadable;
-import org.mcupdater.FMLStyleFormatter;
-import org.mcupdater.MCUApp;
-import org.mcupdater.TaskableExecutor;
-import org.mcupdater.Version;
+import org.mcupdater.*;
 import org.mcupdater.instance.FileInfo;
 import org.mcupdater.instance.Instance;
-import org.mcupdater.model.Backup;
-import org.mcupdater.model.ConfigFile;
-import org.mcupdater.model.GenericModule;
-import org.mcupdater.model.ModSide;
-import org.mcupdater.model.ServerList;
+import org.mcupdater.model.*;
 import org.mcupdater.mojang.AssetIndex;
 import org.mcupdater.mojang.AssetIndex.Asset;
 import org.mcupdater.mojang.Library;
@@ -77,8 +18,31 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
+import javax.swing.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+//import j7compat.Files;
+//import java.nio.file.StandardCopyOption;
+//import java.nio.file.StandardOpenOption;
+//import j7compat.Path;
 
 public class MCUpdater {
 	//public static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
@@ -91,7 +55,7 @@ public class MCUpdater {
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
 	private String newestMC = "";
-	private final Map<String,String> versionMap = new HashMap<String,String>();
+	private final Map<String,String> versionMap = new HashMap<>();
 	public static Logger apiLogger;
 	//private Path lwjglFolder;
 	private int timeoutLength = 5000;
@@ -165,9 +129,7 @@ public class MCUpdater {
 			apiHandler.setFormatter(new FMLStyleFormatter());
 			apiLogger.addHandler(apiHandler);
 			
-		} catch (SecurityException e1) {
-			e1.printStackTrace(); // Will only be thrown if there is a problem with logging.
-		} catch (IOException e1) {
+		} catch (SecurityException | IOException e1) {
 			e1.printStackTrace(); // Will only be thrown if there is a problem with logging.
 		}
 		try {
@@ -196,7 +158,7 @@ public class MCUpdater {
 			md5Con.setReadTimeout(this.timeoutLength);
 			InputStreamReader input = new InputStreamReader(md5Con.getInputStream());
 			BufferedReader buffer = new BufferedReader(input);
-			String currentLine = null;
+			String currentLine;
 			while(true){
 				currentLine = buffer.readLine();
 				if(currentLine != null){
@@ -290,16 +252,14 @@ public class MCUpdater {
 			
 			Iterator<ServerList> it = serverlist.iterator();
 			
-			Set<String> urls = new HashSet<String>();
+			Set<String> urls = new HashSet<>();
 			while(it.hasNext())
 			{
 				ServerList entry = it.next();
 				urls.add(entry.getPackUrl());
 			}
-			Iterator<String> urlIterator = urls.iterator();
-			while (urlIterator.hasNext())
-			{
-				writer.write(urlIterator.next());
+			for (String url : urls) {
+				writer.write(url);
 				writer.newLine();
 			}
 			
@@ -312,7 +272,7 @@ public class MCUpdater {
 	}
 	
 	public List<Backup> loadBackupList() {
-		List<Backup> bList = new ArrayList<Backup>();
+		List<Backup> bList = new ArrayList<>();
 		try {
 			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuBackups.dat"), StandardCharsets.UTF_8);
 			
@@ -336,11 +296,8 @@ public class MCUpdater {
 	public void writeBackupList(List<Backup> backupList) {
 		try {
 			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuBackups.dat"), StandardCharsets.UTF_8);
-			
-			Iterator<Backup> it = backupList.iterator();
-			
-			while(it.hasNext()) {
-				Backup entry = it.next();
+
+			for (Backup entry : backupList) {
 				writer.write(entry.getDescription() + "~~~~~" + entry.getFilename());
 				writer.newLine();
 			}
@@ -353,10 +310,10 @@ public class MCUpdater {
 	
 	public List<ServerList> loadServerList(String defaultUrl)
 	{
-		List<ServerList> slList = new ArrayList<ServerList>();
+		List<ServerList> slList = new ArrayList<>();
 		try
 		{
-			Set<String> urls = new HashSet<String>();
+			Set<String> urls = new HashSet<>();
 			urls.add(defaultUrl);
 			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuServers.dat"), StandardCharsets.UTF_8);
 
@@ -367,24 +324,22 @@ public class MCUpdater {
 				entry = reader.readLine();
 			}
 			reader.close();
-			Iterator<String> it = urls.iterator();
-			while (it.hasNext()){
-				String serverUrl = it.next();
+			for (String serverUrl : urls) {
 				try {
-					Element docEle = null;
+					Element docEle;
 					Document serverHeader = ServerPackParser.readXmlFromUrl(serverUrl);
 					if (!(serverHeader == null)) {
 						Element parent = serverHeader.getDocumentElement();
-						if (parent.getNodeName().equals("ServerPack")){
+						if (parent.getNodeName().equals("ServerPack")) {
 							String mcuVersion = parent.getAttribute("version");
 							NodeList servers = parent.getElementsByTagName("Server");
-							for (int i = 0; i < servers.getLength(); i++){
-								docEle = (Element)servers.item(i);
+							for (int i = 0; i < servers.getLength(); i++) {
+								docEle = (Element) servers.item(i);
 								System.out.println(serverUrl + ": " + docEle.getAttribute("id"));
 								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), serverUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList"), true), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true), docEle.getAttribute("revision"), ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false), docEle.getAttribute("mainClass"));
 								sl.setMCUVersion(mcuVersion);
 								slList.add(sl);
-							}					
+							}
 						} else {
 							System.out.println(serverUrl + ": *** " + parent.getAttribute("id"));
 							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList"), true), ServerPackParser.parseBoolean(parent.getAttribute("autoConnect"), true), parent.getAttribute("revision"), ServerPackParser.parseBoolean(parent.getAttribute("abstract"), false), parent.getAttribute("mainClass"));
@@ -493,10 +448,8 @@ public class MCUpdater {
 		List<File> contents = recurseFolder(folder, false);
 		try {
 			String uniqueName = UUID.randomUUID().toString() + ".zip";
-			Iterator<File> it = new ArrayList<File>(contents).iterator();
-			while(it.hasNext()) {
-				File entry = it.next();
-				if(getExcludedNames(entry.getPath(), false) || entry.getPath().contains("temp")){
+			for (File entry : new ArrayList<>(contents)) {
+				if (getExcludedNames(entry.getPath(), false) || entry.getPath().contains("temp")) {
 					contents.remove(entry);
 				}
 			}
@@ -592,8 +545,8 @@ public class MCUpdater {
 
 	private List<File> recurseFolder(File folder, boolean includeFolders)
 	{
-		List<File> output = new ArrayList<File>();
-		List<File> input = new ArrayList<File>(Arrays.asList(folder.listFiles()));
+		List<File> output = new ArrayList<>();
+		List<File> input = new ArrayList<>(Arrays.asList(folder.listFiles()));
 		Iterator<File> fi = input.iterator();
 		if(includeFolders) {
 			output.add(folder);
@@ -604,10 +557,8 @@ public class MCUpdater {
 			if(entry.isDirectory())
 			{
 				List<File> subfolder = recurseFolder(entry, includeFolders);
-				Iterator<File> sfiterator = subfolder.iterator();
-				while(sfiterator.hasNext())
-				{
-					output.add(sfiterator.next());
+				for (File aSubfolder : subfolder) {
+					output.add(aSubfolder);
 				}
 			} else {
 				output.add(entry);
@@ -619,10 +570,8 @@ public class MCUpdater {
 	public void restoreBackup(File archive) {
 		File folder = MCFolder.toFile();
 		List<File> contents = recurseFolder(folder, true);
-		Iterator<File> it = new ArrayList<File>(contents).iterator();
-		while(it.hasNext()) {
-			File entry = it.next();
-			if(getExcludedNames(entry.getPath(), true)){
+		for (File entry : new ArrayList<>(contents)) {
+			if (getExcludedNames(entry.getPath(), true)) {
 				contents.remove(entry);
 			}
 		}
@@ -650,15 +599,15 @@ public class MCUpdater {
 		//File jar = null;
 		final File tmpFolder = instancePath.resolve("temp").toFile();
 		tmpFolder.mkdirs();
-		Set<Downloadable> jarMods = new HashSet<Downloadable>();
-		Set<Downloadable> generalFiles = new HashSet<Downloadable>();
+		Set<Downloadable> jarMods = new HashSet<>();
+		Set<Downloadable> generalFiles = new HashSet<>();
 		DownloadQueue assetsQueue = null;
-		DownloadQueue jarQueue = null;
-		DownloadQueue generalQueue = null;
+		DownloadQueue jarQueue;
+		DownloadQueue generalQueue;
 		DownloadQueue libraryQueue = null;
-		final List<String> libExtract = new ArrayList<String>();
-		final Map<String,Boolean> modExtract = new HashMap<String,Boolean>();
-		final Map<String,Boolean> keepMeta = new TreeMap<String,Boolean>();
+		final List<String> libExtract = new ArrayList<>();
+		final Map<String,Boolean> modExtract = new HashMap<>();
+		final Map<String,Boolean> keepMeta = new TreeMap<>();
 		Downloadable baseJar = null;
 		final MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
 		switch (side){
@@ -670,10 +619,10 @@ public class MCUpdater {
 //				parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
 //				throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
 //			}
-			Set<Downloadable> libSet = new HashSet<Downloadable>();
+			Set<Downloadable> libSet = new HashSet<>();
 			for (Library lib : version.getLibraries()) {
 				if (lib.validForOS()) {
-					List<URL> urls = new ArrayList<URL>();
+					List<URL> urls = new ArrayList<>();
 					try {
 						urls.add(new URL(lib.getDownloadUrl()));
 					} catch (MalformedURLException e) {
@@ -689,7 +638,7 @@ public class MCUpdater {
 			libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("lib").toFile(), DownloadCache.getDir());
 
 			productionJar = binPath.resolve("minecraft.jar");
-			List<URL> jarUrl = new ArrayList<URL>();
+			List<URL> jarUrl = new ArrayList<>();
 			try {
 				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/" + server.getVersion() + ".jar"));
 			} catch (MalformedURLException e2) {
@@ -722,7 +671,7 @@ public class MCUpdater {
 			//TODO:Server jar detection
 		}			
 		Iterator<GenericModule> iMods = toInstall.iterator();
-		List<String> modIds = new ArrayList<String>();
+		List<String> modIds = new ArrayList<>();
 		int jarModCount = 0;
 		while (iMods.hasNext() && !updateJar) {
 			GenericModule current = iMods.next();
@@ -744,9 +693,7 @@ public class MCUpdater {
 		if (updateJar && baseJar != null) {
 			jarMods.add(baseJar);
 		}
-		Iterator<FileInfo> itExisting = instData.getInstanceFiles().iterator();
-		while (itExisting.hasNext()) {
-			FileInfo entry = itExisting.next();
+		for (FileInfo entry : instData.getInstanceFiles()) {
 			if (!modIds.contains(entry.getModId())) {
 				instancePath.resolve(entry.getFilename()).toFile().delete();
 			}
@@ -759,10 +706,8 @@ public class MCUpdater {
 		if (clearExisting){
 			parent.setStatus("Clearing existing configuration");
 			parent.log("Clearing existing configuration...");
-			Iterator<File> it = new ArrayList<File>(contents).iterator();
-			while(it.hasNext()) {
-				File entry = it.next();
-				if(getExcludedNames(entry.getPath(), true)){
+			for (File entry : new ArrayList<>(contents)) {
+				if (getExcludedNames(entry.getPath(), true)) {
 					contents.remove(entry);
 				}
 			}
@@ -815,19 +760,19 @@ public class MCUpdater {
 			//			parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
 			parent.log("  Done ("+modsLoaded+"/"+modCount+")");
 		}
-		Iterator<ConfigFile> itConfigs = configs.iterator();
-		while(itConfigs.hasNext()) {
-			final ConfigFile cfEntry = itConfigs.next();
+		for (ConfigFile cfEntry : configs) {
 			final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();
-			if (confFile.exists() && cfEntry.isNoOverwrite()) { continue; }
-			List<URL> configUrl = new ArrayList<URL>();
+			if (confFile.exists() && cfEntry.isNoOverwrite()) {
+				continue;
+			}
+			List<URL> configUrl = new ArrayList<>();
 			try {
 				configUrl.add(new URL(cfEntry.getUrl()));
 			} catch (MalformedURLException e) {
 				++errorCount;
 				apiLogger.log(Level.SEVERE, "General Error", e);
 			}
-			generalFiles.add(new Downloadable(cfEntry.getPath(),cfEntry.getPath(),cfEntry.getMD5(),10000,configUrl));
+			generalFiles.add(new Downloadable(cfEntry.getPath(), cfEntry.getPath(), cfEntry.getMD5(), 10000, configUrl));
 			//1
 			// save in cache for future reference
 			//					if( MD5 != null ) {
@@ -882,10 +827,8 @@ public class MCUpdater {
 					}
 					boolean doManifest = true;
 					List<File> buildList = recurseFolder(tmpFolder,true);
-					Iterator<File> blIt = new ArrayList<File>(buildList).iterator();
-					while(blIt.hasNext()) {
-						File entry = blIt.next();
-						if(entry.getPath().contains("META-INF")) {
+					for (File entry : new ArrayList<>(buildList)) {
+						if (entry.getPath().contains("META-INF")) {
 							doManifest = false;
 						}
 					}
@@ -1040,8 +983,8 @@ public class MCUpdater {
 
 	public static void openLink(URI uri) {
 		try {
-			Object o = Class.forName("java.awt.Desktop").getMethod("getDesktop", new Class[0]).invoke(null, new Object[0]);
-			o.getClass().getMethod("browse", new Class[] { URI.class }).invoke(o, new Object[] { uri });
+			Object o = Class.forName("java.awt.Desktop").getMethod("getDesktop", new Class[0]).invoke(null);
+			o.getClass().getMethod("browse", new Class[] { URI.class }).invoke(o, uri);
 		} catch (Throwable e) {
 			_log("Failed to open link " + uri.toString());
 		}

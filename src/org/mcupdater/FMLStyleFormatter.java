@@ -16,20 +16,20 @@ public class FMLStyleFormatter extends Formatter {
 	@Override
 	public String format(LogRecord record) {
 		StringBuilder msg = new StringBuilder();
-		msg.append(sdf.format(Long.valueOf(record.getMillis())));
+		msg.append(sdf.format(record.getMillis()));
 		Level level = record.getLevel();
 		
 		String name = level.getLocalizedName();
 		if (name == null) { name = level.getName(); }
 		
 		if ( name != null && name.length() > 0) {
-			msg.append(" [" + name + "] ");
+			msg.append(" [").append(name).append("] ");
 		} else {
 			msg.append(" ");
 		}
 		// Heavily based on cpw.mods.fml.relauncher.FMLLogFormatter
 		if (record.getLoggerName() != null) {
-			msg.append("[" + record.getLoggerName()+"] ");
+			msg.append("[").append(record.getLoggerName()).append("] ");
 		}
 		
 		msg.append(record.getMessage());

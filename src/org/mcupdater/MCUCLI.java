@@ -1,14 +1,14 @@
 package org.mcupdater;
 
+import org.mcupdater.model.ModSide;
+import org.mcupdater.model.ServerList;
+import org.mcupdater.mojang.MinecraftVersion;
+
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.mcupdater.model.ModSide;
-import org.mcupdater.model.ServerList;
-import org.mcupdater.mojang.MinecraftVersion;
 
 public class MCUCLI extends MCUApp {
 	@Override
@@ -31,18 +31,18 @@ public class MCUCLI extends MCUApp {
 
 	public static boolean DEBUG = false;
 	private void parse( String args[] ) {
-		Map<String,String> opts = new HashMap<String,String>();
+		Map<String,String> opts = new HashMap<>();
 		boolean showHelp = true;
 		// grab our provided options
-		for( int k = 0; k < args.length; ++k ) {
-			String[] param = args[k].split("=",2);
-			if( !param[0].startsWith("--") || param[0].equals("--help") ) {
+		for (String arg : args) {
+			String[] param = arg.split("=", 2);
+			if (!param[0].startsWith("--") || param[0].equals("--help")) {
 				showHelp = true;
 				break;
 			}
 			showHelp = false;
-			param[0] = param[0].substring(2);	// crop the --'s
-			if( param.length > 1 ) {
+			param[0] = param[0].substring(2);    // crop the --'s
+			if (param.length > 1) {
 				opts.put(param[0], param[1]);
 			} else {
 				opts.put(param[0], "");
@@ -98,10 +98,8 @@ public class MCUCLI extends MCUApp {
 	}
 	
 	private void dumpOpts( Map<String,String> opts ) {
-		Iterator<String> it = opts.keySet().iterator();
-		while( it.hasNext() ) {
-			String key = it.next();
-			System.out.println(key+": "+opts.get(key));
+		for (String key : opts.keySet()) {
+			System.out.println(key + ": " + opts.get(key));
 		}
 	}
 	

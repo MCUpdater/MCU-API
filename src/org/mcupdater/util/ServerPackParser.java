@@ -31,11 +31,9 @@ public class ServerPackParser {
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(packFile);
-		}catch(ParserConfigurationException pce) {
+		}catch(ParserConfigurationException | SAXException pce) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Parser error", pce);
-		}catch(SAXException se) {
-			MCUpdater.apiLogger.log(Level.SEVERE, "Parser error", se);
-		}catch(IOException ioe) {
+		} catch(IOException ioe) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
 		return null;
@@ -64,11 +62,9 @@ public class ServerPackParser {
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(serverConn.getInputStream());
-		}catch(ParserConfigurationException pce) {
+		}catch(ParserConfigurationException | SAXException pce) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Parser error", pce);
-		}catch(SAXException se) {
-			MCUpdater.apiLogger.log(Level.SEVERE, "Parser error", se);
-		}catch(IOException ioe) {
+		} catch(IOException ioe) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
 		return null;
@@ -77,7 +73,7 @@ public class ServerPackParser {
 	private static List<Module> parseDocument(Document dom, String serverId)
 	{
 		int version;
-		List<Module> modList = new ArrayList<Module>();
+		List<Module> modList = new ArrayList<>();
 		Element parent = dom.getDocumentElement();
 		Element docEle = null;
 		if (parent.getNodeName().equals("ServerPack")){
@@ -100,6 +96,7 @@ public class ServerPackParser {
 		switch (version) {
 		case 2:
 			// Handle ServerPacks designed for MCUpdater 3.0 and later
+			assert docEle != null;
 			nl = docEle.getElementsByTagName("Import");
 			if(nl != null && nl.getLength() > 0) {
 				for(int i = 0; i < nl.getLength(); i++) {
@@ -121,6 +118,7 @@ public class ServerPackParser {
 			
 		case 1:
 			// Handle ServerPacks designed for MCUpdater 2.7 and earlier
+			assert docEle != null;
 			nl = docEle.getElementsByTagName("Module");
 			if(nl != null && nl.getLength() > 0)
 			{
@@ -143,9 +141,6 @@ public class ServerPackParser {
 		if (!url.isEmpty()){
 			try {
 				dom = readXmlFromUrl(url);
-			} catch (DOMException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -162,7 +157,7 @@ public class ServerPackParser {
 			String id = el.getAttribute("id");
 			String depends = el.getAttribute("depends");
 			String side = el.getAttribute("side");
-			List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+			List<PrioritizedURL> urls = new ArrayList<>();
 			NodeList nl;
 			nl = (NodeList) xpath.evaluate("URL", el, XPathConstants.NODESET);
 			for (int i = 0; i < nl.getLength(); i++) {
@@ -216,8 +211,8 @@ public class ServerPackParser {
 				break;
 			}
 			String md5 = (String) xpath.evaluate("MD5", el, XPathConstants.STRING);
-			List<ConfigFile> configs = new ArrayList<ConfigFile>();
-			List<GenericModule> submodules = new ArrayList<GenericModule>();
+			List<ConfigFile> configs = new ArrayList<>();
+			List<GenericModule> submodules = new ArrayList<>();
 			nl = el.getElementsByTagName("ConfigFile");
 			for(int i = 0; i < nl.getLength(); i++) 
 			{
@@ -229,10 +224,10 @@ public class ServerPackParser {
 			for(int i = 0; i < nl.getLength(); i++)
 			{
 				Element elSubmod = (Element)nl.item(i);
-				GenericModule sm = (GenericModule)getModuleV2(elSubmod);
+				GenericModule sm = getModuleV2(elSubmod);
 				submodules.add(sm);
 			}
-			HashMap<String,String> mapMeta = new HashMap<String,String>();
+			HashMap<String,String> mapMeta = new HashMap<>();
 			NodeList nlMeta = el.getElementsByTagName("Meta");
 			if (nlMeta.getLength() > 0){
 				Element elMeta = (Element) nlMeta.item(0);
@@ -266,7 +261,7 @@ public class ServerPackParser {
 		String name = modEl.getAttribute("name");
 		String id = modEl.getAttribute("id");
 		PrioritizedURL url = new PrioritizedURL(getTextValue(modEl,"URL"),0);
-		List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+		List<PrioritizedURL> urls = new ArrayList<>();
 		urls.add(url);
 		String path = getTextValue(modEl,"ModPath");
 		String depends = modEl.getAttribute("depends");
@@ -280,7 +275,7 @@ public class ServerPackParser {
 		Boolean inRoot = getBooleanValue(modEl,"InRoot");
 		Boolean coreMod = getBooleanValue(modEl,"CoreMod");
 		String md5 = getTextValue(modEl,"MD5");
-		List<ConfigFile> configs = new ArrayList<ConfigFile>();
+		List<ConfigFile> configs = new ArrayList<>();
 		NodeList nl = modEl.getElementsByTagName("ConfigFile");
 		for(int i = 0; i < nl.getLength(); i++) 
 		{
@@ -288,7 +283,7 @@ public class ServerPackParser {
 			ConfigFile cf = getConfigFileV1(el);
 			configs.add(cf);
 		}
-		HashMap<String,String> mapMeta = new HashMap<String,String>();
+		HashMap<String,String> mapMeta = new HashMap<>();
 		NodeList nlMeta = modEl.getElementsByTagName("Meta");
 		if (nlMeta.getLength() > 0){
 			Element elMeta = (Element) nlMeta.item(0);

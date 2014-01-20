@@ -1,14 +1,13 @@
 package org.mcupdater.mojang;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /*
  * Implementation of version.json format used by Minecraft's launcher
@@ -48,8 +47,6 @@ public class MinecraftVersion {
 		try {
 			conn = (new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + version + "/" + version + ".json")).openConnection();
 			return gson.fromJson(new InputStreamReader(conn.getInputStream()),MinecraftVersion.class);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

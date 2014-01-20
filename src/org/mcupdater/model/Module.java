@@ -6,8 +6,8 @@ import java.util.List;
 
 
 public class Module extends GenericModule {
-	private List<ConfigFile> configs = new ArrayList<ConfigFile>();
-	private List<GenericModule> submodules = new ArrayList<GenericModule>();
+	private List<ConfigFile> configs = new ArrayList<>();
+	private List<GenericModule> submodules = new ArrayList<>();
 	
 	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, boolean isLibrary, boolean litemod, String launchArgs, String jreArgs, List<GenericModule> submodules){
 		super(name,id,url,depends,required,inJar,jarOrder,keepMeta,extract,inRoot,isDefault,coreMod,md5,side,path,meta,isLibrary,litemod,launchArgs,jreArgs);	
@@ -15,7 +15,7 @@ public class Module extends GenericModule {
 		{
 			this.configs = configs;
 		} else {
-			this.configs = new ArrayList<ConfigFile>();
+			this.configs = new ArrayList<>();
 		}
 		this.submodules.addAll(submodules);
 	}
@@ -32,7 +32,7 @@ public class Module extends GenericModule {
 	}
 	
 	private static List<PrioritizedURL> makeList(String url) {
-		List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+		List<PrioritizedURL> urls = new ArrayList<>();
 		urls.add(new PrioritizedURL(url, 0));
 		return urls;
 	}

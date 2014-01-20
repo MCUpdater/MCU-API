@@ -10,7 +10,7 @@ public class AssetIndex {
 	private boolean virtual;
 	
 	public AssetIndex() {
-		this.objects = new LinkedHashMap<String, Asset>();
+		this.objects = new LinkedHashMap<>();
 	}
 	
 	public Map<String, Asset> getObjects() {
@@ -18,7 +18,7 @@ public class AssetIndex {
 	}
 	
 	public Set<Asset> getUniqueObjects() {
-		return new HashSet<Asset>(this.objects.values());
+		return new HashSet<>(this.objects.values());
 	}
 	
 	public boolean isVirtual() {

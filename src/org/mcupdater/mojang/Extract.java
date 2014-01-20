@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Extract {
-	private List<String> exclude = new ArrayList<String>();
+	private List<String> exclude = new ArrayList<>();
 	
 	public Extract() { }
 	

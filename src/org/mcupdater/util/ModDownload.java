@@ -1,31 +1,20 @@
 package org.mcupdater.util;
 // Credit for this class goes to Peter Koeleman, who graciously provided the initial code.
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.mcupdater.Version;
 
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTML.Tag;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.mcupdater.Version;
+import java.io.*;
+import java.net.*;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallback {
 
@@ -176,13 +165,12 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	
 	public static void printheaders(Map<String, List<String>> headers) {
 		System.out.println("\nPrinting headers:\n=====================");
-		Iterator<String> it = headers.keySet().iterator();
-		while (it.hasNext()) {
-			String header = it.next();
+		for (String header : headers.keySet()) {
 			System.out.println(header);
 			List<String> ls = headers.get(header);
-			for (String t : ls)
-				System.out.println("\t"+t);
+			for (String t : ls) {
+				System.out.println("\t" + t);
+			}
 		}
 		System.out.println("=====================");
 	}

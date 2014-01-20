@@ -43,7 +43,7 @@ public class ServerStatus {
 		Socket socket = null;
 		DataInputStream dis = null;
 		DataOutputStream dos = null;
-		URI server = null;
+		URI server;
 		String host = null;
 		int port = -1;
 		
@@ -114,9 +114,7 @@ public class ServerStatus {
 			}
 			result = new ServerStatus(motd, players, maxPlayers);
 			
-		} catch (SocketException e1) {
-		} catch (SocketTimeoutException e2) {
-		} catch (UnknownHostException uhe) {
+		} catch (SocketException | SocketTimeoutException | UnknownHostException e1) {
 		} finally {
 			if (dis != null) dis.close();
 			if (dos != null) dos.close();
