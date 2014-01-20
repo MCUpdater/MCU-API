@@ -1,5 +1,8 @@
 package org.mcupdater.model;
 
+import org.mcupdater.util.ServerPackParser;
+import org.w3c.dom.Element;
+
 public class ServerList implements Comparable<ServerList>{
 	private String name;
 	private String packUrl;
@@ -14,7 +17,10 @@ public class ServerList implements Comparable<ServerList>{
 	private String revision;	// serverpack revision
 	private String serverId;
 	private String mainClass;
-	
+
+	public ServerList() {}
+
+	@Deprecated
 	public ServerList(String serverId, String name, String packUrl, String newsUrl, String iconUrl, String version, String address, boolean generateList, boolean autoConnect, String revision, boolean fakeServer, String mainClass)
 	{
 		this.serverId = serverId;
@@ -150,5 +156,23 @@ public class ServerList implements Comparable<ServerList>{
 	@Override
 	public int compareTo(ServerList that) {
 		return this.getName().compareTo(that.getName());
+	}
+
+	public static ServerList fromElement(String mcuVersion, String serverUrl, Element docEle) {
+		ServerList newSL = new ServerList();
+		newSL.setMCUVersion(mcuVersion);
+		newSL.setPackUrl(serverUrl);
+	    newSL.setServerId(docEle.getAttribute("id"));
+		newSL.setName(docEle.getAttribute("name"));
+		newSL.setNewsUrl(docEle.getAttribute("newsUrl"));
+		newSL.setIconUrl(docEle.getAttribute("iconUrl"));
+		newSL.setVersion(docEle.getAttribute("version"));
+		newSL.setAddress(docEle.getAttribute("serverAddress"));
+		newSL.setGenerateList(ServerPackParser.parseBoolean(docEle.getAttribute("generateList"), true));
+		newSL.setAutoConnect(ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true));
+		newSL.setRevision(docEle.getAttribute("revision"));
+		newSL.setFakeServer(ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false));
+		newSL.setMainClass(docEle.getAttribute("mainClass"));
+		return newSL;
 	}
 }
