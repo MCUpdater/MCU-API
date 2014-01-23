@@ -294,7 +294,7 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		Module m = new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta);	
+		Module m = new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, false, false, "", "", null);
 		return m;
 	}
 	
