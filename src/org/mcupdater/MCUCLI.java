@@ -3,11 +3,11 @@ package org.mcupdater;
 import org.mcupdater.model.ModSide;
 import org.mcupdater.model.ServerList;
 import org.mcupdater.mojang.MinecraftVersion;
+import org.mcupdater.settings.Profile;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class MCUCLI extends MCUApp {
@@ -19,9 +19,10 @@ public class MCUCLI extends MCUApp {
 	public void log(String msg) {
 		System.out.println(msg);
 	}
+
 	@Override
-	public boolean requestLogin() {
-		return false;
+	public Profile requestLogin(String username) {
+		return null;
 	}
 
 	public static void main( String args[] ) {
@@ -121,11 +122,6 @@ public class MCUCLI extends MCUApp {
 	}
 	@Override
 	public void addServer(ServerList entry) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void addProgressBar(String title, String parent) {
 		// TODO Auto-generated method stub
 		
 	}
