@@ -126,11 +126,7 @@ public class ServerList implements Comparable<ServerList>{
 	}
 
 	public boolean isAutoConnect() {
-		if (!this.generateList) {
-			return false;
-		} else {
-			return autoConnect;
-		}
+		return this.generateList && autoConnect;
 	}
 
 	public void setAutoConnect(boolean autoConnect) {

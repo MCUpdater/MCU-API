@@ -40,8 +40,7 @@ public class AssetIndex {
 			if ((o == null) || (getClass() != o.getClass())) return false;
 			
 			Asset that = (Asset) o;
-			if (this.size != that.size) { return false; }
-			return this.hash.equals(that.hash);
+			return this.size == that.size && this.hash.equals(that.hash);
 
 		}
 		
