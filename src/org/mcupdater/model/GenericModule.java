@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-
 public class GenericModule {
 	protected String name = "";
 	protected String id = "";
@@ -15,46 +14,54 @@ public class GenericModule {
 	protected String path = "";
 	protected String depends = "";
 	protected boolean required = false;
-	protected boolean inJar = false;
+	//protected boolean inJar = false;
 	protected int order = 1;
 	protected boolean keepMeta = false;
-	protected boolean extract = false;
+	//protected boolean extract = false;
 	protected boolean inRoot = false;
 	protected boolean isDefault = false;
-	protected boolean coreMod = false;
-	protected boolean litemod = false;
+	//protected boolean coreMod = false;
+	//protected boolean litemod = false;
 	protected String md5 = "";
 	protected ModSide side = ModSide.BOTH;
 	protected HashMap<String,String> meta = new HashMap<>();
-	protected boolean isLibrary = false;
+	//protected boolean isLibrary = false;
 	protected String launchArgs = "";
 	protected String jreArgs = "";
+	protected ModType modType = ModType.Regular;
 
-	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, String side, String path, HashMap<String, String> meta, boolean isLibrary, boolean litemod, String launchArgs, String jreArgs){
+	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs) {
 		this.setName(name);
 		this.setId(id);
 		this.setUrls(url);
 		this.setDepends(depends);
 		this.setRequired(required);
-		this.setInJar(inJar);
-		this.setJarOrder(jarOrder+1);
+		this.setModType(modType);
+		this.setJarOrder(jarOrder + 1);
 		this.setKeepMeta(keepMeta);
 		this.setIsDefault(isDefault);
-		this.setExtract(extract);
 		this.setInRoot(inRoot);
-		this.setCoreMod(coreMod);
 		this.setMD5(md5);
 		this.setSide(side);
 		this.setPath(path);
-		this.setIsLibrary(isLibrary);
 		this.setLaunchArgs(launchArgs);
 		this.setJreArgs(jreArgs);
-		this.setLitemod(litemod);
 		if(meta != null)
 		{
 			this.setMeta(meta);
 		} else {
 			this.setMeta(new HashMap<String,String>());
+		}
+	}
+
+	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs){
+		this(name, id, url, depends, required, ModType.Regular, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs);
+		if (inJar) {
+			this.setModType(ModType.Jar);
+		} else if (extract) {
+			this.setModType(ModType.Extract);
+		} else if (coreMod) {
+			this.setModType(ModType.Coremod);
 		}
 	}
 	
@@ -106,6 +113,7 @@ public class GenericModule {
 		this.required=required;
 	}
 	
+/*
 	public boolean getInJar()
 	{
 		return inJar;
@@ -123,7 +131,7 @@ public class GenericModule {
 	public void setExtract(boolean extract) {
 		this.extract = extract;
 	}
-
+*/
 	public boolean getInRoot() {
 		return inRoot;
 	}
@@ -149,6 +157,7 @@ public class GenericModule {
 		this.isDefault = isDefault;
 	}
 
+/*
 	public boolean getCoreMod() {
 		return coreMod;
 	}
@@ -156,7 +165,7 @@ public class GenericModule {
 	public void setCoreMod(boolean coreMod) {
 		this.coreMod = coreMod;
 	}
-
+*/
 	public String getId() {
 		return id;
 	}
@@ -243,7 +252,7 @@ public class GenericModule {
 	public void setLaunchArgs(String launchArgs) {
 		this.launchArgs = launchArgs;
 	}
-
+/*
 	public boolean getIsLibrary() {
 		return isLibrary;
 	}
@@ -251,7 +260,7 @@ public class GenericModule {
 	public void setIsLibrary(boolean isLibrary) {
 		this.isLibrary = isLibrary;
 	}
-
+*/
 	public List<PrioritizedURL> getPrioritizedUrls() {
 		return this.urls;
 	}
@@ -264,6 +273,15 @@ public class GenericModule {
 		this.jreArgs = jreArgs;
 	}
 
+	public void setModType(ModType modType) {
+		this.modType = modType;
+	}
+
+	public ModType getModType() {
+		return this.modType;
+	}
+
+/*
 	public boolean isLitemod() {
 		return litemod;
 	}
@@ -271,4 +289,5 @@ public class GenericModule {
 	public void setLitemod(boolean litemod) {
 		this.litemod = litemod;
 	}
+*/
 }

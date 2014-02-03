@@ -178,38 +178,12 @@ public class ServerPackParser {
 				isDefault = parseBooleanWithDefault(elReq.getAttribute("isDefault"),false);
 			}
 			Element elType = (Element) el.getElementsByTagName("ModType").item(0);
-			boolean inRoot = parseBooleanWithDefault(elType.getAttribute("inRoot"),false);
+			boolean inRoot = parseBooleanWithDefault(elType.getAttribute("inRoot"), false);
 			int order = parseInt(elType.getAttribute("order"));
 			boolean keepMeta = parseBooleanWithDefault(elType.getAttribute("keepMeta"),false);
 			String launchArgs = elType.getAttribute("launchArgs");
 			String jreArgs = elType.getAttribute("jreArgs");
 			ModType modType = ModType.valueOf(elType.getTextContent());
-			boolean coremod = false;
-			boolean jar = false;
-			boolean library = false;
-			boolean extract = false;
-			boolean litemod = false;
-			switch (modType) {
-			case Coremod:
-				coremod = true;
-				break;
-			case Extract:
-				extract = true;
-				break;
-			case Jar:
-				jar = true;
-				break;
-			case Library:
-				library = true;
-				break;
-			case Litemod:
-				litemod = true;
-				break;
-			case Option:
-				throw new RuntimeException("Module type 'Option' not implemented");
-			default:
-				break;
-			}
 			String md5 = (String) xpath.evaluate("MD5", el, XPathConstants.STRING);
 			List<ConfigFile> configs = new ArrayList<>();
 			List<GenericModule> submodules = new ArrayList<>();
@@ -238,7 +212,7 @@ public class ServerPackParser {
 					mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 				}
 			}
-			Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, litemod, launchArgs, jreArgs, submodules);	
+			Module m = new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules);
 			return m;
 		} catch (XPathExpressionException e) {
 			// TODO Auto-generated catch block
@@ -294,7 +268,7 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		Module m = new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, false, false, "", "", new ArrayList<GenericModule>());
+		Module m = new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "");
 		return m;
 	}
 	

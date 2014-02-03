@@ -673,7 +673,7 @@ public class MCUpdater {
 		int jarModCount = 0;
 		while (iMods.hasNext() && !updateJar) {
 			GenericModule current = iMods.next();
-			if (current.getInJar()) {
+			if (current.getModType() == ModType.Jar) {
 				FileInfo jarMod = instData.findJarMod(current.getId());
 				if (jarMod == null) {
 					updateJar = true;
@@ -730,28 +730,42 @@ public class MCUpdater {
 			parent.setStatus("Mod: " + entry.getName());
 			parent.log("Mod: "+entry.getName());
 			Collections.sort(entry.getPrioritizedUrls());
-			if (entry.getInJar()) {
-				if (updateJar) {
-					jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),100000,entry.getUrls()));
-					keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
-					instData.addJarMod(entry.getId(), entry.getMD5());
-					jarModCount++;
-				}
-			} else if (entry.getCoreMod()) {
-				String filename = "coremods/" + cleanForFile(entry.getId()) + ".jar";
-				generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
-				instData.addMod(entry.getId(), entry.getMD5(), filename);
-			} else if (entry.getIsLibrary()) {
-				String filename = "lib/" + cleanForFile(entry.getId()) + ".jar";
-				generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
-				instData.addMod(entry.getId(), entry.getMD5(), filename);
-			} else if (entry.getExtract()) {
-				generalFiles.add(new Downloadable(entry.getName(),cleanForFile(entry.getId()) + ".zip",entry.getMD5(),100000,entry.getUrls()));
-				modExtract.put(cleanForFile(entry.getId()) + ".zip", entry.getInRoot());
-			} else {
-				String filename = entry.getPath().isEmpty() ? "mods/" + cleanForFile(entry.getId()) + (entry.isLitemod() ? ".litemod" : ".jar") : entry.getPath();
-				generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
-				instData.addMod(entry.getId(), entry.getMD5(), filename);
+			String filename;
+			switch (entry.getModType()) {
+				case Jar:
+					if (updateJar) {
+						jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),100000,entry.getUrls()));
+						keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
+						instData.addJarMod(entry.getId(), entry.getMD5());
+						jarModCount++;
+					}
+					break;
+				case Coremod:
+					filename = "coremods/" + cleanForFile(entry.getId()) + ".jar";
+					generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
+					instData.addMod(entry.getId(), entry.getMD5(), filename);
+					break;
+				case Library:
+					filename = "lib/" + cleanForFile(entry.getId()) + ".jar";
+					generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
+					instData.addMod(entry.getId(), entry.getMD5(), filename);
+					break;
+				case Extract:
+					generalFiles.add(new Downloadable(entry.getName(),cleanForFile(entry.getId()) + ".zip",entry.getMD5(),100000,entry.getUrls()));
+					modExtract.put(cleanForFile(entry.getId()) + ".zip", entry.getInRoot());
+					break;
+				case Litemod:
+					filename = entry.getPath().isEmpty() ? "mods/" + cleanForFile(entry.getId()) + ".litemod" : entry.getPath();
+					generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
+					instData.addMod(entry.getId(), entry.getMD5(), filename);
+					break;
+				case Regular:
+					filename = entry.getPath().isEmpty() ? "mods/" + cleanForFile(entry.getId()) + ".jar" : entry.getPath();
+					generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
+					instData.addMod(entry.getId(), entry.getMD5(), filename);
+					break;
+				case Option:
+					//TODO: Unimplemented
 			}
 			// 0
 			modsLoaded++;
