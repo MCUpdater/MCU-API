@@ -727,7 +727,6 @@ public class MCUpdater {
 		
 		while(itMods.hasNext()) {
 			GenericModule entry = itMods.next();
-			parent.setStatus("Mod: " + entry.getName());
 			parent.log("Mod: "+entry.getName());
 			Collections.sort(entry.getPrioritizedUrls());
 			String filename;

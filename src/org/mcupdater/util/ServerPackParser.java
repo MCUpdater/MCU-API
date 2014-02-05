@@ -212,6 +212,7 @@ public class ServerPackParser {
 					mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 				}
 			}
+			System.out.println(name + " - " + modType.toString());
 			Module m = new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules);
 			return m;
 		} catch (XPathExpressionException e) {
