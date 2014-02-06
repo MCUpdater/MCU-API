@@ -2,6 +2,7 @@ package org.mcupdater.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -26,6 +27,7 @@ import javax.crypto.spec.PBEParameterSpec;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigInteger;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -1132,6 +1134,19 @@ public class MCUpdater {
 		return this.timeoutLength;
 	}
 
+	public static String calculateGroupHash(Set<String> digests) {
+		BigInteger hash = BigInteger.valueOf(0);
+		for (String entry : digests) {
+			try {
+				BigInteger digest = new BigInteger(Hex.decodeHex(entry.toCharArray()));
+				hash = hash.xor(digest);
+			} catch (DecoderException e) {
+				//e.printStackTrace();
+				System.out.println("Entry '" + entry + "' is not a valid hexadecimal number");
+			}
+		}
+		return Hex.encodeHexString(hash.toByteArray());
+	}
 }
 
 /* 0

@@ -8,6 +8,7 @@ import java.util.Map;
 public class Instance {
 	private String mcversion;
 	private String revision;
+	private String hash = "";
 	private List<FileInfo> instanceFiles = new ArrayList<>();
 	private List<FileInfo> jarMods = new ArrayList<>();
 	private Map<String, Boolean> optionalMods = new HashMap<>();
@@ -78,5 +79,13 @@ public class Instance {
 		entry.setMD5(md5);
 		entry.setFilename(filename);
 		this.instanceFiles.add(entry);
+	}
+
+	public String getHash() {
+		return hash;
+	}
+
+	public void setHash(String hash) {
+		this.hash = hash;
 	}
 }

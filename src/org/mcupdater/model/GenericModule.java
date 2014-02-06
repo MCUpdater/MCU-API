@@ -36,7 +36,7 @@ public class GenericModule {
 		this.setUrls(url);
 		this.setDepends(depends);
 		this.setRequired(required);
-		this.setModType(modType);
+		this.setModType(type);
 		this.setJarOrder(jarOrder + 1);
 		this.setKeepMeta(keepMeta);
 		this.setIsDefault(isDefault);
@@ -184,7 +184,7 @@ public class GenericModule {
 	
 	@Override
 	public String toString() {
-		return id;
+		return "{id="+id+";name="+name+";type="+modType+";}";
 	}
 
 	public ModSide getSide() {
