@@ -1,19 +1,15 @@
 package org.mcupdater.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.logging.Level;
-
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
+import java.io.*;
+import java.util.logging.Level;
+
 public class DownloadCache {
 	private static DownloadCache instance;
-	private File dir;
+	private final File dir;
 	
 	private DownloadCache(File dir) {
 		this.dir = dir;

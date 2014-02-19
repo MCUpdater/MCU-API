@@ -31,7 +31,7 @@ public class ServerPackParser {
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(packFile);
-		}catch(ParserConfigurationException | SAXException pce) {
+		} catch(ParserConfigurationException | SAXException pce) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Parser error", pce);
 		} catch(IOException ioe) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "I/O error", ioe);

@@ -2,6 +2,7 @@ package org.mcupdater.mojang;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.mcupdater.model.JSON;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,6 +13,7 @@ import java.util.List;
 /*
  * Implementation of version.json format used by Minecraft's launcher
  */
+@JSON
 public class MinecraftVersion {
 	private String id;
 	private String time;

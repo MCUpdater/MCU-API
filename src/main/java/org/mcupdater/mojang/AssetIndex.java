@@ -1,10 +1,13 @@
 package org.mcupdater.mojang;
 
+import org.mcupdater.model.JSON;
+
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+@JSON
 public class AssetIndex {
 	private Map<String, Asset> objects;
 	private boolean virtual;

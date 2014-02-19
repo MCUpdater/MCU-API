@@ -14,9 +14,9 @@ import java.util.logging.Level;
 
 public class ServerStatus {
 	
-	private String motd;
-	private int players;
-	private int maxPlayers;
+	private final String motd;
+	private final int players;
+	private final int maxPlayers;
 
 	public ServerStatus(String motd, int players, int maxPlayers) {
 		this.motd = motd;

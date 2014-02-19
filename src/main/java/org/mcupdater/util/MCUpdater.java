@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 public class MCUpdater {
 	//public static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
 	//private List<Module> modList = new ArrayList<Module>();
-	private Path MCFolder;
+	private final Path MCFolder;
 	private Path archiveFolder;
 	private Path instanceRoot;
 	private MCUApp parent;
@@ -591,7 +591,7 @@ public class MCUpdater {
 	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, boolean clearExisting, final Instance instData, ModSide side) throws FileNotFoundException {
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
-			//Collections.sort(toInstall, new ModuleComparator());
+			Collections.sort(toInstall, new ModuleComparator());
 		}
 		final Path instancePath = instanceRoot.resolve(server.getServerId());
 		Path binPath = instancePath.resolve("bin");

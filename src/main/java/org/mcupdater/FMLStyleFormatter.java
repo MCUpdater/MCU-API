@@ -11,7 +11,7 @@ import java.util.logging.LogRecord;
 
 public class FMLStyleFormatter extends Formatter {
 	static final String LINE_SEP = System.getProperty("line.separator");
-	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
 	@Override
 	public String format(LogRecord record) {

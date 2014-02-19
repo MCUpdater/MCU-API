@@ -6,7 +6,9 @@ package org.mcupdater.settings;
 import org.mcupdater.MCUApp;
 import org.mcupdater.Yggdrasil.AuthManager;
 import org.mcupdater.Yggdrasil.SessionResponse;
+import org.mcupdater.model.JSON;
 
+@JSON
 public class Profile {
 	private String style;
 	private String name;

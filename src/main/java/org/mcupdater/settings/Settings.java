@@ -1,8 +1,11 @@
 package org.mcupdater.settings;
 
+import org.mcupdater.model.JSON;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@JSON
 public class Settings {
 	public enum TextField {
 		minMemory,

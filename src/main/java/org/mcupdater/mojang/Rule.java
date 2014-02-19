@@ -1,8 +1,11 @@
 package org.mcupdater.mojang;
 
+import org.mcupdater.model.JSON;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@JSON
 public class Rule {
 	private Action action = Action.ALLOW;
 	private OSRestriction os;

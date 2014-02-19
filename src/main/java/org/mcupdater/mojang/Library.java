@@ -1,8 +1,11 @@
 package org.mcupdater.mojang;
 
+import org.mcupdater.model.JSON;
+
 import java.util.List;
 import java.util.Map;
 
+@JSON
 public class Library {
 	private String name;
 	private List<Rule> rules;
