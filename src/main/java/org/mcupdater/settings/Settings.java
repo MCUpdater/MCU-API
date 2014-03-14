@@ -34,6 +34,7 @@ public class Settings {
 	private String programWrapper;
 	private int timeoutLength;
 	private boolean autoConnect;
+	private boolean minecraftToConsole = true;
 	private boolean minimizeOnLaunch;
 	private List<String> packURLs = new ArrayList<>();
 
@@ -164,6 +165,14 @@ public class Settings {
 
 	public void setMinimizeOnLaunch(boolean minimizeOnLaunch) {
 		this.minimizeOnLaunch = minimizeOnLaunch;
+	}
+
+	public boolean isMinecraftToConsole() {
+		return minecraftToConsole;
+	}
+
+	public void setMinecraftToConsole(boolean minecraftToConsole) {
+		this.minecraftToConsole = minecraftToConsole;
 	}
 
 	public List<String> getPackURLs() {
