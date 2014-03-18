@@ -1,5 +1,7 @@
 package org.mcupdater.model;
 
+import org.mcupdater.util.MCUpdater;
+
 import java.util.Locale;
 
 public class ConfigFile {
@@ -46,6 +48,10 @@ public class ConfigFile {
 
 	public String getMD5()
 	{
+		if (md5 == null) {
+			MCUpdater.apiLogger.warning("No MD5 for ConfigFile: " + path);
+			return "";
+		}
 		return md5;
 	}
 	

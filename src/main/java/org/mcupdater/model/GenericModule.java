@@ -1,5 +1,7 @@
 package org.mcupdater.model;
 
+import org.mcupdater.util.MCUpdater;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -141,7 +143,11 @@ public class GenericModule {
 	}
 	
 	public String getMD5() {
-		return (md5 == null ? "" : md5);
+		if (md5 == null) {
+			MCUpdater.apiLogger.warning("No MD5 for Module " + this.id);
+			return "";
+		}
+		return md5;
 	}
 	
 	public void setMD5(String md5) {

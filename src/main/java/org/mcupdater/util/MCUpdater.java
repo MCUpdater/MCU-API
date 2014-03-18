@@ -1142,7 +1142,7 @@ public class MCUpdater {
 				hash = hash.xor(digest);
 			} catch (DecoderException e) {
 				//e.printStackTrace();
-				System.out.println("Entry '" + entry + "' is not a valid hexadecimal number");
+				apiLogger.warning("Entry '" + entry + "' is not a valid hexadecimal number");
 			}
 		}
 		return Hex.encodeHexString(hash.toByteArray());
