@@ -17,10 +17,25 @@ public class Version {
 			prop.load(Version.class.getResourceAsStream("/version.properties"));
 		} catch (IOException e) {
 		}
-		MAJOR_VERSION = Integer.valueOf(prop.getProperty("major","0"));
-		MINOR_VERSION = Integer.valueOf(prop.getProperty("minor","0"));
-		BUILD_VERSION = Integer.valueOf(prop.getProperty("build_version","0"));
-		BUILD_BRANCH = prop.getProperty("git_branch","unknown");
+		int major;
+		int minor;
+		int build;
+		String branch;
+		try {
+			major = Integer.valueOf(prop.getProperty("major", "0"));
+			minor = Integer.valueOf(prop.getProperty("minor", "0"));
+			build = Integer.valueOf(prop.getProperty("build_version", "0"));
+			branch = prop.getProperty("git_branch", "unknown");
+		} catch (Exception e) {
+			major = 3;
+			minor = 2;
+			build = 999;
+			branch = "develop";
+		}
+		MAJOR_VERSION = major;
+		MINOR_VERSION = minor;
+		BUILD_VERSION = build;
+		BUILD_BRANCH = branch;
 		if( BUILD_BRANCH.equals("unknown") || BUILD_BRANCH.equals("master") ) {
 			BUILD_LABEL = "";
 		} else {
