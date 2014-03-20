@@ -1,4 +1,6 @@
-package org.mcupdater;
+package org.mcupdater.api;
+
+import org.mcupdater.MCUApp;
 
 import java.io.IOException;
 import java.util.Properties;

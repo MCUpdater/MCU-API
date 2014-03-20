@@ -3,10 +3,10 @@ package org.mcupdater.mojang;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.mcupdater.DownloadQueue;
-import org.mcupdater.Downloadable;
-import org.mcupdater.Downloadable.HashAlgorithm;
-import org.mcupdater.TrackerListener;
+import org.mcupdater.downloadlib.DownloadQueue;
+import org.mcupdater.downloadlib.Downloadable;
+import org.mcupdater.downloadlib.Downloadable.HashAlgorithm;
+import org.mcupdater.downloadlib.TrackerListener;
 import org.mcupdater.util.MCUpdater;
 
 import java.io.File;

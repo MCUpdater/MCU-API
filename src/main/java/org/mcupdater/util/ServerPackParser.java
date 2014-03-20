@@ -1,8 +1,12 @@
 package org.mcupdater.util;
 
-import org.mcupdater.Version;
+import org.apache.commons.codec.binary.Base64;
+import org.mcupdater.api.Version;
 import org.mcupdater.model.*;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -55,8 +59,13 @@ public class ServerPackParser {
 		}
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		URLConnection serverConn = server.openConnection();
-		serverConn.setRequestProperty("User-Agent", "MCUpdater/" + Version.VERSION);
+		serverConn.setRequestProperty("User-Agent", "MCUpdater/" + Version.API_VERSION);
+		if (server.getUserInfo() != null) {
+			String basicAuth = "Basic " + new String(new Base64().encode(server.getUserInfo().getBytes()));
+			serverConn.setRequestProperty("Authorization", basicAuth);
+		}
 		//TODO: Pass the username as a header
+		// serverConn.setRequestProperty("MC-User", MCUpdater.getInstance().getParent().);
 		serverConn.setConnectTimeout(MCUpdater.getInstance().getTimeout());
 		serverConn.setReadTimeout(MCUpdater.getInstance().getTimeout());
 		try {

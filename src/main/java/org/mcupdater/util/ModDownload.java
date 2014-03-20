@@ -3,7 +3,7 @@ package org.mcupdater.util;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.mcupdater.Version;
+import org.mcupdater.api.Version;
 
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;

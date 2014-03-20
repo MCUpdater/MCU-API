@@ -1,5 +1,6 @@
 package org.mcupdater;
 
+import org.mcupdater.downloadlib.*;
 import org.mcupdater.model.ModSide;
 import org.mcupdater.model.ServerList;
 import org.mcupdater.mojang.MinecraftVersion;
@@ -105,7 +106,7 @@ public class MCUCLI extends MCUApp {
 	}
 	
 	private void displayVersion() {
-		System.out.println("MCUpdater CLI - "+Version.VERSION);
+		System.out.println("MCUpdater CLI - "+ Version.VERSION);
 	}
 	
 	private void displayHelp() {

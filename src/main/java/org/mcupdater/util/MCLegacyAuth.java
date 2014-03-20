@@ -1,6 +1,6 @@
 package org.mcupdater.util;
 
-import org.mcupdater.Version;
+import org.mcupdater.api.Version;
 import org.mcupdater.model.LoginData;
 import org.mcupdater.util.MCLoginException.ResponseType;
 

@@ -8,6 +8,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.mcupdater.*;
+import org.mcupdater.api.Version;
+import org.mcupdater.downloadlib.*;
 import org.mcupdater.instance.FileInfo;
 import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
@@ -1142,7 +1144,7 @@ public class MCUpdater {
 				hash = hash.xor(digest);
 			} catch (DecoderException e) {
 				//e.printStackTrace();
-				apiLogger.warning("Entry '" + entry + "' is not a valid hexadecimal number");
+				System.out.println("Entry '" + entry + "' is not a valid hexadecimal number");
 			}
 		}
 		return Hex.encodeHexString(hash.toByteArray());

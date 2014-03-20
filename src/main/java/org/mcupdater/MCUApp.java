@@ -1,5 +1,7 @@
 package org.mcupdater;
 
+import org.mcupdater.downloadlib.DownloadQueue;
+import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.model.ServerList;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.Profile;

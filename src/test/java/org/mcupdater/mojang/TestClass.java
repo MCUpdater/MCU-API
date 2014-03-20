@@ -1,8 +1,8 @@
 package org.mcupdater.mojang;
 
-import org.mcupdater.DownloadQueue;
-import org.mcupdater.Downloadable;
-import org.mcupdater.TrackerListener;
+import org.mcupdater.downloadlib.DownloadQueue;
+import org.mcupdater.downloadlib.Downloadable;
+import org.mcupdater.downloadlib.TrackerListener;
 import org.mcupdater.util.Archive;
 import org.mcupdater.util.MCUpdater;
 
