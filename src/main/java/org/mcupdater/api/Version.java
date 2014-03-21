@@ -14,7 +14,7 @@ public class Version {
 	static {
 		Properties prop = new Properties();
 		try {
-			prop.load(Version.class.getResourceAsStream("/version.properties"));
+			prop.load(Version.class.getResourceAsStream("/org/mcupdater/api/version.properties"));
 		} catch (IOException e) {
 		}
 		int major;
