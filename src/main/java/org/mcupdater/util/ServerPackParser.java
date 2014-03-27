@@ -192,7 +192,13 @@ public class ServerPackParser {
 			boolean keepMeta = parseBooleanWithDefault(elType.getAttribute("keepMeta"),false);
 			String launchArgs = elType.getAttribute("launchArgs");
 			String jreArgs = elType.getAttribute("jreArgs");
-			ModType modType = ModType.valueOf(elType.getTextContent());
+			ModType modType;
+			if (elType == null) {
+				MCUpdater.apiLogger.warning("ModType element missing from Module with id: " + id);
+				modType = ModType.Regular;
+			} else {
+				modType = ModType.valueOf(elType.getTextContent());
+			}
 			String md5 = (String) xpath.evaluate("MD5", el, XPathConstants.STRING);
 			List<ConfigFile> configs = new ArrayList<>();
 			List<GenericModule> submodules = new ArrayList<>();
