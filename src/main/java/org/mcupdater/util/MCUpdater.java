@@ -52,6 +52,7 @@ public class MCUpdater {
 	public static MCUpdater getInstance(File file) {
 		if( INSTANCE == null ) {
 			INSTANCE = new MCUpdater(file);
+			apiLogger.finest("MCUpdater intialized with path: " + file.getAbsolutePath());
 		}
 		return INSTANCE;
 	}
@@ -59,6 +60,7 @@ public class MCUpdater {
 	public static MCUpdater getInstance() {
 		if( INSTANCE == null ) {
 			INSTANCE = new MCUpdater(null);
+			apiLogger.finest("MCUpdater intialized without path");
 		}
 		return INSTANCE;		
 	}
@@ -216,9 +218,6 @@ public class MCUpdater {
 		if(path.contains("lastlogin")) {
 			return true;
 		}
-		if(path.contains("mcuServers.dat")) {
-			return true;
-		}
 		if(path.contains("instance.dat")) {
 			return true;
 		}
@@ -278,7 +277,7 @@ public class MCUpdater {
 	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, final Path instancePath, boolean clearExisting, final Instance instData, ModSide side) throws FileNotFoundException {
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
-			Collections.sort(toInstall, new ModuleComparator());
+			Collections.sort(toInstall, new ModuleComparator(ModuleComparator.Mode.IMPORTANCE));
 		}
 		//final Path instancePath = instanceRoot.resolve(server.getServerId());
 		Path binPath = instancePath.resolve("bin");
