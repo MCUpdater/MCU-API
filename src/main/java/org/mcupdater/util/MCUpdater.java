@@ -42,7 +42,6 @@ public class MCUpdater {
 	private final String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
-	private String newestMC = "";
 	private final Map<String,String> versionMap = new HashMap<>();
 	public static Logger apiLogger;
 	private int timeoutLength = 5000;
@@ -135,7 +134,6 @@ public class MCUpdater {
 				if(currentLine != null){
 					String entry[] = currentLine.split("\\|");
 					versionMap.put(entry[0], entry[1]);
-					newestMC = entry[1]; // Most recent entry in md5.dat is the current release
 				} else {
 					break;
 				}
@@ -143,7 +141,6 @@ public class MCUpdater {
 			buffer.close();
 			input.close();
 			apiLogger.fine("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
-			apiLogger.fine("newest Minecraft in md5.dat: " + newestMC);
 		} catch (MalformedURLException e) {
 			apiLogger.log(Level.SEVERE, "Bad URL", e);
 		} catch (IOException e) {
