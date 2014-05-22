@@ -36,7 +36,7 @@ public class ServerStatus {
 		return maxPlayers;
 	}
 	
-	public static ServerStatus getStatus(String address) throws IOException {
+	public static ServerStatus getStatus(String address) throws Exception {
 		
 		ServerStatus result = null;
 		
