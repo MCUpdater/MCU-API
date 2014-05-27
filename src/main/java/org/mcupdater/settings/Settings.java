@@ -59,12 +59,7 @@ public class Settings {
 	}
 
 	public void setMinMemory(String minMemory) {
-		try {
-			this.minMemory = minMemory;
-		} catch (Exception e) {
-			// ignore errors
-		}
-		
+		this.minMemory = minMemory;
 	}
 
 	public String getMaxMemory() {
@@ -88,11 +83,7 @@ public class Settings {
 	}
 
 	public void setResWidth(int resWidth) {
-		try {
-			this.resWidth = resWidth;
-		} catch (Exception e) {
-			// ignore errors
-		}
+		this.resWidth = resWidth;
 	}
 
 	public int getResHeight() {
