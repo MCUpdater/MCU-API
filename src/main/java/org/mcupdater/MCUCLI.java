@@ -1,8 +1,9 @@
 package org.mcupdater;
 
-import org.mcupdater.downloadlib.*;
+import org.mcupdater.downloadlib.DownloadQueue;
+import org.mcupdater.downloadlib.Downloadable;
+import org.mcupdater.downloadlib.Version;
 import org.mcupdater.model.ModSide;
-import org.mcupdater.model.ServerList;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.Profile;
 
@@ -120,11 +121,6 @@ public class MCUCLI extends MCUApp {
 			"--backup                  Save a timestamped backup of the world, mods, and configs\n"+
 			"--launch                  Attempt to launch the world after updating"
 		);
-	}
-	@Override
-	public void addServer(ServerList entry) {
-		// TODO Auto-generated method stub
-		
 	}
 	@Override
 	public DownloadQueue submitNewQueue(String queueName, String parent,
