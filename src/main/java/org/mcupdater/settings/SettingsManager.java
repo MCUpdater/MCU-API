@@ -115,7 +115,7 @@ public class SettingsManager {
 		newSettings.setResHeight(720);
 		newSettings.setFullScreen(false);
 		newSettings.setJrePath(System.getProperty("java.home"));
-		newSettings.setJvmOpts("-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts");
+		newSettings.setJvmOpts("-XX:+UseG1GC -XX:+AggressiveOpts");
 		newSettings.setInstanceRoot(MCUpdater.getInstance().getArchiveFolder().resolve("instances").toString());
 		newSettings.setProgramWrapper("");
 		newSettings.setTimeoutLength(5000);
@@ -126,6 +126,12 @@ public class SettingsManager {
 
 	public Settings getSettings() {
 		return settings;
+	}
+
+	public void setSettings(Settings newSettings) {
+		this.settings = newSettings;
+		this.setDirty();
+		fireSettingsUpdate();
 	}
 
 	public static SettingsManager getInstance() {

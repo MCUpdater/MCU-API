@@ -129,19 +129,19 @@ public class Settings {
 	public String getProgramWrapper() {
 		return programWrapper;
 	}
-	
+
 	public void setProgramWrapper(String programWrapper) {
 		this.programWrapper = programWrapper;
 	}
-	
+
 	public int getTimeoutLength() {
 		return timeoutLength;
 	}
-	
+
 	public void setTimeoutLength(int timeoutLength) {
 		this.timeoutLength = timeoutLength;
 	}
-	
+
 	public boolean isAutoConnect() {
 		return autoConnect;
 	}
@@ -169,11 +169,15 @@ public class Settings {
 	public List<String> getPackURLs() {
 		return packURLs;
 	}
-	
+
+	public void setPackURLs(List<String> packURLs) {
+		this.packURLs = packURLs;
+	}
+
 	public void addPackURL(String newUrl) {
 		this.packURLs.add(newUrl);
 	}
-	
+
 	public void removePackUrl(String oldUrl) {
 		this.packURLs.remove(oldUrl);
 	}
@@ -186,49 +190,49 @@ public class Settings {
 		}
 		this.profiles.add(newProfile);
 	}
-	
+
 	public void updateField(TextField field, String value) {
 		switch(field){
-		case instanceRoot:
-			setInstanceRoot(value);
-			break;
-		case jrePath:
-			setJrePath(value);
-			break;
-		case jvmOpts:
-			setJvmOpts(value);
-			break;
-		case maxMemory:
-			setMaxMemory(value);
-			break;
-		case minMemory:
-			setMinMemory(value);
-			break;
-		case permGen:
-			setPermGen(value);
-			break;
-		case programWrapper:
-			setProgramWrapper(value);
-			break;
-		case resHeight:
-			try {
-				setResHeight(Integer.parseInt(value));
-			} catch (Exception e) {
-				// ignore errors
-			}
-			break;
-		case resWidth:
-			try {
-				setResWidth(Integer.parseInt(value));
-			} catch (Exception e) {
-				// ignore errors
-			}
-			break;
-		case timeoutLength:
-			setTimeoutLength(Integer.parseInt(value));
-			break;
-		default:
-			break;
+			case instanceRoot:
+				setInstanceRoot(value);
+				break;
+			case jrePath:
+				setJrePath(value);
+				break;
+			case jvmOpts:
+				setJvmOpts(value);
+				break;
+			case maxMemory:
+				setMaxMemory(value);
+				break;
+			case minMemory:
+				setMinMemory(value);
+				break;
+			case permGen:
+				setPermGen(value);
+				break;
+			case programWrapper:
+				setProgramWrapper(value);
+				break;
+			case resHeight:
+				try {
+					setResHeight(Integer.parseInt(value));
+				} catch (Exception e) {
+					// ignore errors
+				}
+				break;
+			case resWidth:
+				try {
+					setResWidth(Integer.parseInt(value));
+				} catch (Exception e) {
+					// ignore errors
+				}
+				break;
+			case timeoutLength:
+				setTimeoutLength(Integer.parseInt(value));
+				break;
+			default:
+				break;
 		}
 	}
 

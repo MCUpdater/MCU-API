@@ -171,6 +171,7 @@ public class MCUpdater {
 
 	public void setInstanceRoot(Path instanceRoot) {
 		this.instanceRoot = instanceRoot;
+		apiLogger.info("Instance root changed to: " + instanceRoot.toString());
 	}
 
 	private boolean getExcludedNames(String path, boolean forDelete) {
