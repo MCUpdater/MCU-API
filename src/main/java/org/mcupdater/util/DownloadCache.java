@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -81,17 +80,6 @@ public class DownloadCache {
 		} catch (IOException e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 		}
-	}
-
-	public static void purge() {
-		Path cache = instance.dir.toPath();
-		PathWalker pathWalk = new PathWalker(new HashSet<String>());
-		try {
-			Files.walkFileTree(cache, pathWalk);
-		} catch (IOException e) {
-			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
-		}
-
 	}
 
 	private static class PathWalker extends SimpleFileVisitor<Path> {
