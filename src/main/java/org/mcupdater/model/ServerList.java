@@ -1,7 +1,12 @@
 package org.mcupdater.model;
 
+import org.mcupdater.api.Version;
 import org.mcupdater.util.ServerPackParser;
 import org.w3c.dom.Element;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ServerList implements Comparable<ServerList>{
 	private String name;
@@ -17,6 +22,7 @@ public class ServerList implements Comparable<ServerList>{
 	private String revision;	// serverpack revision
 	private String serverId;
 	private String mainClass;
+	private String launcherType = "Legacy";
 
 	public ServerList() {}
 
@@ -169,6 +175,42 @@ public class ServerList implements Comparable<ServerList>{
 		newSL.setRevision(docEle.getAttribute("revision"));
 		newSL.setFakeServer(ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false));
 		newSL.setMainClass(docEle.getAttribute("mainClass"));
+		if (docEle.hasAttribute("launcherType")) {
+			newSL.setLauncherType(docEle.getAttribute("launcherType"));
+		} else {
+			if (Version.requestedFeatureLevel(mcuVersion,"3")) {
+				newSL.setLauncherType("Vanilla");
+			}
+		}
 		return newSL;
+	}
+
+	public String getLauncherType() {
+		return launcherType;
+	}
+
+	public void setLauncherType(String launcherType) {
+		this.launcherType = launcherType;
+	}
+
+	public Set<String> getDigests() {
+		Set<String> digests = new HashSet<>();
+		List<Module> mods = ServerPackParser.loadFromURL(getPackUrl(), getServerId());
+		for (Module mod : mods) {
+			if (!mod.getMD5().isEmpty()) {
+				digests.add(mod.getMD5());
+			}
+			for (ConfigFile cf : mod.getConfigs()) {
+				if (!cf.getMD5().isEmpty()) {
+					digests.add(cf.getMD5());
+				}
+			}
+			for (GenericModule sm : mod.getSubmodules()) {
+				if (!sm.getMD5().isEmpty()) {
+					digests.add(sm.getMD5());
+				}
+			}
+		}
+		return digests;
 	}
 }

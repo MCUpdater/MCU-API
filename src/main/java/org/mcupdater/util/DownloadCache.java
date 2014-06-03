@@ -5,6 +5,13 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 public class DownloadCache {
@@ -64,5 +71,44 @@ public class DownloadCache {
 	public static File getFile(String chksum) {
 		final File file = getDir().toPath().resolve(chksum + ".bin").toFile();
 		return file;
+	}
+
+	public static void cull(Set<String> digests) {
+		Path cache = instance.dir.toPath();
+		PathWalker pathWalk = new PathWalker(digests);
+		try {
+			Files.walkFileTree(cache, pathWalk);
+		} catch (IOException e) {
+			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
+		}
+	}
+
+	public static void purge() {
+		Path cache = instance.dir.toPath();
+		PathWalker pathWalk = new PathWalker(new HashSet<String>());
+		try {
+			Files.walkFileTree(cache, pathWalk);
+		} catch (IOException e) {
+			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
+		}
+
+	}
+
+	private static class PathWalker extends SimpleFileVisitor<Path> {
+		private final Set<String> digests;
+
+		public PathWalker(Set<String> digests) {
+			this.digests = digests;
+		}
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			String[] split = instance.dir.toPath().relativize(file).toString().split("\\.");
+			if (!digests.contains(split[0])) {
+				Files.delete(file);
+				MCUpdater.apiLogger.info("Deleted " + file.toString());
+			}
+			return FileVisitResult.CONTINUE;
+		}
 	}
 }
