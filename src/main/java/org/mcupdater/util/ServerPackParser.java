@@ -71,41 +71,25 @@ public class ServerPackParser {
 		return null;
 	}
 
-	private static List<Module> parseDocument(Document dom, String serverId)
-	{
-		int version;
+	private static List<Module> parseDocument(Document dom, String serverId) throws Exception {
 		List<Module> modList = new ArrayList<>();
 		Element parent = dom.getDocumentElement();
-		Element docEle = null;
-		if (parent.getNodeName().equals("ServerPack")){
-			if (Version.requestedFeatureLevel(parent.getAttribute("version"),"3.0")) {
-				version = 2;
-			} else {
-				version = 1;
-			}
-			NodeList servers = parent.getElementsByTagName("Server");
-			for (int i = 0; i < servers.getLength(); i++){
-				docEle = (Element)servers.item(i);
-				if (docEle.getAttribute("id").equals(serverId)) { break; }
-			}
-		} else {
-			docEle = parent;
-			version = 1;
-		}
-		MCUpdater.apiLogger.log(Level.FINE, serverId + ": format=" + version);
+		ServerEntry server = getServerEntry(serverId, parent);
+		ServerList sl = ServerList.fromElement(server.mcuVersion, "", server.serverElement);
+		MCUpdater.apiLogger.log(Level.FINE, serverId + ": format=" + server.packVersion);
 		NodeList nl;
-		switch (version) {
+		switch (server.packVersion) {
 		case 2:
 			// Handle ServerPacks designed for MCUpdater 3.0 and later
-			assert docEle != null;
-			nl = docEle.getElementsByTagName("Import");
+			assert server.serverElement != null;
+			nl = server.serverElement.getElementsByTagName("Import");
 			if(nl != null && nl.getLength() > 0) {
 				for(int i = 0; i < nl.getLength(); i++) {
 					Element el = (Element)nl.item(i);
-					modList.addAll(doImportV2(el, dom));
+					modList.addAll(doImportV2(el, dom, sl));
 				}
 			}
-			nl = docEle.getElementsByTagName("Module");
+			nl = server.serverElement.getElementsByTagName("Module");
 			if(nl != null && nl.getLength() > 0)
 			{
 				for(int i = 0; i < nl.getLength(); i++)
@@ -119,8 +103,8 @@ public class ServerPackParser {
 			
 		case 1:
 			// Handle ServerPacks designed for MCUpdater 2.7 and earlier
-			assert docEle != null;
-			nl = docEle.getElementsByTagName("Module");
+			assert server.serverElement != null;
+			nl = server.serverElement.getElementsByTagName("Module");
 			if(nl != null && nl.getLength() > 0)
 			{
 				for(int i = 0; i < nl.getLength(); i++)
@@ -136,8 +120,34 @@ public class ServerPackParser {
 			return null;
 		}
 	}
-	
-	private static List<Module> doImportV2(Element el, Document dom) {
+
+	private static ServerEntry getServerEntry(String serverId, Element parent) {
+		int version;
+		String mcuVersion;
+		Element docEle = null;
+		if (parent.getNodeName().equals("ServerPack")) {
+			mcuVersion = parent.getAttribute("version");
+			if (Version.requestedFeatureLevel(parent.getAttribute("version"), "3.0")) {
+				version = 2;
+			} else {
+				version = 1;
+			}
+			NodeList servers = parent.getElementsByTagName("Server");
+			for (int i = 0; i < servers.getLength(); i++) {
+				docEle = (Element) servers.item(i);
+				if (docEle.getAttribute("id").equals(serverId)) {
+					break;
+				}
+			}
+		} else {
+			mcuVersion = "1.0";
+			docEle = parent;
+			version = 1;
+		}
+		return new ServerEntry(version, docEle, mcuVersion);
+	}
+
+	private static List<Module> doImportV2(Element el, Document dom, ServerList parent) throws Exception {
 		String url = el.getAttribute("url");
 		if (!url.isEmpty()){
 			try {
@@ -146,6 +156,11 @@ public class ServerPackParser {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
+		}
+		ServerEntry server = getServerEntry(el.getTextContent(), dom.getDocumentElement());
+		ServerList child = ServerList.fromElement(server.mcuVersion, "", server.serverElement);
+		if (!Version.fuzzyMatch(parent.getVersion(), child.getVersion())) {
+			throw new Exception("Import " + (url.isEmpty() ? "" : url + ":") + el.getTextContent() + " failed version checking.");
 		}
 		return parseDocument(dom, el.getTextContent());
 	}
@@ -185,12 +200,7 @@ public class ServerPackParser {
 			String launchArgs = elType.getAttribute("launchArgs");
 			String jreArgs = elType.getAttribute("jreArgs");
 			ModType modType;
-			if (elType == null) {
-				MCUpdater.apiLogger.warning("ModType element missing from Module with id: " + id);
-				modType = ModType.Regular;
-			} else {
-				modType = ModType.valueOf(elType.getTextContent());
-			}
+			modType = ModType.valueOf(elType.getTextContent());
 			String md5 = (String) xpath.evaluate("MD5", el, XPathConstants.STRING);
 			List<ConfigFile> configs = new ArrayList<>();
 			List<GenericModule> submodules = new ArrayList<>();
@@ -326,7 +336,7 @@ public class ServerPackParser {
 		try {
 			return parseDocument(readXmlFromFile(packFile), serverId);
 		} catch (Exception e) {
-			MCUpdater.apiLogger.log(Level.SEVERE, "General error", e);
+			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
 		//return modList;
@@ -337,7 +347,7 @@ public class ServerPackParser {
 		try {
 			return parseDocument(readXmlFromUrl(serverUrl), serverId);
 		} catch (Exception e) {
-			MCUpdater.apiLogger.log(Level.SEVERE, "General error", e);
+			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
 		//return modList;
@@ -377,5 +387,17 @@ public class ServerPackParser {
 		}
 		conn.connect();
 		return conn;
+	}
+
+	public static class ServerEntry {
+		public int packVersion;
+		public Element serverElement;
+		private String mcuVersion;
+
+		public ServerEntry(int packVersion, Element serverElement, String mcuVersion) {
+			this.packVersion = packVersion;
+			this.serverElement = serverElement;
+			this.mcuVersion = mcuVersion;
+		}
 	}
 }

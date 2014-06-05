@@ -64,7 +64,11 @@ public class Version {
 		}
 		return false;
 	}
-	
+
+	public static boolean fuzzyMatch(String version1, String version2) {
+		return version1.equals(version2) || version1.startsWith(version2) || version2.startsWith(version1);
+	}
+
 	public static boolean requestedFeatureLevel(String packVersion, String featureLevelVersion) {
 		String packParts[] = packVersion.split("\\.");
 		String featureParts[] = featureLevelVersion.split("\\.");
