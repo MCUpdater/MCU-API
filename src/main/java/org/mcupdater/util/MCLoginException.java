@@ -9,7 +9,7 @@ public class MCLoginException extends Exception {
 		OLDLAUNCHER("Outdated Launcher"),
 		NOTPREMIUM("User not premium");
 		
-		public String message;
+		public final String message;
 		
 		ResponseType (String message) {
 			this.message = message;

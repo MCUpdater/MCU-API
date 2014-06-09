@@ -153,9 +153,8 @@ public class ServerPackParser {
 			try {
 				dom = readXmlFromUrl(url);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}			
+				MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
+			}
 		}
 		ServerEntry server = getServerEntry(el.getTextContent(), dom.getDocumentElement());
 		ServerList child = ServerList.fromElement(server.mcuVersion, "", server.serverElement);
@@ -229,11 +228,9 @@ public class ServerPackParser {
 					mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 				}
 			}
-			Module m = new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules);
-			return m;
+			return new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules);
 		} catch (XPathExpressionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
 	}
@@ -246,7 +243,6 @@ public class ServerPackParser {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private static Module getModuleV1(Element modEl)
 	{
 		String name = modEl.getAttribute("name");
@@ -285,8 +281,7 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		Module m = new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "");
-		return m;
+		return new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "");
 	}
 	
 	private static ConfigFile getConfigFileV1(Element cfEl)
@@ -295,8 +290,7 @@ public class ServerPackParser {
 		String path = getTextValue(cfEl,"Path");
 		String md5 = getTextValue(cfEl,"MD5");
 		boolean noOverwrite = getBooleanValue(cfEl, "NoOverwrite");
-		ConfigFile cf = new ConfigFile(url,path,noOverwrite,md5);
-		return cf;
+		return new ConfigFile(url,path,noOverwrite,md5);
 	}
 	
 	private static int getIntValue(Element ele, String tagName) {
@@ -332,6 +326,7 @@ public class ServerPackParser {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public static List<Module> loadFromFile(File packFile, String serverId) {
 		try {
 			return parseDocument(readXmlFromFile(packFile), serverId);
@@ -339,7 +334,6 @@ public class ServerPackParser {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
-		//return modList;
 	}
 	
 	public static List<Module> loadFromURL(String serverUrl, String serverId)
@@ -350,9 +344,8 @@ public class ServerPackParser {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
-		//return modList;
 	}
-	
+
 	public static boolean parseBoolean(String attribute, boolean defaultValue) {
 		if (attribute.isEmpty()) {
 			return defaultValue;
