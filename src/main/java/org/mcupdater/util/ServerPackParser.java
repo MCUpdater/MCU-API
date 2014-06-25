@@ -18,10 +18,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -376,7 +373,7 @@ public class ServerPackParser {
 		conn.setUseCaches(false);
 		conn.setInstanceFollowRedirects(false);
 		if (conn.getResponseCode() / 100 == 3) {
-			return redirectAndConnect(new URL(conn.getHeaderField("Location")),target);
+			return redirectAndConnect(new URL(conn.getHeaderField("Location")), target);
 		}
 		conn.connect();
 		return conn;
