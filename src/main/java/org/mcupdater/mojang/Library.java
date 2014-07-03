@@ -1,12 +1,16 @@
 package org.mcupdater.mojang;
 
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.mcupdater.model.JSON;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @JSON
 public class Library {
+
+	private final StrSubstitutor replacer = new StrSubstitutor(new HashMap(){});
 	private String name;
 	private List<Rule> rules;
 	private Map<OperatingSystem, String> natives;
@@ -53,16 +57,18 @@ public class Library {
 	}
 	
 	public String getFilename() {
+		String result;
 		String[] parts = this.name.split(":",3);
 		if (this.natives != null) {
 			if (this.natives.containsKey(OperatingSystem.getCurrentPlatform())) {
-				return String.format("%s-%s-%s.jar", parts[1], parts[2], natives.get(OperatingSystem.getCurrentPlatform()));
+				result = String.format("%s-%s-%s.jar", parts[1], parts[2], natives.get(OperatingSystem.getCurrentPlatform()));
 			} else {
-				return String.format("%s-%s.jar", parts[1], parts[2]);
+				result = String.format("%s-%s.jar", parts[1], parts[2]);
 			}
 		} else {
-			return String.format("%s-%s.jar", parts[1], parts[2]);
+			result = String.format("%s-%s.jar", parts[1], parts[2]);
 		}
+		return replacer.replace(result);
 	}
 	
 	public boolean hasNatives() {

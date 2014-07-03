@@ -4,9 +4,14 @@ import org.mcupdater.model.JSON;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @JSON
 public class Settings {
+	public UUID getClientToken() {
+		return clientToken;
+	}
+
 	public enum TextField {
 		minMemory,
 		maxMemory,
@@ -37,6 +42,7 @@ public class Settings {
 	private boolean minecraftToConsole = true;
 	private boolean minimizeOnLaunch;
 	private List<String> packURLs = new ArrayList<>();
+	private UUID clientToken = UUID.randomUUID();
 
 	public List<Profile> getProfiles() {
 		return profiles;

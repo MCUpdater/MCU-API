@@ -5,9 +5,12 @@ import com.google.gson.GsonBuilder;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
-import org.mcupdater.*;
+import org.mcupdater.FMLStyleFormatter;
+import org.mcupdater.MCUApp;
 import org.mcupdater.api.Version;
-import org.mcupdater.downloadlib.*;
+import org.mcupdater.downloadlib.DownloadQueue;
+import org.mcupdater.downloadlib.Downloadable;
+import org.mcupdater.downloadlib.TaskableExecutor;
 import org.mcupdater.instance.FileInfo;
 import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
@@ -20,7 +23,9 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigInteger;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -273,6 +278,7 @@ public class MCUpdater {
 	}
 
 	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, final Path instancePath, boolean clearExisting, final Instance instData, ModSide side) throws FileNotFoundException {
+		//TODO: Divide code into logical sections for better analysis
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
 			Collections.sort(toInstall, new ModuleComparator(ModuleComparator.Mode.IMPORTANCE));

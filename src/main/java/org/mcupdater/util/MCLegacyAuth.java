@@ -7,6 +7,8 @@ import org.mcupdater.util.MCLoginException.ResponseType;
 import java.util.HashMap;
 import java.util.logging.Level;
 
+//Post-heartbleed this method does not work as the old login server has been taken offline
+@Deprecated
 public class MCLegacyAuth {
 	public static LoginData login(String username, String password) throws Exception {
 		try {

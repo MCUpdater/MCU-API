@@ -1,11 +1,6 @@
 package org.mcupdater.settings;
 
-//import org.mcupdater.LoginDialog;
-//import org.mcupdater.MainShell;
-
 import org.mcupdater.MCUApp;
-import org.mcupdater.Yggdrasil.AuthManager;
-import org.mcupdater.Yggdrasil.SessionResponse;
 import org.mcupdater.model.JSON;
 
 @JSON
@@ -14,7 +9,6 @@ public class Profile {
 	private String name;
 	private String username;
 	private String sessionKey;
-	private String clientToken;
 	private String accessToken;
 	private String lastInstance;
 	private String uuid;
@@ -46,34 +40,10 @@ public class Profile {
 	public String getSessionKey(MCUApp caller) throws Exception {
 		if (this.sessionKey == null || this.sessionKey.isEmpty()) {
 			if (this.style.equals("Yggdrasil")) {
+				return caller.getAuthManager().getSessionKey(this);
+			/*
 				AuthManager auth = new AuthManager();
-				System.out.println("old-> " + accessToken + ": " + clientToken);
-				SessionResponse response = auth.refresh(accessToken, clientToken);
-				if (!response.getError().isEmpty()) {
-					try {
-						Profile newProfile = caller.requestLogin(this.username);
-						if (newProfile.getStyle().equals("Yggdrasil")) {
-							SettingsManager.getInstance().getSettings().addOrReplaceProfile(newProfile);
-							if (!SettingsManager.getInstance().isDirty()) {
-								SettingsManager.getInstance().saveSettings();
-							}
-							return newProfile.getSessionKey(caller);
-						}
-					} catch (Exception e) {
-						throw new Exception("Authentication error: " + response.getErrorMessage());
-					}
-				} else {
-					this.accessToken = response.getAccessToken();
-					this.clientToken = response.getClientToken();
-					//System.out.println("new-> " + accessToken + ": " + clientToken);
-
-					SettingsManager.getInstance().getSettings().addOrReplaceProfile(this);
-					if (!SettingsManager.getInstance().isDirty()) {
-						System.out.println("Saving settings");
-						SettingsManager.getInstance().saveSettings();
-					}
-				}
-				return response.getSessionId();
+				*/
 			}
 		}
 		return sessionKey;
@@ -81,14 +51,6 @@ public class Profile {
 
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
-	}
-
-	public String getClientToken() {
-		return clientToken;
-	}
-
-	public void setClientToken(String clientToken) {
-		this.clientToken = clientToken;
 	}
 
 	public String getAccessToken() {
