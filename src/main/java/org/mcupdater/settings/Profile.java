@@ -12,6 +12,8 @@ public class Profile {
 	private String accessToken;
 	private String lastInstance;
 	private String uuid;
+	private String userId;
+	private boolean legacy;
 
 	public String getStyle() {
 		return style;
@@ -40,10 +42,16 @@ public class Profile {
 	public String getSessionKey(MCUApp caller) throws Exception {
 		if (this.sessionKey == null || this.sessionKey.isEmpty()) {
 			if (this.style.equals("Yggdrasil")) {
-				return caller.getAuthManager().getSessionKey(this);
-			/*
-				AuthManager auth = new AuthManager();
-				*/
+				try {
+					return caller.getAuthManager().getSessionKey(this);
+				} catch (Exception e) {
+					Profile newProfile = caller.requestLogin(this.username);
+					SettingsManager.getInstance().getSettings().addOrReplaceProfile(newProfile);
+					if (!SettingsManager.getInstance().isDirty()) {
+						SettingsManager.getInstance().saveSettings();
+					}
+					return newProfile.getSessionKey(caller);
+				}
 			}
 		}
 		return sessionKey;
@@ -74,6 +82,22 @@ public class Profile {
 	}
 
 	public void setUUID(String uuid) { this.uuid = uuid; }
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public boolean isLegacy() {
+		return legacy;
+	}
+
+	public void setLegacy(boolean legacy) {
+		this.legacy = legacy;
+	}
 
 	@Override
 	public String toString() { return this.getName(); }
