@@ -10,7 +10,6 @@ import java.util.Map;
 @JSON
 public class Library {
 
-	private final StrSubstitutor replacer = new StrSubstitutor(new HashMap(){});
 	private String name;
 	private List<Rule> rules;
 	private Map<OperatingSystem, String> natives;
@@ -42,7 +41,7 @@ public class Library {
 
 	public String getLibraryPath(String classifier) {
 		String[] parts = this.name.split(":",3);
-		return String.format("%s/%s/%s/%s-%s%s.jar", parts[0].replaceAll("\\.", "/"),parts[1],parts[2],parts[1],parts[2], (classifier == null ? "" : "-" + classifier));
+		return String.format("%s/%s/%s/%s-%s%s.jar", parts[0].replaceAll("\\.", "/"),parts[1],parts[2],parts[1],parts[2], (classifier == null ? "" : "-" + classifier)).replace("${arch}", System.getProperty("sun.arch.data.model"));
 	}
 	
 	public boolean validForOS() {
@@ -68,7 +67,7 @@ public class Library {
 		} else {
 			result = String.format("%s-%s.jar", parts[1], parts[2]);
 		}
-		return replacer.replace(result);
+		return result.replace("${arch}",System.getProperty("sun.arch.data.model"));
 	}
 	
 	public boolean hasNatives() {
