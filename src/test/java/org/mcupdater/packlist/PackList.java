@@ -14,10 +14,10 @@ public class PackList {
 		List<Module> mods;
 		mods = ServerPackParser.loadFromURL(args[0],args[1]);
 		for (Module x : mods) {
-			System.out.println(x.getName() + "," + x.getId() + "," + x.getUrls().get(0));
+			System.out.println(x.getName() + "," + x.getId() + "," + x.getUrls().get(0) + "," + x.getMeta().get("version"));
 			if (x.hasSubmodules()) {
 				for (GenericModule sub : x.getSubmodules()) {
-					System.out.println(sub.getName() + "," + sub.getId() + "," + sub.getUrls().get(0));
+					System.out.println(sub.getName() + "," + sub.getId() + "," + sub.getUrls().get(0) + "," + sub.getMeta().get("version"));
 				}
 			}
 		}
