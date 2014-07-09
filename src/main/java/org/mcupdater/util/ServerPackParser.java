@@ -22,6 +22,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 public class ServerPackParser {
@@ -68,8 +69,8 @@ public class ServerPackParser {
 		return null;
 	}
 
-	private static List<Module> parseDocument(Document dom, String serverId) throws Exception {
-		List<Module> modList = new ArrayList<>();
+	private static Map<String,Module> parseDocument(Document dom, String serverId) throws Exception {
+		Map<String,Module> modList = new HashMap<>();
 		Element parent = dom.getDocumentElement();
 		ServerEntry server = getServerEntry(serverId, parent);
 		ServerList sl = ServerList.fromElement(server.mcuVersion, "", server.serverElement);
@@ -83,7 +84,7 @@ public class ServerPackParser {
 			if(nl != null && nl.getLength() > 0) {
 				for(int i = 0; i < nl.getLength(); i++) {
 					Element el = (Element)nl.item(i);
-					modList.addAll(doImportV2(el, dom, sl));
+					modList.putAll(doImportV2(el, dom, sl));
 				}
 			}
 			nl = server.serverElement.getElementsByTagName("Module");
@@ -93,7 +94,19 @@ public class ServerPackParser {
 				{
 					Element el = (Element)nl.item(i);
 					Module m = getModuleV2(el);
-					modList.add(m);
+					if (m.getModType() == ModType.Removal) {
+						modList.remove(m.getId());
+					}
+					else if (m.getModType() == ModType.Override && modList.containsKey(m.getId())) {
+						Module existing = modList.get(m.getId());
+						existing.getPrioritizedUrls().addAll(m.getPrioritizedUrls());
+						existing.getConfigs().addAll(m.getConfigs());
+						existing.getSubmodules().addAll(m.getSubmodules());
+						existing.setRequired(m.getRequired());
+						existing.setIsDefault(m.getIsDefault());
+					} else {
+						modList.put(m.getId(), m);
+					}
 				}
 			}
 			return modList;
@@ -108,7 +121,7 @@ public class ServerPackParser {
 				{
 					Element el = (Element)nl.item(i);
 					Module m = getModuleV1(el);
-					modList.add(m);
+					modList.put(m.getId(), m);
 				}
 			}
 			return modList;
@@ -144,7 +157,7 @@ public class ServerPackParser {
 		return new ServerEntry(version, docEle, mcuVersion);
 	}
 
-	private static List<Module> doImportV2(Element el, Document dom, ServerList parent) throws Exception {
+	private static Map<String,Module> doImportV2(Element el, Document dom, ServerList parent) throws Exception {
 		String url = el.getAttribute("url");
 		if (!url.isEmpty()){
 			try {
@@ -312,7 +325,7 @@ public class ServerPackParser {
 	}
 
 	private static Boolean getBooleanValue(Element ele, String tagName) {
-		return parseBooleanWithDefault(getTextValue(ele,tagName), false);
+		return parseBooleanWithDefault(getTextValue(ele, tagName), false);
 	}
 
 	private static Boolean parseBooleanWithDefault(String textValue, boolean state) {
@@ -326,7 +339,7 @@ public class ServerPackParser {
 	@SuppressWarnings("unused")
 	public static List<Module> loadFromFile(File packFile, String serverId) {
 		try {
-			return parseDocument(readXmlFromFile(packFile), serverId);
+			return new ArrayList<>(parseDocument(readXmlFromFile(packFile), serverId).values());
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
@@ -336,7 +349,7 @@ public class ServerPackParser {
 	public static List<Module> loadFromURL(String serverUrl, String serverId)
 	{
 		try {
-			return parseDocument(readXmlFromUrl(serverUrl), serverId);
+			return new ArrayList<>(parseDocument(readXmlFromUrl(serverUrl), serverId).values());
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;

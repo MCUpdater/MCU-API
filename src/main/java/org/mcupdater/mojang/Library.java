@@ -73,4 +73,8 @@ public class Library {
 	public boolean hasNatives() {
 		return this.natives != null;
 	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }
