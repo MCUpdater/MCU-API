@@ -278,7 +278,7 @@ public class MCUpdater {
 		return output;
 	}
 
-	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, final Path instancePath, boolean clearExisting, final Instance instData, ModSide side, Map<String,String> libOverrides) throws FileNotFoundException {
+	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, final Path instancePath, boolean clearExisting, final Instance instData, ModSide side) throws FileNotFoundException {
 		//TODO: Divide code into logical sections for better analysis
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
@@ -308,8 +308,8 @@ public class MCUpdater {
 			for (Library lib : version.getLibraries()) {
 				String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"),0,2),":");
 				System.out.println(lib.getName() + " - " + key);
-				if (libOverrides.containsKey(key)) {
-					lib.setName(libOverrides.get(key));
+				if (server.getLibOverrides().containsKey(key)) {
+					lib.setName(server.getLibOverrides().get(key));
 					System.out.println(" - Replaced: " + lib.getName());
 				}
 				if (lib.validForOS()) {

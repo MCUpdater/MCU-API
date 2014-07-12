@@ -1,12 +1,11 @@
 package org.mcupdater.model;
 
+import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.util.ServerPackParser;
 import org.w3c.dom.Element;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ServerList implements Comparable<ServerList>{
 	private String name;
@@ -22,6 +21,8 @@ public class ServerList implements Comparable<ServerList>{
 	private String revision;	// serverpack revision
 	private String serverId;
 	private String mainClass;
+    private Map<String,String> libOverrides;
+    private Map<String,Module> modules;
 	private String launcherType = "Legacy";
 
 	public ServerList() {}
@@ -160,31 +161,6 @@ public class ServerList implements Comparable<ServerList>{
 		return this.getName().compareTo(that.getName());
 	}
 
-	public static ServerList fromElement(String mcuVersion, String serverUrl, Element docEle) {
-		ServerList newSL = new ServerList();
-		newSL.setMCUVersion(mcuVersion);
-		newSL.setPackUrl(serverUrl);
-	    newSL.setServerId(docEle.getAttribute("id"));
-		newSL.setName(docEle.getAttribute("name"));
-		newSL.setNewsUrl(docEle.getAttribute("newsUrl"));
-		newSL.setIconUrl(docEle.getAttribute("iconUrl"));
-		newSL.setVersion(docEle.getAttribute("version"));
-		newSL.setAddress(docEle.getAttribute("serverAddress"));
-		newSL.setGenerateList(ServerPackParser.parseBoolean(docEle.getAttribute("generateList"), true));
-		newSL.setAutoConnect(ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true));
-		newSL.setRevision(docEle.getAttribute("revision"));
-		newSL.setFakeServer(ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false));
-		newSL.setMainClass(docEle.getAttribute("mainClass"));
-		if (docEle.hasAttribute("launcherType")) {
-			newSL.setLauncherType(docEle.getAttribute("launcherType"));
-		} else {
-			if (Version.requestedFeatureLevel(mcuVersion,"3")) {
-				newSL.setLauncherType("Vanilla");
-			}
-		}
-		return newSL;
-	}
-
 	public String getLauncherType() {
 		return launcherType;
 	}
@@ -192,6 +168,22 @@ public class ServerList implements Comparable<ServerList>{
 	public void setLauncherType(String launcherType) {
 		this.launcherType = launcherType;
 	}
+
+    public Map<String, String> getLibOverrides() {
+        return libOverrides;
+    }
+
+    public void setLibOverrides(Map<String, String> libOverrides) {
+        this.libOverrides = libOverrides;
+    }
+
+    public Map<String, Module> getModules() {
+        return modules;
+    }
+
+    public void setModules(Map<String, Module> modules) {
+        this.modules = modules;
+    }
 
 	public Set<String> getDigests() {
 		Set<String> digests = new HashSet<>();
@@ -213,4 +205,36 @@ public class ServerList implements Comparable<ServerList>{
 		}
 		return digests;
 	}
+
+    public static ServerList fromElement(String mcuVersion, String serverUrl, Element docEle) {
+        ServerList newSL = new ServerList();
+        newSL.setMCUVersion(mcuVersion);
+        newSL.setPackUrl(serverUrl);
+        newSL.setServerId(docEle.getAttribute("id"));
+        newSL.setName(docEle.getAttribute("name"));
+        newSL.setNewsUrl(docEle.getAttribute("newsUrl"));
+        newSL.setIconUrl(docEle.getAttribute("iconUrl"));
+        newSL.setVersion(docEle.getAttribute("version"));
+        newSL.setAddress(docEle.getAttribute("serverAddress"));
+        newSL.setGenerateList(ServerPackParser.parseBoolean(docEle.getAttribute("generateList"), true));
+        newSL.setAutoConnect(ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true));
+        newSL.setRevision(docEle.getAttribute("revision"));
+        newSL.setFakeServer(ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false));
+        newSL.setMainClass(docEle.getAttribute("mainClass"));
+        if (docEle.hasAttribute("launcherType")) {
+            newSL.setLauncherType(docEle.getAttribute("launcherType"));
+        } else {
+            if (Version.requestedFeatureLevel(mcuVersion,"3")) {
+                newSL.setLauncherType("Vanilla");
+            }
+        }
+        Map<String,String> mapOverrides = new HashMap<>();
+        String[] overrides = docEle.getAttribute("libOverrides").split(" ");
+        for (String entry : overrides) {
+            String key = StringUtils.join(Arrays.copyOfRange(entry.split(":"), 0, 2), ":");
+            mapOverrides.put(key, entry);
+        }
+        newSL.setLibOverrides(mapOverrides);
+        return newSL;
+    }
 }

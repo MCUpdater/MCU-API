@@ -69,7 +69,7 @@ public class ServerPackParser {
 		return null;
 	}
 
-	private static Map<String,Module> parseDocument(Document dom, String serverId) throws Exception {
+	private static ServerList parseDocument(Document dom, String serverId) throws Exception {
 		Map<String,Module> modList = new HashMap<>();
 		Element parent = dom.getDocumentElement();
 		ServerEntry server = getServerEntry(serverId, parent);
@@ -84,7 +84,9 @@ public class ServerPackParser {
 			if(nl != null && nl.getLength() > 0) {
 				for(int i = 0; i < nl.getLength(); i++) {
 					Element el = (Element)nl.item(i);
-					modList.putAll(doImportV2(el, dom, sl));
+                    ServerList child = doImportV2(el, dom, sl);
+                    sl.getLibOverrides().putAll(child.getLibOverrides());
+					modList.putAll(child.getModules());
 				}
 			}
 			nl = server.serverElement.getElementsByTagName("Module");
@@ -109,7 +111,8 @@ public class ServerPackParser {
 					}
 				}
 			}
-			return modList;
+            sl.setModules(modList);
+			return sl;
 			
 		case 1:
 			// Handle ServerPacks designed for MCUpdater 2.7 and earlier
@@ -124,7 +127,8 @@ public class ServerPackParser {
 					modList.put(m.getId(), m);
 				}
 			}
-			return modList;
+            sl.setModules(modList);
+			return sl;
 
 		default:
 			return null;
@@ -157,7 +161,7 @@ public class ServerPackParser {
 		return new ServerEntry(version, docEle, mcuVersion);
 	}
 
-	private static Map<String,Module> doImportV2(Element el, Document dom, ServerList parent) throws Exception {
+	private static ServerList doImportV2(Element el, Document dom, ServerList parent) throws Exception {
 		String url = el.getAttribute("url");
 		if (!url.isEmpty()){
 			try {
@@ -337,19 +341,19 @@ public class ServerPackParser {
 	}
 
 	@SuppressWarnings("unused")
-	public static List<Module> loadFromFile(File packFile, String serverId) {
+	public static ServerList loadFromFile(File packFile, String serverId) {
 		try {
-			return new ArrayList<>(parseDocument(readXmlFromFile(packFile), serverId).values());
+			return parseDocument(readXmlFromFile(packFile), serverId);
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
 	}
 	
-	public static List<Module> loadFromURL(String serverUrl, String serverId)
+	public static ServerList loadFromURL(String serverUrl, String serverId)
 	{
 		try {
-			return new ArrayList<>(parseDocument(readXmlFromUrl(serverUrl), serverId).values());
+			return parseDocument(readXmlFromUrl(serverUrl), serverId);
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
