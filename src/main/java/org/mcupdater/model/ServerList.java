@@ -21,8 +21,8 @@ public class ServerList implements Comparable<ServerList>{
 	private String revision;	// serverpack revision
 	private String serverId;
 	private String mainClass;
-    private Map<String,String> libOverrides;
-    private Map<String,Module> modules;
+    private Map<String,String> libOverrides = new HashMap<>();
+    private Map<String,Module> modules = new HashMap<>();
 	private String launcherType = "Legacy";
 
 	public ServerList() {}
@@ -187,7 +187,7 @@ public class ServerList implements Comparable<ServerList>{
 
 	public Set<String> getDigests() {
 		Set<String> digests = new HashSet<>();
-		List<Module> mods = ServerPackParser.loadFromURL(getPackUrl(), getServerId());
+		List<Module> mods = new ArrayList<>(this.getModules().values());
 		for (Module mod : mods) {
 			if (!mod.getMD5().isEmpty()) {
 				digests.add(mod.getMD5());
@@ -229,12 +229,14 @@ public class ServerList implements Comparable<ServerList>{
             }
         }
         Map<String,String> mapOverrides = new HashMap<>();
-        String[] overrides = docEle.getAttribute("libOverrides").split(" ");
-        for (String entry : overrides) {
-            String key = StringUtils.join(Arrays.copyOfRange(entry.split(":"), 0, 2), ":");
-            mapOverrides.put(key, entry);
+        if (docEle.getAttribute("libOverrides").length() > 0) {
+            String[] overrides = docEle.getAttribute("libOverrides").split(" ");
+            for (String entry : overrides) {
+                String key = StringUtils.join(Arrays.copyOfRange(entry.split(":"), 0, 2), ":");
+                mapOverrides.put(key, entry);
+            }
+            newSL.setLibOverrides(mapOverrides);
         }
-        newSL.setLibOverrides(mapOverrides);
         return newSL;
     }
 }

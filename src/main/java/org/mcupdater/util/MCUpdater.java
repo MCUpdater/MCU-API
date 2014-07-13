@@ -303,8 +303,12 @@ public class MCUpdater {
 		final MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
 		switch (side){
 		case CLIENT:
+            System.out.println("Overrides: " + server.getLibOverrides().size());
 			assetsQueue = parent.submitAssetsQueue("Assets", server.getServerId(), version);
 			Set<Downloadable> libSet = new HashSet<>();
+            for (Map.Entry<String,String> entry : server.getLibOverrides().entrySet()) {
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
 			for (Library lib : version.getLibraries()) {
 				String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"),0,2),":");
 				System.out.println(lib.getName() + " - " + key);

@@ -28,7 +28,7 @@ public class Version {
 			branch = prop.getProperty("git_branch", "unknown");
 		} catch (Exception e) {
 			major = 3;
-			minor = 2;
+			minor = 4;
 			build = 999;
 			branch = "develop";
 		}

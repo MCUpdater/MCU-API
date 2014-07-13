@@ -69,7 +69,7 @@ public class ServerPackParser {
 		return null;
 	}
 
-	private static ServerList parseDocument(Document dom, String serverId) throws Exception {
+	public static ServerList parseDocument(Document dom, String serverId) throws Exception {
 		Map<String,Module> modList = new HashMap<>();
 		Element parent = dom.getDocumentElement();
 		ServerEntry server = getServerEntry(serverId, parent);
