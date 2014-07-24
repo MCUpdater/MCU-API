@@ -1,9 +1,7 @@
 package org.mcupdater.mojang;
 
-import org.apache.commons.lang3.text.StrSubstitutor;
 import org.mcupdater.model.JSON;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

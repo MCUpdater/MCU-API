@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.mcupdater.com/ServerPack" xmlns:tns="http://www.mcupdater.com/ServerPack" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.mcupdater.com" xmlns:tns="http://www.mcupdater.com" elementFormDefault="qualified">
 	<xs:element name="ServerPack">
 		<xs:complexType>
 			<xs:sequence>
@@ -26,14 +26,16 @@
 		<xs:attribute type="xs:string" name="id" use="required" />
 		<xs:attribute type="xs:boolean" name="abstract" use="optional" />
 		<xs:attribute type="xs:string" name="name" use="required" />
-		<xs:attribute type="xs:anyURI" name="newsUrl" use="required" />
+		<xs:attribute type="xs:anyURI" name="newsUrl" use="optional" default="about:blank" />
 		<xs:attribute type="xs:anyURI" name="iconUrl" use="optional" />
 		<xs:attribute type="xs:string" name="version" use="required" />
-		<xs:attribute type="xs:string" name="serverAddress" use="required" />
+		<xs:attribute type="xs:string" name="serverAddress" use="optional" />
 		<xs:attribute type="xs:boolean" name="generateList" use="optional" default="true" />
 		<xs:attribute type="xs:boolean" name="autoConnect" use="optional" default="true" />
 		<xs:attribute type="xs:string" name="revision" use="required" />
 		<xs:attribute type="xs:string" name="mainClass" use="optional" />
+		<xs:attribute type="xs:string" name="launcherType" use="optional" />
+		<xs:attribute type="xs:string" name="libOverrides" use="optional" />
 	</xs:complexType>
 
 	<xs:complexType name="ModuleType">
@@ -59,7 +61,7 @@
 				</xs:complexType>
 			</xs:element>
 			<xs:element type="xs:string" name="ModPath" minOccurs="0" maxOccurs="1" />
-			<xs:element name="Required" minOccurs="1" maxOccurs="1">
+			<xs:element name="Required" minOccurs="0" maxOccurs="1">
 				<xs:complexType>
 					<xs:simpleContent>
 						<xs:extension base="xs:boolean">
@@ -128,6 +130,8 @@
 			<xs:enumeration value="Extract" />
 			<xs:enumeration value="Litemod" />
 			<!-- <xs:enumeration value="Option" /> -->
+			<xs:enumeration value="Removal" />
+			<xs:enumeration value="Override" />
 		</xs:restriction>
 	</xs:simpleType>
 	
