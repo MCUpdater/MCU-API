@@ -288,7 +288,7 @@ public class MCUpdater {
 		Path binPath = instancePath.resolve("bin");
 		final Path productionJar;
 		//File jar = null;
-		final File tmpFolder = instancePath.resolve("temp").toFile();
+		final File tmpFolder = instancePath.resolve("temp" + Integer.toString((new Random()).nextInt(100))).toFile();
 		tmpFolder.mkdirs();
 		Set<Downloadable> jarMods = new HashSet<>();
 		Set<Downloadable> generalFiles = new HashSet<>();
