@@ -115,7 +115,7 @@ public class SettingsManager {
 		newSettings.setResHeight(720);
 		newSettings.setFullScreen(false);
 		newSettings.setJrePath(System.getProperty("java.home"));
-		newSettings.setJvmOpts("-XX:+UseG1GC -XX:+AggressiveOpts");
+		newSettings.setJvmOpts("");
 		newSettings.setInstanceRoot(MCUpdater.getInstance().getArchiveFolder().resolve("instances").toString());
 		newSettings.setProgramWrapper("");
 		newSettings.setTimeoutLength(5000);
