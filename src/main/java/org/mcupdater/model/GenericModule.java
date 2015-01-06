@@ -31,6 +31,8 @@ public class GenericModule {
 	protected String launchArgs = "";
 	protected String jreArgs = "";
 	protected ModType modType = ModType.Regular;
+	protected String loadPrefix = "";
+	protected long filesize = 100000;
 
 	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs) {
 		this.setName(name);
@@ -287,6 +289,46 @@ public class GenericModule {
 		return this.modType;
 	}
 
+	public String getLoadPrefix() {
+		return this.loadPrefix;
+	}
+
+	public void setLoadPrefix(String prefix) {
+		this.loadPrefix = prefix;
+	}
+
+	public long getFilesize() {
+		return this.filesize;
+	}
+
+	public void setFilesize(long size) {
+		this.filesize = size;
+	}
+
+	public String getFilename() {
+		if (!this.path.isEmpty()) {
+			return this.path;
+		} else {
+			StringBuilder newPath = new StringBuilder();
+			if (this.modType == ModType.Regular || this.modType == ModType.Litemod) {
+				newPath.append("mods/");
+			} else if (this.modType == ModType.Coremod) {
+				newPath.append("coremods/");
+			} else if (this.modType == ModType.Library) {
+				newPath.append("lib/");
+			}
+			if (!this.loadPrefix.isEmpty()) {
+				newPath.append(this.loadPrefix + "_");
+			}
+			newPath.append(cleanForFile(this.id));
+			newPath.append(this.modType == ModType.Litemod ? ".litemod" : ".jar" );
+			return newPath.toString();
+		}
+	}
+
+	private String cleanForFile(String id) {
+		return id.replaceAll("[^a-zA-Z_0-9\\-.]", "_");
+	}
 /*
 	public boolean isLitemod() {
 		return litemod;

@@ -60,7 +60,9 @@
 					</xs:simpleContent>
 				</xs:complexType>
 			</xs:element>
+			<xs:element type="xs:string" name="LoadPrefix" minOccurs="0" maxOccurs="1" />
 			<xs:element type="xs:string" name="ModPath" minOccurs="0" maxOccurs="1" />
+			<xs:element type="xs:long" name="Size" minOccurs="0" maxOccurs="1" />
 			<xs:element name="Required" minOccurs="0" maxOccurs="1">
 				<xs:complexType>
 					<xs:simpleContent>

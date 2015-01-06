@@ -195,7 +195,13 @@ public class ServerPackParser {
 				int priority = parseInt(elURL.getAttribute("priority"));
 				urls.add(new PrioritizedURL(url, priority));
 			}
+			String loadPrefix = (String) xpath.evaluate("LoadPrefix", el, XPathConstants.STRING);
 			String path = (String) xpath.evaluate("ModPath", el, XPathConstants.STRING);
+			String sizeString = (String) xpath.evaluate("Size", el, XPathConstants.STRING);
+			if (sizeString.isEmpty()) {
+				sizeString = "100000";
+			}
+			long size = Long.parseLong(sizeString);
 			Element elReq = (Element) el.getElementsByTagName("Required").item(0);
 			boolean required;
 			boolean isDefault;
@@ -242,7 +248,10 @@ public class ServerPackParser {
 					mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 				}
 			}
-			return new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules);
+			Module out = new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules);
+			out.setLoadPrefix(loadPrefix);
+			out.setFilesize(size);
+			return out;
 		} catch (XPathExpressionException e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
