@@ -21,6 +21,7 @@ public class ServerList implements Comparable<ServerList>{
 	private String revision;	// serverpack revision
 	private String serverId;
 	private String mainClass;
+	private String serverClass;
     private Map<String,String> libOverrides = new HashMap<>();
     private Map<String,Module> modules = new HashMap<>();
 	private String launcherType = "Legacy";
@@ -221,6 +222,7 @@ public class ServerList implements Comparable<ServerList>{
         newSL.setRevision(docEle.getAttribute("revision"));
         newSL.setFakeServer(ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false));
         newSL.setMainClass(docEle.getAttribute("mainClass"));
+	    newSL.setServerClass(docEle.getAttribute("serverClass"));
         if (docEle.hasAttribute("launcherType")) {
             newSL.setLauncherType(docEle.getAttribute("launcherType"));
         } else {
@@ -239,4 +241,16 @@ public class ServerList implements Comparable<ServerList>{
         }
         return newSL;
     }
+
+	public String getServerClass() {
+		if (serverClass.isEmpty()) {
+			return "net.minecraft.server.MinecraftServer";
+		} else {
+			return serverClass;
+		}
+	}
+
+	public void setServerClass(String serverClass) {
+		this.serverClass = serverClass;
+	}
 }

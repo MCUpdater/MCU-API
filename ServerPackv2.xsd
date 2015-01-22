@@ -36,6 +36,7 @@
 		<xs:attribute type="xs:string" name="mainClass" use="optional" />
 		<xs:attribute type="xs:string" name="launcherType" use="optional" />
 		<xs:attribute type="xs:string" name="libOverrides" use="optional" />
+		<xs:attribute type="xs:string" name="serverClass" use="optional" />
 	</xs:complexType>
 
 	<xs:complexType name="ModuleType">
