@@ -301,6 +301,7 @@ public class MCUpdater {
 		final Map<String,Boolean> keepMeta = new TreeMap<>();
 		Downloadable baseJar = null;
 		final MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
+		List<URL> jarUrl = new ArrayList<>();
 		switch (side){
 		case CLIENT:
             System.out.println("Overrides: " + server.getLibOverrides().size());
@@ -333,7 +334,6 @@ public class MCUpdater {
 			libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("lib").toFile(), DownloadCache.getDir());
 
 			productionJar = binPath.resolve("minecraft.jar");
-			List<URL> jarUrl = new ArrayList<>();
 			try {
 				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/" + server.getVersion() + ".jar"));
 			} catch (MalformedURLException e2) {
@@ -351,6 +351,14 @@ public class MCUpdater {
 			break;
 		case SERVER:
 			productionJar = instancePath.resolve("minecraft_server.jar");
+			try {
+				jarUrl.add(new URL("https://s3.amazon.com/Minecraft.Download/versions/" + server.getVersion() + "/minecraft_server." + server.getVersion() + ".jar"));
+				jarUrl.add(new URL("http://assets.minecraft.net/" + server.getVersion().replace(".", "_") + "/minecraft_server.jar"));
+			} catch (MalformedURLException e2) {
+				apiLogger.log(Level.SEVERE, "Bad URL", e2);
+			}
+			baseJar = new Downloadable("Server jar","0.jar","",3000000,jarUrl);
+			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 			break;
 		default:
 			apiLogger.severe("Invalid API call to MCUpdater.installMods! (side cannot be " + side.toString() + ")");
