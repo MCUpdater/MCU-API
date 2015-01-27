@@ -26,6 +26,12 @@ public class ServerList implements Comparable<ServerList>{
     private Map<String,Module> modules = new HashMap<>();
 	private String launcherType = "Legacy";
 
+	private State state = State.UNKNOWN;
+	public enum State {
+		UNKNOWN,
+		READY, UPDATE, ERROR;
+	}
+
 	public ServerList() {}
 
 	@Deprecated
@@ -253,4 +259,7 @@ public class ServerList implements Comparable<ServerList>{
 	public void setServerClass(String serverClass) {
 		this.serverClass = serverClass;
 	}
+
+	public State getState() { return state; }
+	public void setState(State state) { this.state = state; }
 }

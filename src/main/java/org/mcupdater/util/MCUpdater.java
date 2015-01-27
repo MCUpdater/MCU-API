@@ -57,7 +57,11 @@ public class MCUpdater {
 	public static MCUpdater getInstance(File file) {
 		if( INSTANCE == null ) {
 			INSTANCE = new MCUpdater(file);
-			apiLogger.finest("MCUpdater intialized with path: " + file.getAbsolutePath());
+            if( file == null ) {
+                apiLogger.finest("MCUpdater intialized without path");
+            } else {
+                apiLogger.finest("MCUpdater intialized with path: " + file.getAbsolutePath());
+            }
 		}
 		return INSTANCE;
 	}
