@@ -3,8 +3,11 @@ package org.mcupdater.util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
@@ -19,7 +22,12 @@ import org.mcupdater.mojang.AssetIndex;
 import org.mcupdater.mojang.AssetIndex.Asset;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
+import org.mcupdater.mojang.nbt.TagByte;
+import org.mcupdater.mojang.nbt.TagCompound;
+import org.mcupdater.mojang.nbt.TagList;
+import org.mcupdater.mojang.nbt.TagString;
 
+import javax.annotation.Resources;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -638,6 +646,8 @@ public class MCUpdater {
 	}
 
 	public void writeMCServerFile(Path installPath, String name, String ip) {
+		apiLogger.info("Writing servers.dat");
+		/*
 		byte[] header = new byte[]{
 				0x0A,0x00,0x00,0x09,0x00,0x07,0x73,0x65,0x72,0x76,0x65,0x72,0x73,0x0A,
 				0x00,0x00,0x00,0x01,0x01,0x00,0x0B,0x68,0x69,0x64,0x65,0x41,0x64,0x64,
@@ -660,6 +670,18 @@ public class MCUpdater {
 		System.arraycopy(ipBytes, 0, full, pos, ipBytes.length);
 		pos += ipBytes.length;
 		System.arraycopy(end, 0, full, pos, end.length);
+		*/
+
+		TagCompound root = new TagCompound("");
+		TagList servers = new TagList("servers", TagList.Type.Compound);
+		TagCompound entry = new TagCompound("");
+		entry.add(new TagByte("hideAddress", (byte) 1));
+		entry.add(new TagString("name", "§A[MCU] §F" + name));
+		entry.add(new TagString("ip",ip));
+		servers.add(entry);
+		root.add(servers);
+		List<Byte> bytes = root.toBytes(true);
+		byte[] full = ArrayUtils.toPrimitive(bytes.toArray(new Byte[bytes.size()]));
 		File serverFile = installPath.resolve("servers.dat").toFile();
 		try {
 			serverFile.createNewFile();
