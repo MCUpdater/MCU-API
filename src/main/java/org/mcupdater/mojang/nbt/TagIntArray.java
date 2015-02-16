@@ -23,7 +23,7 @@ public class TagIntArray extends Tag {
     @Override
     public List<Byte> toBytes(boolean doHeader) {
         List<Byte> bytes = new ArrayList<>();
-        if (doHeader) { bytes.addAll(super.getHeader((byte) 0x11)); }
+        if (doHeader) { bytes.addAll(super.getHeader((byte) 0x0b)); }
         int size = values.length;
         bytes.add((byte)((size >> 24) & 0xff));
         bytes.add((byte)((size >> 16) & 0xff));

@@ -50,7 +50,8 @@ public class TagList extends Tag {
         Byte_Array ((byte) 0x07),
         String ((byte) 0x08),
         List ((byte) 0x09),
-        Compound ((byte) 0x0a);
+        Compound ((byte) 0x0a),
+        Int_Array ((byte) 0x0b);
 
         private final byte value;
         Type(byte value) {
