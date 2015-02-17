@@ -24,7 +24,11 @@ public class Instance {
 	public Map<String, Boolean> getOptionalMods() {
 		return this.optionalMods;
 	}
-	
+
+	public void setOptionalMods(Map<String,Boolean> optionalMods) {
+		this.optionalMods = optionalMods;
+	}
+
 	public Boolean getModStatus(String key) {
 		return this.optionalMods.get(key);
 	}
@@ -88,4 +92,31 @@ public class Instance {
 	public void setHash(String hash) {
 		this.hash = hash;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder serializer = new StringBuilder();
+		serializer.append("{");
+		serializer.append("mcversion:").append(this.mcversion).append(";");
+		serializer.append("revision:").append(this.revision).append(";");
+		serializer.append("hash:").append(this.hash).append(";");
+		serializer.append("instanceFiles:[");
+		for (FileInfo entry : instanceFiles) {
+			serializer.append(entry.toString()).append(";");
+		}
+		serializer.append("];");
+		serializer.append("jarMods:[");
+		for (FileInfo entry : jarMods) {
+			serializer.append(entry.toString()).append(";");
+		}
+		serializer.append("];");
+		serializer.append("optionalMods:[");
+		for (Map.Entry<String,Boolean> entry : optionalMods.entrySet()) {
+			serializer.append("{key:").append(entry.getKey()).append(";value:").append(entry.getValue().toString()).append("};");
+		}
+		serializer.append("];");
+		serializer.append("}");
+		return serializer.toString();
+	}
+
 }
