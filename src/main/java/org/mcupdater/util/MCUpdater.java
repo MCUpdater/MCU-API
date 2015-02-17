@@ -59,7 +59,9 @@ public class MCUpdater {
 	private final Map<String,String> versionMap = new HashMap<>();
 	public static Logger apiLogger;
 	private int timeoutLength = 5000;
-	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();	
+	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	public static String defaultMemory = "1G";
+	public static String defaultPermGen = "128M";
 	private static MCUpdater INSTANCE;
 
 	public static MCUpdater getInstance(File file) {

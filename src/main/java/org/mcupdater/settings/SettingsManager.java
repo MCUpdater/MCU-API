@@ -76,9 +76,9 @@ public class SettingsManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		newSettings.setMinMemory(oldConfig.getProperty("minimumMemory","1G"));
-		newSettings.setMaxMemory(oldConfig.getProperty("maximumMemory","1G"));
-		newSettings.setPermGen(oldConfig.getProperty("permGen","128M"));
+		newSettings.setMinMemory(oldConfig.getProperty("minimumMemory",MCUpdater.defaultMemory));
+		newSettings.setMaxMemory(oldConfig.getProperty("maximumMemory", MCUpdater.defaultMemory));
+		newSettings.setPermGen(oldConfig.getProperty("permGen",MCUpdater.defaultPermGen));
 		newSettings.setResWidth(Integer.parseInt(oldConfig.getProperty("width","1280")));
 		newSettings.setResHeight(Integer.parseInt(oldConfig.getProperty("height","720")));
 		newSettings.setFullScreen(false);
@@ -108,9 +108,9 @@ public class SettingsManager {
 
 	public Settings getDefaultSettings() {
 		Settings newSettings = new Settings();
-		newSettings.setMinMemory("1G");
-		newSettings.setMaxMemory("1G");
-		newSettings.setPermGen("128M");
+		newSettings.setMinMemory(MCUpdater.defaultMemory);
+		newSettings.setMaxMemory(MCUpdater.defaultMemory);
+		newSettings.setPermGen(MCUpdater.defaultPermGen);
 		newSettings.setResWidth(1280);
 		newSettings.setResHeight(720);
 		newSettings.setFullScreen(false);
