@@ -3,10 +3,8 @@ package org.mcupdater.util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.FMLStyleFormatter;
@@ -27,7 +25,6 @@ import org.mcupdater.mojang.nbt.TagCompound;
 import org.mcupdater.mojang.nbt.TagList;
 import org.mcupdater.mojang.nbt.TagString;
 
-import javax.annotation.Resources;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
