@@ -99,13 +99,15 @@ public class ServerPackParser {
 					if (m.getModType() == ModType.Removal) {
 						modList.remove(m.getId());
 					}
-					else if (m.getModType() == ModType.Override && modList.containsKey(m.getId())) {
-						Module existing = modList.get(m.getId());
-						existing.getPrioritizedUrls().addAll(m.getPrioritizedUrls());
-						existing.getConfigs().addAll(m.getConfigs());
-						existing.getSubmodules().addAll(m.getSubmodules());
-						existing.setRequired(m.getRequired());
-						existing.setIsDefault(m.getIsDefault());
+					else if (m.getModType() == ModType.Override) {
+						if (modList.containsKey(m.getId())) { // If modList does not contain the mod, ignore it.
+							Module existing = modList.get(m.getId());
+							existing.getPrioritizedUrls().addAll(m.getPrioritizedUrls());
+							existing.getConfigs().addAll(m.getConfigs());
+							existing.getSubmodules().addAll(m.getSubmodules());
+							existing.setRequired(m.getRequired());
+							existing.setIsDefault(m.getIsDefault());
+						}
 					} else {
 						modList.put(m.getId(), m);
 					}
