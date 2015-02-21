@@ -28,4 +28,15 @@ public class FileInfo {
 	public void setModId(String modid) {
 		this.modid = modid;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder serializer = new StringBuilder();
+		serializer.append("FileInfo{");
+		serializer.append("filename:").append(this.filename).append(";");
+		serializer.append("MD5:").append(this.MD5).append(";");
+		serializer.append("modid:").append(this.modid).append(";");
+		serializer.append("}");
+		return serializer.toString();
+	}
 }

@@ -96,7 +96,7 @@ public class Instance {
 	@Override
 	public String toString() {
 		StringBuilder serializer = new StringBuilder();
-		serializer.append("{");
+		serializer.append("Instance{");
 		serializer.append("mcversion:").append(this.mcversion).append(";");
 		serializer.append("revision:").append(this.revision).append(";");
 		serializer.append("hash:").append(this.hash).append(";");
@@ -112,7 +112,7 @@ public class Instance {
 		serializer.append("];");
 		serializer.append("optionalMods:[");
 		for (Map.Entry<String,Boolean> entry : optionalMods.entrySet()) {
-			serializer.append("{key:").append(entry.getKey()).append(";value:").append(entry.getValue().toString()).append("};");
+			serializer.append("Entry{key:").append(entry.getKey()).append(";value:").append(entry.getValue().toString()).append("};");
 		}
 		serializer.append("];");
 		serializer.append("}");

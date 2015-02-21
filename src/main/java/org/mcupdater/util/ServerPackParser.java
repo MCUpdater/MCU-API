@@ -69,8 +69,8 @@ public class ServerPackParser {
 		return null;
 	}
 
-	public static ServerList parseDocument(Document dom, String serverId) throws Exception {
-		Map<String,Module> modList = new HashMap<>();
+	public static ServerList parseDocument(Document dom, String serverId, Map<String,Module> modList) throws Exception {
+		//Map<String,Module> modList = new HashMap<>();
 		Element parent = dom.getDocumentElement();
 		ServerEntry server = getServerEntry(serverId, parent);
 		ServerList sl = ServerList.fromElement(server.mcuVersion, "", server.serverElement);
@@ -84,9 +84,9 @@ public class ServerPackParser {
 			if(nl != null && nl.getLength() > 0) {
 				for(int i = 0; i < nl.getLength(); i++) {
 					Element el = (Element)nl.item(i);
-                    ServerList child = doImportV2(el, dom, sl);
+                    ServerList child = doImportV2(el, dom, sl, modList);
                     sl.getLibOverrides().putAll(child.getLibOverrides());
-					modList.putAll(child.getModules());
+					//modList.putAll(child.getModules());
 				}
 			}
 			nl = server.serverElement.getElementsByTagName("Module");
@@ -163,7 +163,7 @@ public class ServerPackParser {
 		return new ServerEntry(version, docEle, mcuVersion);
 	}
 
-	private static ServerList doImportV2(Element el, Document dom, ServerList parent) throws Exception {
+	private static ServerList doImportV2(Element el, Document dom, ServerList parent, Map<String,Module> modList) throws Exception {
 		String url = el.getAttribute("url");
 		if (!url.isEmpty()){
 			try {
@@ -177,7 +177,7 @@ public class ServerPackParser {
 		if (!Version.fuzzyMatch(parent.getVersion(), child.getVersion())) {
 			throw new Exception("Import " + (url.isEmpty() ? "" : url + ":") + el.getTextContent() + " failed version checking.");
 		}
-		return parseDocument(dom, el.getTextContent());
+		return parseDocument(dom, el.getTextContent(), modList);
 	}
 
 	private static Module getModuleV2(Element el) {
@@ -354,7 +354,7 @@ public class ServerPackParser {
 	@SuppressWarnings("unused")
 	public static ServerList loadFromFile(File packFile, String serverId) {
 		try {
-			return parseDocument(readXmlFromFile(packFile), serverId);
+			return parseDocument(readXmlFromFile(packFile), serverId, new HashMap<String,Module>());
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
@@ -364,7 +364,7 @@ public class ServerPackParser {
 	public static ServerList loadFromURL(String serverUrl, String serverId)
 	{
 		try {
-			return parseDocument(readXmlFromUrl(serverUrl), serverId);
+			return parseDocument(readXmlFromUrl(serverUrl), serverId, new HashMap<String,Module>());
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
