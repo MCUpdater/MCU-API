@@ -121,6 +121,7 @@ public class SettingsManager {
 		newSettings.setTimeoutLength(5000);
 		newSettings.setAutoConnect(true);
 		newSettings.setMinimizeOnLaunch(true);
+		newSettings.setMinecraftToConsole(true);
 		return newSettings;
 	}
 
