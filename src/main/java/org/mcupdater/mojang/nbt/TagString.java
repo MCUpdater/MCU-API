@@ -1,5 +1,6 @@
 package org.mcupdater.mojang.nbt;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +24,8 @@ public class TagString extends Tag {
     public List<Byte> toBytes(boolean doHeader) {
         List<Byte> bytes = new ArrayList<>();
         if (doHeader) { bytes.addAll(super.getHeader((byte) 0x08)); }
-        bytes.add((byte)((value.getBytes().length >> 8) & 0xff));
-        bytes.add((byte)(value.getBytes().length & 0xff));
+        bytes.add((byte)((value.getBytes(StandardCharsets.UTF_8).length >> 8) & 0xff));
+        bytes.add((byte)(value.getBytes(StandardCharsets.UTF_8).length & 0xff));
         bytes.addAll(stringToList(value));
         return bytes;
     }

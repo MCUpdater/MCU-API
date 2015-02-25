@@ -1,5 +1,6 @@
 package org.mcupdater.mojang.nbt;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public abstract class Tag {
 
     protected List<Byte> stringToList(String in) {
         List<Byte> bytes = new ArrayList<>();
-        for (byte b : in.getBytes()) {
+        for (byte b : in.getBytes(StandardCharsets.UTF_8)) {
             bytes.add(b);
         }
         return bytes;

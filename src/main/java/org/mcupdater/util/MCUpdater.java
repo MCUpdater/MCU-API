@@ -675,7 +675,8 @@ public class MCUpdater {
 		TagList servers = new TagList("servers", TagList.Type.Compound);
 		TagCompound entry = new TagCompound("");
 		entry.add(new TagByte("hideAddress", (byte) 1));
-		entry.add(new TagString("name", "§A[MCU] §F" + name));
+		String symbol = new String(new byte[]{(byte) 0xc2, (byte) 0xa7}, StandardCharsets.UTF_8);
+		entry.add(new TagString("name", symbol + "A[MCU] " + symbol + "F" + name));
 		entry.add(new TagString("ip",ip));
 		servers.add(entry);
 		root.add(servers);
