@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class MCUpdater {
+public class  MCUpdater {
 	private final Path MCFolder;
 	private Path archiveFolder;
 	private Path instanceRoot;
