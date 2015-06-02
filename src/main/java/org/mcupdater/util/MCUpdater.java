@@ -289,7 +289,7 @@ public class  MCUpdater {
 		return output;
 	}
 
-	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, final Path instancePath, boolean clearExisting, final Instance instData, ModSide side) throws FileNotFoundException {
+	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, final Path instancePath, boolean clearExisting, final Instance instData, final ModSide side) throws FileNotFoundException {
 		//TODO: Divide code into logical sections for better analysis
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
@@ -313,11 +313,11 @@ public class  MCUpdater {
 		Downloadable baseJar = null;
 		final MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
 		List<URL> jarUrl = new ArrayList<>();
-		switch (side){
+        Set<Downloadable> libSet = new HashSet<>();
+        switch (side){
 		case CLIENT:
             System.out.println("Overrides: " + server.getLibOverrides().size());
 			assetsQueue = parent.submitAssetsQueue("Assets", server.getServerId(), version);
-			Set<Downloadable> libSet = new HashSet<>();
             for (Map.Entry<String,String> entry : server.getLibOverrides().entrySet()) {
                 System.out.println(entry.getKey() + ": " + entry.getValue());
             }
@@ -342,7 +342,6 @@ public class  MCUpdater {
 					}
 				}
 			}
-			libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("lib").toFile(), DownloadCache.getDir());
 
 			productionJar = binPath.resolve("minecraft.jar");
 			try {
@@ -363,25 +362,49 @@ public class  MCUpdater {
 		case SERVER:
 			productionJar = instancePath.resolve("minecraft_server.jar");
 			try {
-				jarUrl.add(new URL("https://s3.amazon.com/Minecraft.Download/versions/" + server.getVersion() + "/minecraft_server." + server.getVersion() + ".jar"));
+				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/minecraft_server." + server.getVersion() + ".jar"));
 				jarUrl.add(new URL("http://assets.minecraft.net/" + server.getVersion().replace(".", "_") + "/minecraft_server.jar"));
 			} catch (MalformedURLException e2) {
 				apiLogger.log(Level.SEVERE, "Bad URL", e2);
 			}
 			baseJar = new Downloadable("Server jar","0.jar","",3000000,jarUrl);
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
+
+            Library lib = new Library();
+            lib.setName("net.sf.jopt-simple:jopt-simple:4.5");
+            String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"),0,2),":");
+            System.out.println(lib.getName() + " - " + key);
+            if (server.getLibOverrides().containsKey(key)) {
+                lib.setName(server.getLibOverrides().get(key));
+                System.out.println(" - Replaced: " + lib.getName());
+            }
+            if (lib.validForOS()) {
+                List<URL> urls = new ArrayList<>();
+                try {
+                    urls.add(new URL(lib.getDownloadUrl()));
+                } catch (MalformedURLException e) {
+                    apiLogger.log(Level.SEVERE, "Bad URL", e);
+                }
+                Downloadable entry = new Downloadable(lib.getName(),lib.getFilename(),"",100000,urls);
+                libSet.add(entry);
+                if (lib.hasNatives()) {
+                    libExtract.add(lib.getFilename());
+                }
+            }
+
 			break;
 		default:
 			apiLogger.severe("Invalid API call to MCUpdater.installMods! (side cannot be " + side.toString() + ")");
 			return false;
 		}
+        libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("lib").toFile(), DownloadCache.getDir());
 		Boolean updateJar = clearExisting;
 		if (side == ModSide.CLIENT) {
 			if (!productionJar.toFile().exists()) {
 				updateJar = true;
 			}
 		} else {
-			//TODO:Server jar detection
+			updateJar = true;
 		}			
 		Iterator<GenericModule> iMods = toInstall.iterator();
 		List<String> modIds = new ArrayList<>();
@@ -494,7 +517,9 @@ public class  MCUpdater {
 					Archive.extractZip(instancePath.resolve("lib").resolve(entry).toFile(), instancePath.resolve("lib").resolve("natives").toFile(), false);
 				}				
 			}});
-		libraryQueue.processQueue(libExecutor);
+        if (libraryQueue != null) {
+            libraryQueue.processQueue(libExecutor);
+        }
 		final File branding = new File(tmpFolder, "fmlbranding.properties");
 		try {
 			branding.createNewFile();
@@ -553,7 +578,7 @@ public class  MCUpdater {
 					File entry = li.previous();
 					entry.delete();
 				}
-				if (server.isGenerateList()) { writeMCServerFile(instancePath, server.getName(), server.getAddress()); }
+				if (server.isGenerateList() && side != ModSide.SERVER) { writeMCServerFile(instancePath, server.getName(), server.getAddress()); }
 				instData.setMCVersion(server.getVersion());
 				instData.setRevision(server.getRevision());
 				String jsonOut = gson.toJson(instData);
@@ -632,7 +657,9 @@ public class  MCUpdater {
 			}
 			
 		});
-		assetsQueue.processQueue(assetsExecutor);
+        if (assetsQueue != null) {
+            assetsQueue.processQueue(assetsExecutor);
+        }
 		if( errorCount > 0 ) {
 			parent.baseLogger.severe("Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
 			return false;
