@@ -13,6 +13,11 @@ public class ModuleComparator implements Comparator<GenericModule> {
 
 	@Override
 	public int compare(GenericModule o1, GenericModule o2) {
+        if (mode.equals(Mode.HIERARCHY)) {
+            if (!o1.getParent().equals(o2.getParent())) {
+                return o1.getParent().compareToIgnoreCase(o2.getParent());
+            }
+        }
 		if (mode.equals(Mode.OPTIONAL_FIRST)) {
 			if (!o1.getRequired() && !o2.getRequired()) {
 				return o1.getName().compareToIgnoreCase(o2.getName());
@@ -39,6 +44,7 @@ public class ModuleComparator implements Comparator<GenericModule> {
 	public enum Mode
 	{
 		IMPORTANCE,
-		OPTIONAL_FIRST
+        HIERARCHY,
+        OPTIONAL_FIRST
 	}
 }

@@ -69,7 +69,7 @@ public class ServerPackParser {
 		return null;
 	}
 
-	public static ServerList parseDocument(Document dom, String serverId, Map<String,Module> modList) throws Exception {
+	public static ServerList parseDocument(Document dom, String serverId, Map<String,Module> modList, String hierarchy) throws Exception {
 		//Map<String,Module> modList = new HashMap<>();
 		Element parent = dom.getDocumentElement();
 		ServerEntry server = getServerEntry(serverId, parent);
@@ -84,7 +84,7 @@ public class ServerPackParser {
 			if(nl != null && nl.getLength() > 0) {
 				for(int i = 0; i < nl.getLength(); i++) {
 					Element el = (Element)nl.item(i);
-                    ServerList child = doImportV2(el, dom, sl, modList);
+                    ServerList child = doImportV2(el, dom, sl, modList, hierarchy);
                     sl.getLibOverrides().putAll(child.getLibOverrides());
 					//modList.putAll(child.getModules());
 				}
@@ -95,7 +95,7 @@ public class ServerPackParser {
 				for(int i = 0; i < nl.getLength(); i++)
 				{
 					Element el = (Element)nl.item(i);
-					Module m = getModuleV2(el);
+					Module m = getModuleV2(el, hierarchy);
 					if (m.getModType() == ModType.Removal) {
 						modList.remove(m.getId());
 					}
@@ -125,7 +125,7 @@ public class ServerPackParser {
 				for(int i = 0; i < nl.getLength(); i++)
 				{
 					Element el = (Element)nl.item(i);
-					Module m = getModuleV1(el);
+					Module m = getModuleV1(el, hierarchy);
 					modList.put(m.getId(), m);
 				}
 			}
@@ -163,7 +163,7 @@ public class ServerPackParser {
 		return new ServerEntry(version, docEle, mcuVersion);
 	}
 
-	private static ServerList doImportV2(Element el, Document dom, ServerList parent, Map<String,Module> modList) throws Exception {
+	private static ServerList doImportV2(Element el, Document dom, ServerList parent, Map<String,Module> modList, String hierarchy) throws Exception {
 		String url = el.getAttribute("url");
 		if (!url.isEmpty()){
 			try {
@@ -177,10 +177,10 @@ public class ServerPackParser {
 		if (!Version.fuzzyMatch(parent.getVersion(), child.getVersion())) {
 			throw new Exception("Import " + (url.isEmpty() ? "" : url + ":") + el.getTextContent() + " failed version checking.");
 		}
-		return parseDocument(dom, el.getTextContent(), modList);
+		return parseDocument(dom, el.getTextContent(), modList, hierarchy + "/" + el.getTextContent());
 	}
 
-	private static Module getModuleV2(Element el) {
+	private static Module getModuleV2(Element el, String hierarchy) {
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		try {
 
@@ -236,7 +236,7 @@ public class ServerPackParser {
 			for(int i = 0; i < nl.getLength(); i++)
 			{
 				Element elSubmod = (Element)nl.item(i);
-				GenericModule sm = getModuleV2(elSubmod);
+				GenericModule sm = getModuleV2(elSubmod, hierarchy);
 				submodules.add(sm);
 			}
 			HashMap<String,String> mapMeta = new HashMap<>();
@@ -250,7 +250,7 @@ public class ServerPackParser {
 					mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 				}
 			}
-			Module out = new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules);
+			Module out = new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
 			out.setLoadPrefix(loadPrefix);
 			out.setFilesize(size);
 			return out;
@@ -268,7 +268,7 @@ public class ServerPackParser {
 		}
 	}
 
-	private static Module getModuleV1(Element modEl)
+	private static Module getModuleV1(Element modEl, String hierarchy)
 	{
 		String name = modEl.getAttribute("name");
 		String id = modEl.getAttribute("id");
@@ -306,7 +306,7 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		return new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "");
+		return new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "", hierarchy);
 	}
 	
 	private static ConfigFile getConfigFileV1(Element cfEl)
@@ -354,7 +354,7 @@ public class ServerPackParser {
 	@SuppressWarnings("unused")
 	public static ServerList loadFromFile(File packFile, String serverId) {
 		try {
-			return parseDocument(readXmlFromFile(packFile), serverId, new HashMap<String,Module>());
+			return parseDocument(readXmlFromFile(packFile), serverId, new HashMap<String,Module>(), serverId);
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
@@ -364,7 +364,7 @@ public class ServerPackParser {
 	public static ServerList loadFromURL(String serverUrl, String serverId)
 	{
 		try {
-			return parseDocument(readXmlFromUrl(serverUrl), serverId, new HashMap<String,Module>());
+			return parseDocument(readXmlFromUrl(serverUrl), serverId, new HashMap<String,Module>(), serverId);
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;

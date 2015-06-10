@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class GenericModule {
+	protected String parent = "";
 	protected String name = "";
 	protected String id = "";
 	protected List<PrioritizedURL> urls = new ArrayList<>();
@@ -34,7 +35,7 @@ public class GenericModule {
 	protected String loadPrefix = "";
 	protected long filesize = 100000;
 
-	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs) {
+	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent) {
 		this.setName(name);
 		this.setId(id);
 		this.setUrls(url);
@@ -50,6 +51,7 @@ public class GenericModule {
 		this.setPath(path);
 		this.setLaunchArgs(launchArgs);
 		this.setJreArgs(jreArgs);
+		this.parent = parent;
 		if(meta != null)
 		{
 			this.setMeta(meta);
@@ -58,8 +60,12 @@ public class GenericModule {
 		}
 	}
 
-	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs){
-		this(name, id, url, depends, required, ModType.Regular, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs);
+	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs) {
+		this(name, id, url, depends, required, type, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs, "unspecified");
+	}
+
+	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent){
+		this(name, id, url, depends, required, ModType.Regular, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs, parent);
 		if (inJar) {
 			this.setModType(ModType.Jar);
 		} else if (extract) {
@@ -305,6 +311,14 @@ public class GenericModule {
 		this.filesize = size;
 	}
 
+	public String getParent() {
+		return this.parent;
+	}
+
+	public void setParent(String parent) {
+		this.parent = parent;
+	}
+
 	public String getFilename() {
 		if (!this.path.isEmpty()) {
 			return this.path;
@@ -329,6 +343,7 @@ public class GenericModule {
 	private String cleanForFile(String id) {
 		return id.replaceAll("[^a-zA-Z_0-9\\-.]", "_");
 	}
+
 /*
 	public boolean isLitemod() {
 		return litemod;
