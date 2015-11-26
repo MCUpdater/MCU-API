@@ -134,4 +134,9 @@ public class MCUCLI extends MCUApp {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void alert(String msg) {
+		baseLogger.warning(msg);
+	}
 }

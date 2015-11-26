@@ -28,4 +28,6 @@ public abstract class MCUApp {
 	public void setAuthManager(AuthManager newAuth) {
 		this.authManager = newAuth;
 	}
+
+	public abstract void alert(String msg);
 }

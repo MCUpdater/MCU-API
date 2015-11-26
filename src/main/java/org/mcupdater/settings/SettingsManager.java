@@ -8,6 +8,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -44,6 +45,12 @@ public class SettingsManager {
 			BufferedReader reader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8);
 			this.settings = gson.fromJson(reader, Settings.class);
 			reader.close();
+			Path jrePath = Paths.get(this.settings.getJrePath());
+			if (!jrePath.toFile().exists()) {
+				this.settings.setJrePath(System.getProperty("java.home"));
+				MCUpdater.getInstance().getParent().alert("Java was not found at: " + jrePath.toString() + " JRE path has automatically been changed to: " + this.settings.getJrePath() + ".");
+				saveSettings();
+			}
 			this.dirty=false;
 			fireStateUpdate();
 			fireSettingsUpdate();
