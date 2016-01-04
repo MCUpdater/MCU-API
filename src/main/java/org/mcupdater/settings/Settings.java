@@ -43,6 +43,7 @@ public class Settings {
 	private boolean minimizeOnLaunch;
 	private List<String> packURLs = new ArrayList<>();
 	private UUID clientToken = UUID.randomUUID();
+	private boolean professionalMode;
 
 	public List<Profile> getProfiles() {
 		return profiles;
@@ -254,4 +255,14 @@ public class Settings {
 	public void removeProfile(String name) {
 		this.profiles.remove(findProfile(name));
 	}
+
+	public boolean isProfessionalMode() {
+		return professionalMode;
+	}
+
+	public void setProfessionalMode(boolean professionalMode) {
+		this.professionalMode = professionalMode;
+	}
+
+
 }
