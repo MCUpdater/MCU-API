@@ -513,9 +513,11 @@ public class  MCUpdater {
 
 			@Override
 			public void run() {
+				parent.log("Extracting library files");
 				for (String entry : libExtract){
 					Archive.extractZip(instancePath.resolve("lib").resolve(entry).toFile(), instancePath.resolve("lib").resolve("natives").toFile(), false);
-				}				
+				}
+				parent.log("Library file extraction complete");
 			}});
         if (libraryQueue != null) {
             libraryQueue.processQueue(libExecutor);
@@ -535,12 +537,15 @@ public class  MCUpdater {
 			@Override
 			public void run() {
 				if (!doJarUpdate) {
+					parent.log("Updating FML branding");
 					try {
 						Archive.updateArchive(productionJar.toFile(), new File[]{ branding });
 					} catch (IOException e1) {
 						apiLogger.log(Level.SEVERE, "I/O Error", e1);
 					}
+					parent.log("FML branding complete");
 				} else {
+					parent.log("Extracting files for jar insertion");
 					for (Map.Entry<String,Boolean> entry : keepMeta.entrySet()) {
 						File entryFile = new File(tmpFolder,entry.getKey());
 						Archive.extractZip(entryFile, tmpFolder, entry.getValue());
@@ -571,6 +576,7 @@ public class  MCUpdater {
 					} catch (IOException e) {
 						apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
 					}
+					parent.log("Jar build/update complete");
 				}
 				List<File> tempFiles = recurseFolder(tmpFolder,true);
 				ListIterator<File> li = tempFiles.listIterator(tempFiles.size());
@@ -596,6 +602,7 @@ public class  MCUpdater {
 
 			@Override
 			public void run() {
+				parent.log("Performing needed extractions");
 				for (Map.Entry<String,Boolean> entry : modExtract.entrySet()) {
 					if (entry.getValue()) {
 						Archive.extractZip(instancePath.resolve(entry.getKey()).toFile(), instancePath.toFile());
@@ -604,6 +611,7 @@ public class  MCUpdater {
 					}
 					instancePath.resolve(entry.getKey()).toFile().delete();
 				}
+				parent.log("Extractions complete");
 			}
 			
 		});

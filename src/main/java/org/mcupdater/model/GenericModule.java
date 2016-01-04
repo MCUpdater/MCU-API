@@ -198,7 +198,7 @@ public class GenericModule {
 	
 	@Override
 	public String toString() {
-		return "{id="+id+";name="+name+";type="+modType+";}";
+		return "{id="+id+";name="+name+";type="+modType+";md5="+md5+";}";
 	}
 
 	public ModSide getSide() {
