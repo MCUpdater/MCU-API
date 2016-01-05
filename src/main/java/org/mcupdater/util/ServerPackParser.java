@@ -354,7 +354,11 @@ public class ServerPackParser {
 	@SuppressWarnings("unused")
 	public static ServerList loadFromFile(File packFile, String serverId) {
 		try {
-			return parseDocument(readXmlFromFile(packFile), serverId, new HashMap<String,Module>(), serverId);
+			ServerList server = parseDocument(readXmlFromFile(packFile), serverId, new HashMap<String, Module>(), serverId);
+			if (server != null) {
+				server.setPackUrl(packFile.toURI().toURL().toString());
+			}
+			return server;
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
@@ -364,7 +368,11 @@ public class ServerPackParser {
 	public static ServerList loadFromURL(String serverUrl, String serverId)
 	{
 		try {
-			return parseDocument(readXmlFromUrl(serverUrl), serverId, new HashMap<String,Module>(), serverId);
+			ServerList server = parseDocument(readXmlFromUrl(serverUrl), serverId, new HashMap<String, Module>(), serverId);
+			if (server != null) {
+				server.setPackUrl(serverUrl);
+			}
+			return server;
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;

@@ -7,7 +7,7 @@ import org.w3c.dom.Element;
 
 import java.util.*;
 
-public class ServerList implements Comparable<ServerList>{
+public class ServerList implements Comparable<ServerList> {
 	private String name;
 	private String packUrl;
 	private String newsUrl;
