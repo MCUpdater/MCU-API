@@ -146,11 +146,12 @@ public class  MCUpdater {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
 		try {
-			List<String> resources = IOUtils.readLines(MCUpdater.class.getClassLoader().getResourceAsStream("org/mcupdater/api/"), Charsets.UTF_8);
+			apiLogger.info("Registering root certificates");
+			List<String> resources = IOUtils.readLines(MCUpdater.class.getResourceAsStream("/org/mcupdater/certs/certlist.txt"), Charsets.UTF_8);
 			for (String rsrc : resources) {
 				if (rsrc.endsWith(".pem")) {
-					addRootCA(MCUpdater.class.getClassLoader().getResourceAsStream("org/mcupdater/certs/" + rsrc), rsrc.substring(1, rsrc.length() - 4));
-					apiLogger.info("Registered root certificate: " + rsrc.substring(1, rsrc.length() - 4));
+					addRootCA(MCUpdater.class.getResourceAsStream("/org/mcupdater/certs/" + rsrc), rsrc.substring(0, rsrc.length() - 4));
+					apiLogger.info("Registered root certificate: " + rsrc.substring(0, rsrc.length() - 4));
 				}
 			}
 		} catch (Exception e) {
