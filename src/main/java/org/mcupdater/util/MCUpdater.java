@@ -4,14 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
 import org.mcupdater.api.Version;
+import org.mcupdater.certs.SSLExpansion;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.downloadlib.TaskableExecutor;
@@ -53,7 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class  MCUpdater {
+public class MCUpdater {
 	private final Path MCFolder;
 	private Path archiveFolder;
 	private Path instanceRoot;
@@ -145,18 +144,7 @@ public class  MCUpdater {
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
-		try {
-			apiLogger.info("Registering root certificates");
-			List<String> resources = IOUtils.readLines(MCUpdater.class.getResourceAsStream("/org/mcupdater/certs/certlist.txt"), Charsets.UTF_8);
-			for (String rsrc : resources) {
-				if (rsrc.endsWith(".pem")) {
-					addRootCA(MCUpdater.class.getResourceAsStream("/org/mcupdater/certs/" + rsrc), rsrc.substring(0, rsrc.length() - 4));
-					apiLogger.info("Registered root certificate: " + rsrc.substring(0, rsrc.length() - 4));
-				}
-			}
-		} catch (Exception e) {
-			apiLogger.log(Level.WARNING, "Certificate registration error: ", e);
-		}
+		SSLExpansion ssle = SSLExpansion.getInstance();
 		try {
 			long start = System.currentTimeMillis();
 			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
