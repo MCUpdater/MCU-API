@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.FMLStyleFormatter;
@@ -26,9 +28,6 @@ import org.mcupdater.mojang.nbt.TagCompound;
 import org.mcupdater.mojang.nbt.TagList;
 import org.mcupdater.mojang.nbt.TagString;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -40,11 +39,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.FileHandler;
@@ -144,7 +140,20 @@ public class MCUpdater {
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
+		MCUpdater.apiLogger.info("Registering root certificates");
 		SSLExpansion ssle = SSLExpansion.getInstance();
+		try {
+			List<String> resources = IOUtils.readLines(MCUpdater.class.getResourceAsStream("/org/mcupdater/certs/certlist.txt"), Charsets.UTF_8);
+			for (String rsrc : resources) {
+				if (rsrc.endsWith(".pem")) {
+					ssle.addCertificateFromStream(MCUpdater.class.getResourceAsStream("/org/mcupdater/certs/" + rsrc), rsrc.substring(0, rsrc.length() - 4));
+					apiLogger.info("Registered root certificate: " + rsrc.substring(0, rsrc.length() - 4));
+				}
+			}
+			ssle.updateSSLContext();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		try {
 			long start = System.currentTimeMillis();
 			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
@@ -171,18 +180,6 @@ public class MCUpdater {
 		} catch (IOException e) {
 			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
-	}
-
-	private void addRootCA(InputStream cert, String alias) throws Exception {
-		Certificate ca = CertificateFactory.getInstance("X.509").generateCertificate(cert);
-		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		ks.load(null, null);
-		ks.setCertificateEntry(alias, ca);
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		tmf.init(ks);
-		SSLContext ctx = SSLContext.getInstance("TLS");
-		ctx.init(null, tmf.getTrustManagers(), null);
-		HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
 	}
 
 	public MCUApp getParent() {
