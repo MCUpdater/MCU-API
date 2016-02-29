@@ -19,10 +19,8 @@ import org.mcupdater.downloadlib.TaskableExecutor;
 import org.mcupdater.instance.FileInfo;
 import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
-import org.mcupdater.mojang.AssetIndex;
+import org.mcupdater.mojang.*;
 import org.mcupdater.mojang.AssetIndex.Asset;
-import org.mcupdater.mojang.Library;
-import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.mojang.nbt.TagByte;
 import org.mcupdater.mojang.nbt.TagCompound;
 import org.mcupdater.mojang.nbt.TagList;
@@ -34,7 +32,6 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +39,6 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +52,7 @@ public class MCUpdater {
 	private final String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
-	private final Map<String,String> versionMap = new HashMap<>();
+	//private final Map<String,String> versionMap = new HashMap<>();
 	public static Logger apiLogger;
 	private int timeoutLength = 5000;
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -154,6 +150,7 @@ public class MCUpdater {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		/*
 		try {
 			long start = System.currentTimeMillis();
 			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
@@ -180,6 +177,7 @@ public class MCUpdater {
 		} catch (IOException e) {
 			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
+		*/
 	}
 
 	public MCUApp getParent() {
@@ -331,7 +329,8 @@ public class MCUpdater {
 		final MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
 		List<URL> jarUrl = new ArrayList<>();
         Set<Downloadable> libSet = new HashSet<>();
-        switch (side){
+		DownloadInfo downloadInfo;
+		switch (side) {
 		case CLIENT:
             System.out.println("Overrides: " + server.getLibOverrides().size());
 			assetsQueue = parent.submitAssetsQueue("Assets", server.getServerId(), version);
@@ -359,32 +358,40 @@ public class MCUpdater {
 					}
 				}
 			}
-
+			downloadInfo = version.getDownloadInfo(DownloadType.CLIENT);
 			productionJar = binPath.resolve("minecraft.jar");
 			try {
+				if (downloadInfo != null) {
+					jarUrl.add(downloadInfo.getUrl());
+				}
 				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/" + server.getVersion() + ".jar"));
 			} catch (MalformedURLException e2) {
 				apiLogger.log(Level.SEVERE, "Bad URL", e2);
 			}
-			String jarMD5 = "";
-			for (Entry<String,String> entry : versionMap.entrySet()) {
-				if (entry.getValue().equals(server.getVersion())) {
-					jarMD5 = entry.getKey();
-					break;
-				}
+			if (downloadInfo != null) {
+				baseJar = new Downloadable("Minecraft jar", "0.jar", Downloadable.HashAlgorithm.SHA, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrl);
+			} else {
+				baseJar = new Downloadable("Minecraft jar", "0.jar", "", 3000000, jarUrl);
 			}
-			baseJar = new Downloadable("Minecraft jar","0.jar",jarMD5,3000000,jarUrl);
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 			break;
 		case SERVER:
+			downloadInfo = version.getDownloadInfo(DownloadType.SERVER);
 			productionJar = instancePath.resolve("minecraft_server.jar");
 			try {
+				if (downloadInfo != null) {
+					jarUrl.add(downloadInfo.getUrl());
+				}
 				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/minecraft_server." + server.getVersion() + ".jar"));
 				jarUrl.add(new URL("http://assets.minecraft.net/" + server.getVersion().replace(".", "_") + "/minecraft_server.jar"));
 			} catch (MalformedURLException e2) {
 				apiLogger.log(Level.SEVERE, "Bad URL", e2);
 			}
-			baseJar = new Downloadable("Server jar","0.jar","",3000000,jarUrl);
+			if (downloadInfo != null) {
+				baseJar = new Downloadable("Server Jar", "0.jar", Downloadable.HashAlgorithm.SHA, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrl);
+			} else {
+				baseJar = new Downloadable("Server jar", "0.jar", "", 3000000, jarUrl);
+			}
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 
             Library lib = new Library();
