@@ -6,7 +6,7 @@
 	<xsl:template match="/">
 		<html lang="en-US">
 			<head>
-				<link href="http://code.jquery.com/ui/1.11.2/themes/vader/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+				<link href="//code.jquery.com/ui/1.11.2/themes/vader/jquery-ui.min.css" rel="stylesheet" type="text/css" />
 				<!--[if lt IE 9]>
 				<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 				<![endif]-->
