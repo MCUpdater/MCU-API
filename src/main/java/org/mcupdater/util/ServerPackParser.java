@@ -138,6 +138,10 @@ public class ServerPackParser {
 	}
 
 	private static ServerEntry getServerEntry(String serverId, Element parent) {
+		return getServerEntry(serverId, parent, null);
+	}
+
+	private static ServerEntry getServerEntry(String serverId, Element parent, String mcVersion) {
 		int version;
 		String mcuVersion;
 		Element docEle = null;
@@ -151,7 +155,7 @@ public class ServerPackParser {
 			NodeList servers = parent.getElementsByTagName("Server");
 			for (int i = 0; i < servers.getLength(); i++) {
 				docEle = (Element) servers.item(i);
-				if (docEle.getAttribute("id").equals(serverId)) {
+				if (docEle.getAttribute("id").equals(serverId) && (mcuVersion == null || docEle.getAttribute("version").equals(mcVersion))) {
 					break;
 				}
 			}
@@ -172,7 +176,7 @@ public class ServerPackParser {
 				MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
-		ServerEntry server = getServerEntry(el.getTextContent(), dom.getDocumentElement());
+		ServerEntry server = getServerEntry(el.getTextContent(), dom.getDocumentElement(), parent.getVersion());
 		ServerList child = ServerList.fromElement(server.mcuVersion, "", server.serverElement);
 		if (!Version.fuzzyMatch(parent.getVersion(), child.getVersion())) {
 			throw new Exception("Import " + (url.isEmpty() ? "" : url + ":") + el.getTextContent() + " failed version checking.");
