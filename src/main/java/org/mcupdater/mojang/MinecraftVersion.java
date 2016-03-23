@@ -1,5 +1,7 @@
 package org.mcupdater.mojang;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.mcupdater.model.JSON;
@@ -9,12 +11,14 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.Map;
 
 /*
  * Implementation of version.json format used by Minecraft's launcher
  */
 @JSON
 public class MinecraftVersion {
+	private String inheritsFrom;
 	private String id;
 	private String time;
 	private String releaseTime;
@@ -25,7 +29,9 @@ public class MinecraftVersion {
 	private String mainClass;
 	private String incompatibilityReason;
 	private String assets;
-	private List<Rule> rules;
+	private List<Rule> compatibilityRules;
+	private Map<DownloadType, DownloadInfo> downloads = Maps.newEnumMap(DownloadType.class);
+	private AssetIndexInfo assetIndex;
 	
 	public String getId(){ return id; }
 	public String getTime(){ return time; }
@@ -37,7 +43,25 @@ public class MinecraftVersion {
 	public String getMainClass(){ return mainClass; }
 	public String getIncompatibilityReason(){ return incompatibilityReason; }
 	public String getAssets() { return this.assets; }
-	public List<Rule> getRules(){ return rules; }
+
+	public List<Rule> getRules() {
+		return compatibilityRules;
+	}
+
+	public DownloadInfo getDownloadInfo(DownloadType type) {
+		if (this.downloads.containsKey(type)) {
+			return this.downloads.get(type);
+		} else {
+			return null;
+		}
+	}
+
+	public AssetIndexInfo getAssetIndex() {
+		if (this.assetIndex == null) {
+			this.assetIndex = new AssetIndexInfo(MoreObjects.firstNonNull(this.assets, "legacy"));
+		}
+		return this.assetIndex;
+	}
 	
 	public static MinecraftVersion loadVersion(String version) {
 		GsonBuilder builder = new GsonBuilder();

@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.FMLStyleFormatter;
@@ -17,36 +19,26 @@ import org.mcupdater.downloadlib.TaskableExecutor;
 import org.mcupdater.instance.FileInfo;
 import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
-import org.mcupdater.mojang.AssetIndex;
+import org.mcupdater.mojang.*;
 import org.mcupdater.mojang.AssetIndex.Asset;
-import org.mcupdater.mojang.Library;
-import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.mojang.nbt.TagByte;
 import org.mcupdater.mojang.nbt.TagCompound;
 import org.mcupdater.mojang.nbt.TagList;
 import org.mcupdater.mojang.nbt.TagString;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +52,7 @@ public class MCUpdater {
 	private final String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
-	private final Map<String,String> versionMap = new HashMap<>();
+	//private final Map<String,String> versionMap = new HashMap<>();
 	public static Logger apiLogger;
 	private int timeoutLength = 5000;
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -144,7 +136,21 @@ public class MCUpdater {
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
+		MCUpdater.apiLogger.info("Registering root certificates");
 		SSLExpansion ssle = SSLExpansion.getInstance();
+		try {
+			List<String> resources = IOUtils.readLines(MCUpdater.class.getResourceAsStream("/org/mcupdater/certs/certlist.txt"), Charsets.UTF_8);
+			for (String rsrc : resources) {
+				if (rsrc.endsWith(".pem")) {
+					ssle.addCertificateFromStream(MCUpdater.class.getResourceAsStream("/org/mcupdater/certs/" + rsrc), rsrc.substring(0, rsrc.length() - 4));
+					apiLogger.info("Registered root certificate: " + rsrc.substring(0, rsrc.length() - 4));
+				}
+			}
+			ssle.updateSSLContext();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		/*
 		try {
 			long start = System.currentTimeMillis();
 			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
@@ -171,18 +177,7 @@ public class MCUpdater {
 		} catch (IOException e) {
 			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
-	}
-
-	private void addRootCA(InputStream cert, String alias) throws Exception {
-		Certificate ca = CertificateFactory.getInstance("X.509").generateCertificate(cert);
-		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		ks.load(null, null);
-		ks.setCertificateEntry(alias, ca);
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		tmf.init(ks);
-		SSLContext ctx = SSLContext.getInstance("TLS");
-		ctx.init(null, tmf.getTrustManagers(), null);
-		HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
+		*/
 	}
 
 	public MCUApp getParent() {
@@ -334,7 +329,8 @@ public class MCUpdater {
 		final MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
 		List<URL> jarUrl = new ArrayList<>();
         Set<Downloadable> libSet = new HashSet<>();
-        switch (side){
+		DownloadInfo downloadInfo;
+		switch (side) {
 		case CLIENT:
             System.out.println("Overrides: " + server.getLibOverrides().size());
 			assetsQueue = parent.submitAssetsQueue("Assets", server.getServerId(), version);
@@ -362,32 +358,40 @@ public class MCUpdater {
 					}
 				}
 			}
-
+			downloadInfo = version.getDownloadInfo(DownloadType.CLIENT);
 			productionJar = binPath.resolve("minecraft.jar");
 			try {
+				if (downloadInfo != null) {
+					jarUrl.add(downloadInfo.getUrl());
+				}
 				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/" + server.getVersion() + ".jar"));
 			} catch (MalformedURLException e2) {
 				apiLogger.log(Level.SEVERE, "Bad URL", e2);
 			}
-			String jarMD5 = "";
-			for (Entry<String,String> entry : versionMap.entrySet()) {
-				if (entry.getValue().equals(server.getVersion())) {
-					jarMD5 = entry.getKey();
-					break;
-				}
+			if (downloadInfo != null) {
+				baseJar = new Downloadable("Minecraft jar", "0.jar", Downloadable.HashAlgorithm.SHA, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrl);
+			} else {
+				baseJar = new Downloadable("Minecraft jar", "0.jar", "", 3000000, jarUrl);
 			}
-			baseJar = new Downloadable("Minecraft jar","0.jar",jarMD5,3000000,jarUrl);
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 			break;
 		case SERVER:
+			downloadInfo = version.getDownloadInfo(DownloadType.SERVER);
 			productionJar = instancePath.resolve("minecraft_server.jar");
 			try {
+				if (downloadInfo != null) {
+					jarUrl.add(downloadInfo.getUrl());
+				}
 				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/minecraft_server." + server.getVersion() + ".jar"));
 				jarUrl.add(new URL("http://assets.minecraft.net/" + server.getVersion().replace(".", "_") + "/minecraft_server.jar"));
 			} catch (MalformedURLException e2) {
 				apiLogger.log(Level.SEVERE, "Bad URL", e2);
 			}
-			baseJar = new Downloadable("Server jar","0.jar","",3000000,jarUrl);
+			if (downloadInfo != null) {
+				baseJar = new Downloadable("Server Jar", "0.jar", Downloadable.HashAlgorithm.SHA, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrl);
+			} else {
+				baseJar = new Downloadable("Server jar", "0.jar", "", 3000000, jarUrl);
+			}
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 
             Library lib = new Library();
