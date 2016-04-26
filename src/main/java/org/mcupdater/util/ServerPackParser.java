@@ -155,7 +155,7 @@ public class ServerPackParser {
 			NodeList servers = parent.getElementsByTagName("Server");
 			for (int i = 0; i < servers.getLength(); i++) {
 				docEle = (Element) servers.item(i);
-				if (docEle.getAttribute("id").equals(serverId) && (mcuVersion == null || docEle.getAttribute("version").equals(mcVersion))) {
+				if (docEle.getAttribute("id").equals(serverId) && (mcVersion == null || docEle.getAttribute("version").equals(mcVersion))) {
 					break;
 				}
 			}
