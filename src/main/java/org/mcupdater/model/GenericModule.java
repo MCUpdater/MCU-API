@@ -220,13 +220,6 @@ public class GenericModule {
 			setSide( ModSide.BOTH );
 		}
 	}
-	
-	public boolean isClientSide() {
-		return side != ModSide.SERVER;
-	}
-	public boolean isServerSide() {
-		return side != ModSide.CLIENT;
-	}
 
 	public String getPath() {
 		return path;
@@ -342,6 +335,10 @@ public class GenericModule {
 
 	private String cleanForFile(String id) {
 		return id.replaceAll("[^a-zA-Z_0-9\\-.]", "_");
+	}
+
+	public boolean isSideValid(ModSide testSide) {
+		return this.side.equals(ModSide.BOTH) || this.side.equals(testSide);
 	}
 
 /*

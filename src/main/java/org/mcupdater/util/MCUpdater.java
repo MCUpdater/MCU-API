@@ -613,7 +613,7 @@ public class MCUpdater {
 				instData.setRevision(server.getRevision());
 				String jsonOut = gson.toJson(instData);
 				try {
-					BufferedWriter writer = Files.newBufferedWriter(getInstanceRoot().resolve(server.getServerId()).resolve("instance.json"), StandardCharsets.UTF_8);
+					BufferedWriter writer = Files.newBufferedWriter(instancePath.resolve("instance.json"), StandardCharsets.UTF_8);
 					writer.append(jsonOut);
 					writer.close();
 				} catch (IOException e) {
