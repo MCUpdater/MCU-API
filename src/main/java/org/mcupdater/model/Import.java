@@ -1,6 +1,6 @@
 package org.mcupdater.model;
 
-public class Import
+public class Import implements IPackElement
 {
 	private String url = "";
 	private String serverId;
@@ -24,5 +24,10 @@ public class Import
 
 	public void setServerId(String serverId) {
 		this.serverId = serverId;
+	}
+
+	@Override
+	public String getFriendlyName() {
+		return "Import: " + serverId + "@" + url;
 	}
 }

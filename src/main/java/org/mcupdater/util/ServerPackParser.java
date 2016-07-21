@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import static org.mcupdater.util.MCUpdater.apiLogger;
+
 public class ServerPackParser {
 
 	public static Document readXmlFromFile(File packFile) throws Exception
@@ -35,16 +37,16 @@ public class ServerPackParser {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(packFile);
 		} catch(ParserConfigurationException | SAXException pce) {
-			MCUpdater.apiLogger.log(Level.SEVERE, "Parser error", pce);
+			apiLogger.log(Level.SEVERE, "Parser error", pce);
 		} catch(IOException ioe) {
-			MCUpdater.apiLogger.log(Level.SEVERE, "I/O error", ioe);
+			apiLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
 		return null;
 	}
 	
 	public static Document readXmlFromUrl(String serverUrl) throws Exception
 	{
-		MCUpdater.apiLogger.fine("readXMLFromUrl(" + serverUrl + ")");
+		apiLogger.fine("readXMLFromUrl(" + serverUrl + ")");
 		if (serverUrl.equals("http://www.example.org/ServerPack.xml") || serverUrl.isEmpty()) {
 			return null;
 		}
@@ -53,7 +55,7 @@ public class ServerPackParser {
 		try {
 			server = new URL(serverUrl);
 		} catch( MalformedURLException e ) {
-			MCUpdater.apiLogger.log(Level.WARNING, "Malformed URL", e);
+			apiLogger.log(Level.WARNING, "Malformed URL", e);
 			return null;
 		}
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -62,19 +64,19 @@ public class ServerPackParser {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(serverConn.getInputStream());
 		}catch(ParserConfigurationException | SAXException pce) {
-			MCUpdater.apiLogger.log(Level.SEVERE, "Parser error", pce);
+			apiLogger.log(Level.SEVERE, "Parser error", pce);
 		} catch(IOException ioe) {
-			MCUpdater.apiLogger.log(Level.SEVERE, "I/O error", ioe);
+			apiLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
 		return null;
 	}
 
-	public static ServerList parseDocument(Document dom, String serverId, Map<String,Module> modList, String hierarchy) throws Exception {
+	public static ServerList parseDocument(Document dom, String serverId, Map<String,Module> modList, String hierarchy, String version) throws Exception {
 		//Map<String,Module> modList = new HashMap<>();
 		Element parent = dom.getDocumentElement();
-		ServerEntry server = getServerEntry(serverId, parent);
+		ServerEntry server = getServerEntry(serverId, parent, version);
 		ServerList sl = ServerList.fromElement(server.mcuVersion, "", server.serverElement);
-		MCUpdater.apiLogger.log(Level.FINE, serverId + ": format=" + server.packVersion);
+		apiLogger.log(Level.FINE, serverId + ": format=" + server.packVersion);
 		NodeList nl;
 		switch (server.packVersion) {
 		case 2:
@@ -137,6 +139,7 @@ public class ServerPackParser {
 		}
 	}
 
+	@Deprecated
 	private static ServerEntry getServerEntry(String serverId, Element parent) {
 		return getServerEntry(serverId, parent, null);
 	}
@@ -155,6 +158,7 @@ public class ServerPackParser {
 			NodeList servers = parent.getElementsByTagName("Server");
 			for (int i = 0; i < servers.getLength(); i++) {
 				docEle = (Element) servers.item(i);
+				apiLogger.fine(docEle.getAttribute("id") + ":" + docEle.getAttribute("version"));
 				if (docEle.getAttribute("id").equals(serverId) && (mcVersion == null || docEle.getAttribute("version").equals(mcVersion))) {
 					break;
 				}
@@ -173,7 +177,7 @@ public class ServerPackParser {
 			try {
 				dom = readXmlFromUrl(url);
 			} catch (Exception e) {
-				MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
+				apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 		ServerEntry server = getServerEntry(el.getTextContent(), dom.getDocumentElement(), parent.getVersion());
@@ -181,7 +185,8 @@ public class ServerPackParser {
 		if (!Version.fuzzyMatch(parent.getVersion(), child.getVersion())) {
 			throw new Exception("Import " + (url.isEmpty() ? "" : url + ":") + el.getTextContent() + " failed version checking.");
 		}
-		return parseDocument(dom, el.getTextContent(), modList, hierarchy + "/" + el.getTextContent());
+		return parseDocument(dom, el.getTextContent(), modList, hierarchy + "/" + el.getTextContent(), parent.getVersion());
+
 	}
 
 	private static Module getModuleV2(Element el, String hierarchy) {
@@ -259,7 +264,7 @@ public class ServerPackParser {
 			out.setFilesize(size);
 			return out;
 		} catch (XPathExpressionException e) {
-			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
+			apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
 	}
@@ -358,13 +363,13 @@ public class ServerPackParser {
 	@SuppressWarnings("unused")
 	public static ServerList loadFromFile(File packFile, String serverId) {
 		try {
-			ServerList server = parseDocument(readXmlFromFile(packFile), serverId, new HashMap<String, Module>(), serverId);
+			ServerList server = parseDocument(readXmlFromFile(packFile), serverId, new HashMap<String, Module>(), serverId, null);
 			if (server != null) {
 				server.setPackUrl(packFile.toURI().toURL().toString());
 			}
 			return server;
 		} catch (Exception e) {
-			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
+			apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
 	}
@@ -372,13 +377,13 @@ public class ServerPackParser {
 	public static ServerList loadFromURL(String serverUrl, String serverId)
 	{
 		try {
-			ServerList server = parseDocument(readXmlFromUrl(serverUrl), serverId, new HashMap<String, Module>(), serverId);
+			ServerList server = parseDocument(readXmlFromUrl(serverUrl), serverId, new HashMap<String, Module>(), serverId, null);
 			if (server != null) {
 				server.setPackUrl(serverUrl);
 			}
 			return server;
 		} catch (Exception e) {
-			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
+			apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
 	}

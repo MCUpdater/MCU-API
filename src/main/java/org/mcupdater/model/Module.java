@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class Module extends GenericModule {
+public class Module extends GenericModule implements IPackElement {
 	private List<ConfigFile> configs = new ArrayList<>();
 	private List<GenericModule> submodules = new ArrayList<>();
 	
@@ -56,5 +56,9 @@ public class Module extends GenericModule {
 		return this.submodules;
 	}
 
+	@Override
+	public String getFriendlyName() {
+		return "Module: " + getName();
+	}
 }
 
