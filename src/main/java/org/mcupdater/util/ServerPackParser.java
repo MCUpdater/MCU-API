@@ -189,7 +189,7 @@ public class ServerPackParser {
 
 	}
 
-	private static Module getModuleV2(Element el, String hierarchy) {
+	private static Module getModuleV2(Element el, String hierarchy) throws MalformedModPackException {
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		try {
 
@@ -224,6 +224,7 @@ public class ServerPackParser {
 				isDefault = parseBooleanWithDefault(elReq.getAttribute("isDefault"),false);
 			}
 			Element elType = (Element) el.getElementsByTagName("ModType").item(0);
+			if (elType == null) throw new MalformedModPackException(hierarchy, id, "Missing ModType");
 			boolean inRoot = parseBooleanWithDefault(elType.getAttribute("inRoot"), false);
 			int order = parseInt(elType.getAttribute("order"));
 			boolean keepMeta = parseBooleanWithDefault(elType.getAttribute("keepMeta"),false);
@@ -433,6 +434,12 @@ public class ServerPackParser {
 			this.packVersion = packVersion;
 			this.serverElement = serverElement;
 			this.mcuVersion = mcuVersion;
+		}
+	}
+
+	private static class MalformedModPackException extends Exception {
+		public MalformedModPackException(String hierarchy, String id, String reason) {
+			super(reason + " @ " + hierarchy + ":" + id);
 		}
 	}
 }
