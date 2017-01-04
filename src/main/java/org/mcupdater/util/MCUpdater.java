@@ -427,6 +427,9 @@ public class MCUpdater {
 			if (!productionJar.toFile().exists()) {
 				updateJar = true;
 			}
+			if (instData.getMCVersion().isEmpty() || !instData.getMCVersion().equals(server.getVersion())) {
+				updateJar = true;
+			}
 		} else {
 			updateJar = true;
 		}			
