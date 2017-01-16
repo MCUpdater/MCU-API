@@ -4,7 +4,7 @@ import org.mcupdater.util.MCUpdater;
 
 import java.util.Locale;
 
-public class ConfigFile {
+public class ConfigFile implements IPackElement {
 	private String url;
 	private String path;
 	private String md5;
@@ -62,8 +62,13 @@ public class ConfigFile {
 	}
 
 	@Override
+	public String getFriendlyName() {
+		return "ConfigFile: " + getPath();
+	}
+
+	@Override
 	public String toString() {
-		return path;
+		return getFriendlyName();
 	}
 
 }

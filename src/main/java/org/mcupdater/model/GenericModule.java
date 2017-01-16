@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class GenericModule {
+public class GenericModule implements IPackElement {
 	protected String parent = "";
 	protected String name = "";
 	protected String id = "";
@@ -74,7 +74,7 @@ public class GenericModule {
 			this.setModType(ModType.Coremod);
 		}
 	}
-	
+
 	private void setJarOrder(int jarOrder) {
 		this.order = jarOrder;
 	}
@@ -196,8 +196,7 @@ public class GenericModule {
 		this.depends = depends;
 	}
 	
-	@Override
-	public String toString() {
+	public String toDebugString() {
 		return "{id="+id+";name="+name+";type="+modType+";md5="+md5+";}";
 	}
 
@@ -341,13 +340,13 @@ public class GenericModule {
 		return this.side.equals(ModSide.BOTH) || this.side.equals(testSide);
 	}
 
-/*
-	public boolean isLitemod() {
-		return litemod;
+	@Override
+	public String getFriendlyName() {
+		return "Submodule: " + getName();
 	}
 
-	public void setLitemod(boolean litemod) {
-		this.litemod = litemod;
+	@Override
+	public String toString() {
+		return getFriendlyName();
 	}
-*/
 }

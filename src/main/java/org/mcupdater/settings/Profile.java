@@ -3,6 +3,8 @@ package org.mcupdater.settings;
 import org.mcupdater.MCUApp;
 import org.mcupdater.model.JSON;
 
+import java.util.logging.Level;
+
 @JSON
 public class Profile {
 	private String style;
@@ -40,21 +42,26 @@ public class Profile {
 	}
 
 	public String getSessionKey(MCUApp caller) throws Exception {
+		String currentSessionKey = null;
 		if (this.sessionKey == null || this.sessionKey.isEmpty()) {
 			if (this.style.equals("Yggdrasil")) {
 				try {
-					return caller.getAuthManager().getSessionKey(this);
+					currentSessionKey = caller.getAuthManager().getSessionKey(this);
 				} catch (Exception e) {
 					Profile newProfile = caller.requestLogin(this.username);
 					SettingsManager.getInstance().getSettings().addOrReplaceProfile(newProfile);
 					if (!SettingsManager.getInstance().isDirty()) {
 						SettingsManager.getInstance().saveSettings();
 					}
-					return newProfile.getSessionKey(caller);
+					currentSessionKey = newProfile.getSessionKey(caller);
+					caller.baseLogger.log(Level.INFO, "A full login request occurred due to the following exception", e);
+					caller.baseLogger.finer("Session key: " + currentSessionKey);
 				}
 			}
+		} else {
+			currentSessionKey = this.sessionKey;
 		}
-		return sessionKey;
+		return currentSessionKey;
 	}
 
 	public void setSessionKey(String sessionKey) {

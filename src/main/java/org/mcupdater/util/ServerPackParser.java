@@ -18,7 +18,10 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +78,8 @@ public class ServerPackParser {
 		//Map<String,Module> modList = new HashMap<>();
 		Element parent = dom.getDocumentElement();
 		ServerEntry server = getServerEntry(serverId, parent, version);
-		ServerList sl = ServerList.fromElement(server.mcuVersion, "", server.serverElement);
+		ServerList sl = new ServerList();
+		ServerList.fromElement(server.mcuVersion, "", server.serverElement, sl);
 		apiLogger.log(Level.FINE, serverId + ": format=" + server.packVersion);
 		NodeList nl;
 		switch (server.packVersion) {
@@ -181,7 +185,8 @@ public class ServerPackParser {
 			}
 		}
 		ServerEntry server = getServerEntry(el.getTextContent(), dom.getDocumentElement(), parent.getVersion());
-		ServerList child = ServerList.fromElement(server.mcuVersion, "", server.serverElement);
+		ServerList child = new ServerList();
+		ServerList.fromElement(server.mcuVersion, "", server.serverElement, child);
 		if (!Version.fuzzyMatch(parent.getVersion(), child.getVersion())) {
 			throw new Exception("Import " + (url.isEmpty() ? "" : url + ":") + el.getTextContent() + " failed version checking.");
 		}
@@ -234,7 +239,7 @@ public class ServerPackParser {
 			modType = ModType.valueOf(elType.getTextContent());
 			String md5 = (String) xpath.evaluate("MD5", el, XPathConstants.STRING);
 			List<ConfigFile> configs = new ArrayList<>();
-			List<GenericModule> submodules = new ArrayList<>();
+			List<Submodule> submodules = new ArrayList<>();
 			nl = el.getElementsByTagName("ConfigFile");
 			for(int i = 0; i < nl.getLength(); i++) 
 			{
@@ -246,7 +251,7 @@ public class ServerPackParser {
 			for(int i = 0; i < nl.getLength(); i++)
 			{
 				Element elSubmod = (Element)nl.item(i);
-				GenericModule sm = getModuleV2(elSubmod, hierarchy);
+				Submodule sm = new Submodule(getModuleV2(elSubmod, hierarchy));
 				submodules.add(sm);
 			}
 			HashMap<String,String> mapMeta = new HashMap<>();
@@ -387,6 +392,59 @@ public class ServerPackParser {
 			apiLogger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 		}
+	}
+
+	public static List<RawServer> loadFromURL(String serverUrl) {
+		List<RawServer> packDefinition = new ArrayList<>();
+		try {
+			Element docEle;
+			Document serverHeader = ServerPackParser.readXmlFromUrl(serverUrl);
+			if (!(serverHeader == null)) {
+				Element parent = serverHeader.getDocumentElement();
+				if (parent.getNodeName().equals("ServerPack")) {
+					String mcuVersion = parent.getAttribute("version");
+					NodeList servers = parent.getElementsByTagName("Server");
+					for (int i = 0; i < servers.getLength(); i++) {
+						docEle = (Element) servers.item(i);
+						RawServer sl = new RawServer();
+						RawServer.fromElement(mcuVersion, serverUrl, docEle, sl);
+						NodeList nl;
+						nl = docEle.getElementsByTagName("Import");
+						if (nl != null && nl.getLength() > 0) {
+							for(int j = 0; j < nl.getLength(); j++) {
+								Element el = (Element) nl.item(j);
+								Import newImport = new Import();
+								String importURL = null;
+								importURL = el.getAttribute("url");
+								if (importURL != null && !importURL.isEmpty()) {
+									newImport.setUrl(importURL);
+								}
+								newImport.setServerId(el.getTextContent());
+								sl.getPackElements().add(newImport);
+							}
+						}
+						nl = docEle.getElementsByTagName("Module");
+						if (nl != null && nl.getLength() > 0) {
+							for(int j = 0; j < nl.getLength(); j++) {
+								Element el = (Element) nl.item(j);
+								Module m = getModuleV2(el, null);
+								sl.getPackElements().add(m);
+							}
+						}
+						packDefinition.add(sl);
+					}
+				} else {
+					RawServer sl = new RawServer();
+					RawServer.fromElement("1.0", serverUrl, parent, sl);
+					packDefinition.add(sl);
+				}
+			} else {
+				MCUpdater.apiLogger.warning("Unable to get server information from " + serverUrl);
+			}
+		} catch (Exception e) {
+			MCUpdater.apiLogger.log(Level.SEVERE, "Failed to load from: " + serverUrl, e);
+		}
+		return packDefinition;
 	}
 
 	public static boolean parseBoolean(String attribute, boolean defaultValue) {

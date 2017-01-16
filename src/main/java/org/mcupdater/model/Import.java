@@ -10,6 +10,9 @@ public class Import implements IPackElement
 		this.serverId = serverId;
 	}
 
+	public Import() {
+	}
+
 	public String getUrl() {
 		return url;
 	}
@@ -29,5 +32,10 @@ public class Import implements IPackElement
 	@Override
 	public String getFriendlyName() {
 		return "Import: " + serverId + "@" + url;
+	}
+
+	@Override
+	public String toString() {
+		return getFriendlyName();
 	}
 }
