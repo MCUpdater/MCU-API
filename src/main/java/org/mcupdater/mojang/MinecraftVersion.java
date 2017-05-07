@@ -71,9 +71,11 @@ public class MinecraftVersion {
 		
 		URLConnection conn;
 		try {
-			conn = (new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + version + "/" + version + ".json")).openConnection();
+			conn = (new URL(VersionManifest.getCurrent(false).getVersion(version).getUrl())).openConnection();
 			return gson.fromJson(new InputStreamReader(conn.getInputStream()),MinecraftVersion.class);
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (VersionManifest.VersionNotFoundException e) {
 			e.printStackTrace();
 		}
 		return null;

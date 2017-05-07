@@ -281,7 +281,7 @@ public class ServerDefinition {
 					if (configName.toLowerCase().contains(mod.getId().toLowerCase())) {
 						newDistance -= 10;
 					}
-					if (configName.toLowerCase().contains(mod.getId().toLowerCase().substring(0, 3))) {
+					if (configName.toLowerCase().contains(mod.getId().toLowerCase().substring(0, mod.getId().length() < 3 ? mod.getId().length() : 3))) {
 						newDistance -= 1;
 					}
 					if (snd.soundex(mod.getId()).equals(snd.soundex(configName))) {

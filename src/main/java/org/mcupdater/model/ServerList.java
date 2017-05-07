@@ -8,7 +8,7 @@ public class ServerList extends Server {
 	private State state = State.UNKNOWN;
 	public enum State {
 		UNKNOWN,
-		READY, UPDATE, ERROR;
+		READY, UPDATE, ERROR
 	}
 
 	public ServerList() {}

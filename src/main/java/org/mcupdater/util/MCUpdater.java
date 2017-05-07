@@ -294,9 +294,7 @@ public class MCUpdater {
 			if(entry.isDirectory())
 			{
 				List<File> subfolder = recurseFolder(entry, includeFolders);
-				for (File aSubfolder : subfolder) {
-					output.add(aSubfolder);
-				}
+				output.addAll(subfolder);
 			} else {
 				output.add(entry);
 			}
@@ -364,6 +362,7 @@ public class MCUpdater {
 				if (downloadInfo != null) {
 					jarUrl.add(downloadInfo.getUrl());
 				}
+				// Add legacy URL to fall back to
 				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/" + server.getVersion() + ".jar"));
 			} catch (MalformedURLException e2) {
 				apiLogger.log(Level.SEVERE, "Bad URL", e2);
@@ -382,6 +381,7 @@ public class MCUpdater {
 				if (downloadInfo != null) {
 					jarUrl.add(downloadInfo.getUrl());
 				}
+				// Add legacy URLs to fall back to
 				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/minecraft_server." + server.getVersion() + ".jar"));
 				jarUrl.add(new URL("http://assets.minecraft.net/" + server.getVersion().replace(".", "_") + "/minecraft_server.jar"));
 			} catch (MalformedURLException e2) {

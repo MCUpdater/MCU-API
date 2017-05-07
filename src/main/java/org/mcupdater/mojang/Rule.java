@@ -15,7 +15,7 @@ public class Rule {
 		return this.action;
 	}
 	
-	public static enum Action
+	public enum Action
 	{
 		ALLOW,
 		DISALLOW

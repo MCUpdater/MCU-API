@@ -17,6 +17,7 @@ public class AssetIndexInfo extends DownloadInfo {
 	public AssetIndexInfo(String id) {
 		this.id = id;
 		try {
+			// This is a legacy URL.  The new URL should be returned in the version definition.
 			this.url = new URL("https://s3.amazonaws.com/Minecraft.Download/indexes/" + id + ".json");
 		} catch (MalformedURLException e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Error getting asset index!", e);
@@ -35,4 +36,5 @@ public class AssetIndexInfo extends DownloadInfo {
 	public boolean isKnown() {
 		return this.known;
 	}
+
 }
