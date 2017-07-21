@@ -191,6 +191,10 @@ public abstract class Server implements Comparable<Server>{
 		}
 	}
 
+	public String getServerClass_Raw() {
+		return serverClass;
+	}
+
 	public void setServerClass(String serverClass) {
 		this.serverClass = serverClass;
 	}

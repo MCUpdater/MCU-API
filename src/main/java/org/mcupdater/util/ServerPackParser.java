@@ -92,6 +92,9 @@ public class ServerPackParser {
 					Element el = (Element)nl.item(i);
                     ServerList child = doImportV2(el, dom, sl, modList, hierarchy);
                     sl.getLibOverrides().putAll(child.getLibOverrides());
+                    if (sl.getServerClass_Raw().isEmpty() && !child.getServerClass_Raw().isEmpty()) {
+                    	sl.setServerClass(child.getServerClass());
+                    }
 					//modList.putAll(child.getModules());
 				}
 			}
