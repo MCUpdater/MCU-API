@@ -421,7 +421,7 @@ public class MCUpdater {
 			apiLogger.severe("Invalid API call to MCUpdater.installMods! (side cannot be " + side.toString() + ")");
 			return false;
 		}
-        libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("lib").toFile(), DownloadCache.getDir());
+        libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("libraries").toFile(), DownloadCache.getDir());
 		Boolean updateJar = clearExisting;
 		if (side == ModSide.CLIENT) {
 			if (!productionJar.toFile().exists()) {

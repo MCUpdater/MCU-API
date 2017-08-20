@@ -321,7 +321,7 @@ public class GenericModule implements IPackElement {
 			} else if (this.modType == ModType.Coremod) {
 				newPath.append("coremods/");
 			} else if (this.modType == ModType.Library) {
-				newPath.append("lib/");
+				newPath.append("libraries/");
 			}
 			if (!this.loadPrefix.isEmpty()) {
 				newPath.append(this.loadPrefix + "_");
