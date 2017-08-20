@@ -45,10 +45,6 @@ public class SSLExpansion {
 	public void updateSSLContext() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
 		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 		tmf.init(keyStore);
-		for (Enumeration<String> elements = keyStore.aliases(); elements.hasMoreElements(); ) {
-			System.out.println("@ " + elements.nextElement());
-		}
-		System.out.println();
 		SSLContext ctx = SSLContext.getInstance("TLS");
 		ctx.init(null, tmf.getTrustManagers(), null);
 		HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());

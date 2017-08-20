@@ -548,7 +548,7 @@ public class MCUpdater {
 			public void run() {
 				parent.log("Extracting library files");
 				for (String entry : libExtract){
-					Archive.extractZip(instancePath.resolve("lib").resolve(entry).toFile(), instancePath.resolve("lib").resolve("natives").toFile(), false);
+					Archive.extractZip(instancePath.resolve("libraries").resolve(entry).toFile(), instancePath.resolve("libraries").resolve("natives").toFile(), false);
 				}
 				parent.log("Library file extraction complete");
 			}});
