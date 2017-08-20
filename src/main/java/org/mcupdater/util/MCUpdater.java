@@ -395,7 +395,13 @@ public class MCUpdater {
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 
             Library lib = new Library();
-            lib.setName("net.sf.jopt-simple:jopt-simple:4.5");
+			lib.setName("net.sf.jopt-simple:jopt-simple:4.5");
+			if (Version.requestedFeatureLevel(server.getVersion(), "1.8")) {
+				lib.setName("net.sf.jopt-simple:jopt-simple:4.6");
+				if (Version.requestedFeatureLevel(server.getVersion(), "1.12")) {
+					lib.setName("net.sf.jopt-simple:jopt-simple:5.0.3");
+				}
+			}
             String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"),0,2),":");
             System.out.println(lib.getName() + " - " + key);
             if (server.getLibOverrides().containsKey(key)) {
