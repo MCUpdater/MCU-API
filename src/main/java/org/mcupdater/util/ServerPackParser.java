@@ -288,7 +288,7 @@ public class ServerPackParser {
 				}
 			}
 			
-			Module out = new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
+			Module out = new Module(name, id, urls, curse, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
 			out.setLoadPrefix(loadPrefix);
 			out.setFilesize(size);
 			return out;
@@ -344,7 +344,7 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		return new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "", hierarchy);
+		return new Module(name, id, urls, null, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "", hierarchy);
 	}
 	
 	private static ConfigFile getConfigFileV1(Element cfEl)

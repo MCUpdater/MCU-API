@@ -9,8 +9,8 @@ public class Module extends GenericModule {
 	private List<ConfigFile> configs = new ArrayList<>();
 	private List<Submodule> submodules = new ArrayList<>();
 	
-	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, ModType modType, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, List<Submodule> submodules, String parent) {
-		super(name, id, url, depends, required, modType, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs, parent);
+	public Module(String name, String id, List<PrioritizedURL> url, CurseProject curse, String depends, boolean required, ModType modType, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, List<Submodule> submodules, String parent) {
+		super(name, id, url, curse, depends, required, modType, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs, parent);
 		if(configs != null) {
 			this.configs = configs;
 		} else {
@@ -23,8 +23,8 @@ public class Module extends GenericModule {
 		}
 	}
 
-	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent){
-		super(name,id,url,depends,required,inJar,jarOrder,keepMeta,extract,inRoot,isDefault,coreMod,md5,side,path,meta,launchArgs,jreArgs,parent);
+	public Module(String name, String id, List<PrioritizedURL> url, CurseProject curse, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent){
+		super(name,id,url,curse,depends,required,inJar,jarOrder,keepMeta,extract,inRoot,isDefault,coreMod,md5,side,path,meta,launchArgs,jreArgs,parent);
 		if(configs != null)
 		{
 			this.configs = configs;
