@@ -205,6 +205,7 @@ public class ServerPackParser {
 			String id = el.getAttribute("id");
 			String depends = el.getAttribute("depends");
 			String side = el.getAttribute("side");
+			
 			List<PrioritizedURL> urls = new ArrayList<>();
 			NodeList nl;
 			nl = (NodeList) xpath.evaluate("URL", el, XPathConstants.NODESET);
@@ -214,13 +215,26 @@ public class ServerPackParser {
 				int priority = parseInt(elURL.getAttribute("priority"));
 				urls.add(new PrioritizedURL(url, priority));
 			}
+			
+			CurseProject curse = null;
+			Element elCurse = (Element) el.getElementsByTagName("Curse").item(0);
+			if( elCurse != null ) {
+				String project = elCurse.getAttribute("project");
+				int file = parseInt(elCurse.getAttribute("file"));
+				String type = elCurse.getAttribute("type");
+				boolean autoupgrade = parseBooleanWithDefault(elCurse.getAttribute("autoupgrade"),false);
+				curse = new CurseProject(project, file, type, autoupgrade);
+			}
+			
 			String loadPrefix = (String) xpath.evaluate("LoadPrefix", el, XPathConstants.STRING);
 			String path = (String) xpath.evaluate("ModPath", el, XPathConstants.STRING);
+			
 			String sizeString = (String) xpath.evaluate("Size", el, XPathConstants.STRING);
 			if (sizeString.isEmpty()) {
 				sizeString = "100000";
 			}
 			long size = Long.parseLong(sizeString);
+			
 			Element elReq = (Element) el.getElementsByTagName("Required").item(0);
 			boolean required;
 			boolean isDefault;
@@ -231,6 +245,7 @@ public class ServerPackParser {
 				required = parseBooleanWithDefault(elReq.getTextContent(),true);
 				isDefault = parseBooleanWithDefault(elReq.getAttribute("isDefault"),false);
 			}
+			
 			Element elType = (Element) el.getElementsByTagName("ModType").item(0);
 			if (elType == null) throw new MalformedModPackException(hierarchy, id, "Missing ModType");
 			boolean inRoot = parseBooleanWithDefault(elType.getAttribute("inRoot"), false);
@@ -240,9 +255,10 @@ public class ServerPackParser {
 			String jreArgs = elType.getAttribute("jreArgs");
 			ModType modType;
 			modType = ModType.valueOf(elType.getTextContent());
+			
 			String md5 = (String) xpath.evaluate("MD5", el, XPathConstants.STRING);
+			
 			List<ConfigFile> configs = new ArrayList<>();
-			List<Submodule> submodules = new ArrayList<>();
 			nl = el.getElementsByTagName("ConfigFile");
 			for(int i = 0; i < nl.getLength(); i++) 
 			{
@@ -250,6 +266,8 @@ public class ServerPackParser {
 				ConfigFile cf = getConfigFileV1(elConfig);
 				configs.add(cf);
 			}
+
+			List<Submodule> submodules = new ArrayList<>();
 			nl = el.getElementsByTagName("Submodule");
 			for(int i = 0; i < nl.getLength(); i++)
 			{
@@ -257,6 +275,7 @@ public class ServerPackParser {
 				Submodule sm = new Submodule(getModuleV2(elSubmod, hierarchy));
 				submodules.add(sm);
 			}
+			
 			HashMap<String,String> mapMeta = new HashMap<>();
 			NodeList nlMeta = el.getElementsByTagName("Meta");
 			if (nlMeta.getLength() > 0){
@@ -268,6 +287,7 @@ public class ServerPackParser {
 					mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 				}
 			}
+			
 			Module out = new Module(name, id, urls, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
 			out.setLoadPrefix(loadPrefix);
 			out.setFilesize(size);
