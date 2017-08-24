@@ -1,5 +1,6 @@
 package org.mcupdater.model;
 
+import org.mcupdater.util.CurseModCache;
 import org.mcupdater.util.MCUpdater;
 
 import java.net.MalformedURLException;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 
 public class GenericModule implements IPackElement {
 	protected String parent = "";
@@ -94,6 +96,16 @@ public class GenericModule implements IPackElement {
 	public List<URL> getUrls()
 	{
 		List<URL> result = new ArrayList<>();
+		// prepend non-null curse project
+		if( curse != null ) {
+			try {
+				final URL curseURL = new URL(CurseModCache.fetchURL(curse));
+				result.add(curseURL);
+			} catch (MalformedURLException e) {
+				MCUpdater.apiLogger.log(Level.SEVERE, "Unable to parse URL for curse:"+curse.getProject(), e);
+			}
+		}
+		// iterate any manually specified url's
 		for (PrioritizedURL entry : urls) {
 			try {
 				result.add(new URL(entry.getUrl()));
@@ -162,6 +174,7 @@ public class GenericModule implements IPackElement {
 	}
 	
 	public String getMD5() {
+		// TODO: add curse support for MD5's
 		if (md5 == null) {
 			MCUpdater.apiLogger.warning("No MD5 for Module " + this.id);
 			return "";

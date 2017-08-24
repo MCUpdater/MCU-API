@@ -2,13 +2,36 @@ package org.mcupdater.model;
 
 public class CurseProject {
 	public enum ReleaseType {
-		ALPHA,BETA,RELEASE;
+		ALPHA(0),BETA(1),RELEASE(2);
+		public final int val;
+		
+		private ReleaseType(int val) {
+			this.val = val;
+		}
+		
+		public boolean worseThan(ReleaseType that) {
+			return this.val < that.val;
+		}
+		
+		public static ReleaseType parse(String typeStr) {
+			try {
+				if( typeStr == null || typeStr.isEmpty() ) {
+					typeStr = "RELEASE";
+				}
+				return valueOf(typeStr.toUpperCase());
+			} catch (IllegalArgumentException e) {
+				return RELEASE;
+			}
+		}
 	}
 	
 	private String project;
 	private int file = 0;
 	private ReleaseType type = ReleaseType.RELEASE;
 	private boolean autoupgrade = false;
+	
+	private String url = "";
+	private String md5 = "";
 	
 	public CurseProject(String project) {
 		this.setProject(project);
@@ -18,6 +41,10 @@ public class CurseProject {
 		this.setFile(file);
 		this.setReleaseType(typeStr);
 		this.setAutoUpgrade(autoupgrade);
+	}
+	
+	public String toString() {
+		return "curse:"+getProject();
 	}
 		
 	public String getProject() {
@@ -41,14 +68,7 @@ public class CurseProject {
 		this.type = type;
 	}
 	public void setReleaseType(String typeStr) {
-		try {
-			if( typeStr == null || typeStr.isEmpty() ) {
-				typeStr = "RELEASE";
-			}
-			setReleaseType( ReleaseType.valueOf(typeStr.toUpperCase()) );
-		} catch (IllegalArgumentException e) {
-			setReleaseType( ReleaseType.RELEASE );
-		}
+		this.type = ReleaseType.parse(typeStr);
 	}
 	
 	public boolean getAutoUpgrade() {
@@ -56,5 +76,19 @@ public class CurseProject {
 	}
 	public void setAutoUpgrade(boolean autoupgrade) {
 		this.autoupgrade = autoupgrade;
+	}
+	
+	public String getURL() {
+		return url;
+	}
+	public void setURL(String url) {
+		this.url = url;
+	}
+	
+	public String getMD5() {
+		return md5;
+	}
+	public void setMD5(String md5) {
+		this.md5 = md5;
 	}
 }
