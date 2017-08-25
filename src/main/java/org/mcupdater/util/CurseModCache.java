@@ -41,31 +41,37 @@ public enum CurseModCache {
 			}
 			
 			// TODO: re-request this, filtering by MC version on their end before proceeding
-			//if( Version.fuzzyMatch(a, b) ) {
-			//	
-			//}
 			
 			// TODO: identify and set file, then re-invoke fetchURL
 			Elements fileList = filesDoc.getElementsByClass("project-file-list-item");
 			ProjectFile file = new ProjectFile();
 			for( Element el : fileList) {
+				int id = Integer.parseInt(el.getElementsByClass("project-file-name-container").first().childNode(0).attr("data-id"));
+
 				String release_type = el.getElementsByClass("project-file-release-type").first().childNode(0).attr("title");
 				CurseProject.ReleaseType type = CurseProject.ReleaseType.parse(release_type);
 				if( type.worseThan(curse.getReleaseType()) || type.worseThan(file.release_type) ) {
+					MCUpdater.apiLogger.log(Level.FINE, "Skipping "+curse+":"+id+", release type mismatch");
 					continue;
 				}
 
-				// TODO: filter for MC version
+				// filter for MC version
 				String mc_version = el.getElementsByClass("version-label").first().text();
+				if( !Version.fuzzyMatch(mc_version, curse.getMCVersion()) ) {
+					MCUpdater.apiLogger.log(Level.FINE, "Skipping "+curse+":"+id+", mc version mismatch");
+					continue;
+				}
 				
 				int upload_date = Integer.parseInt(el.getElementsByClass("standard-date").first().attr("data-epoch"));
 				if( upload_date > file.upload_date ) {
 					// take the newer build
-					int id = Integer.parseInt(el.getElementsByClass("project-file-name-container").first().childNode(0).attr("data-id"));
+					MCUpdater.apiLogger.log(Level.FINE, "Selecting "+curse+":"+id);
 					file.release_type = type;
 					file.upload_date = upload_date;
 					file.id = id;
 					file.mc_version = mc_version;
+				} else {
+					MCUpdater.apiLogger.log(Level.FINE, "Skipping "+curse+":"+id+", older upload date");
 				}
 			}
 			
