@@ -101,8 +101,9 @@ public class GenericModule implements IPackElement {
 			try {
 				final URL curseURL = new URL(CurseModCache.fetchURL(curse));
 				result.add(curseURL);
+				MCUpdater.apiLogger.log(Level.INFO, "Found URL for "+curse+":"+curse.getFile());
 			} catch (MalformedURLException e) {
-				MCUpdater.apiLogger.log(Level.SEVERE, "Unable to parse URL for curse:"+curse.getProject(), e);
+				MCUpdater.apiLogger.log(Level.SEVERE, "Unable to parse URL for "+curse, e);
 			}
 		}
 		// iterate any manually specified url's
@@ -174,8 +175,14 @@ public class GenericModule implements IPackElement {
 	}
 	
 	public String getMD5() {
-		// TODO: add curse support for MD5's
-		if (md5 == null) {
+		if (md5 == null || md5.isEmpty()) {
+			// look at curse first if we have it
+			if( curse != null ) {
+				final String curseMD5 = CurseModCache.fetchMD5(curse);
+				setMD5(curseMD5);
+				MCUpdater.apiLogger.log(Level.INFO, "Found MD5 for "+curse+":"+curse.getFile());
+				return md5;
+			}
 			MCUpdater.apiLogger.warning("No MD5 for Module " + this.id);
 			return "";
 		}

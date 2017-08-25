@@ -35,6 +35,15 @@ public class SSLExpansion {
 		Path ksPath = Paths.get(System.getProperty("java.home")).resolve("lib").resolve("security").resolve("cacerts");
 		String ksPassword = "changeit";
 		keyStore.load(Files.newInputStream(ksPath), ksPassword.toCharArray());
+		
+		/*
+		 * Dump list of loaded CA's
+		 * 
+		for (Enumeration<String> elements = keyStore.aliases(); elements.hasMoreElements(); ) {		
+			System.out.println("@ " + elements.nextElement());		
+		}		
+		System.out.println();
+		*/
 	}
 
 	public void addCertificateFromStream(InputStream cert, String alias) throws Exception {
