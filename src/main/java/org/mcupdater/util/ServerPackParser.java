@@ -104,7 +104,7 @@ public class ServerPackParser {
 				for(int i = 0; i < nl.getLength(); i++)
 				{
 					Element el = (Element)nl.item(i);
-					Module m = getModuleV2(el, hierarchy);
+					Module m = getModuleV2(el, sl.getVersion(), hierarchy);
 					if (m.getModType() == ModType.Removal) {
 						modList.remove(m.getId());
 					}
@@ -146,6 +146,7 @@ public class ServerPackParser {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	@Deprecated
 	private static ServerEntry getServerEntry(String serverId, Element parent) {
 		return getServerEntry(serverId, parent, null);
@@ -197,7 +198,7 @@ public class ServerPackParser {
 
 	}
 
-	private static Module getModuleV2(Element el, String hierarchy) throws MalformedModPackException {
+	private static Module getModuleV2(Element el, String mcVersion, String hierarchy) throws MalformedModPackException {
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		try {
 
@@ -223,7 +224,7 @@ public class ServerPackParser {
 				int file = parseInt(elCurse.getAttribute("file"));
 				String type = elCurse.getAttribute("type");
 				boolean autoupgrade = parseBooleanWithDefault(elCurse.getAttribute("autoupgrade"),false);
-				curse = new CurseProject(project, file, type, autoupgrade);
+				curse = new CurseProject(project, mcVersion, file, type, autoupgrade);
 			}
 			
 			String loadPrefix = (String) xpath.evaluate("LoadPrefix", el, XPathConstants.STRING);
@@ -272,7 +273,7 @@ public class ServerPackParser {
 			for(int i = 0; i < nl.getLength(); i++)
 			{
 				Element elSubmod = (Element)nl.item(i);
-				Submodule sm = new Submodule(getModuleV2(elSubmod, hierarchy));
+				Submodule sm = new Submodule(getModuleV2(elSubmod, mcVersion, hierarchy));
 				submodules.add(sm);
 			}
 			
@@ -389,7 +390,6 @@ public class ServerPackParser {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	public static ServerList loadFromFile(File packFile, String serverId) {
 		try {
 			ServerList server = parseDocument(readXmlFromFile(packFile), serverId, new HashMap<String, Module>(), serverId, null);
@@ -450,7 +450,7 @@ public class ServerPackParser {
 						if (nl != null && nl.getLength() > 0) {
 							for(int j = 0; j < nl.getLength(); j++) {
 								Element el = (Element) nl.item(j);
-								Module m = getModuleV2(el, null);
+								Module m = getModuleV2(el, sl.getVersion(), null);
 								sl.getPackElements().add(m);
 							}
 						}
@@ -518,6 +518,7 @@ public class ServerPackParser {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private static class MalformedModPackException extends Exception {
 		public MalformedModPackException(String hierarchy, String id, String reason) {
 			super(reason + " @ " + hierarchy + ":" + id);

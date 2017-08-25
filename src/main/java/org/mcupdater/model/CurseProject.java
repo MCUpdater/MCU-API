@@ -25,6 +25,7 @@ public class CurseProject {
 		}
 	}
 	
+	private String mcVersion;
 	private String project;
 	private int file = 0;
 	private ReleaseType type = ReleaseType.RELEASE;
@@ -33,11 +34,12 @@ public class CurseProject {
 	private String url = "";
 	private String md5 = "";
 	
-	public CurseProject(String project) {
+	public CurseProject(String project, String mcVersion) {
 		this.setProject(project);
+		this.setMCVersion(mcVersion);
 	}
-	public CurseProject(String project, int file, String typeStr, boolean autoupgrade) {
-		this(project);
+	public CurseProject(String project, String mcVersion, int file, String typeStr, boolean autoupgrade) {
+		this(project, mcVersion);
 		this.setFile(file);
 		this.setReleaseType(typeStr);
 		this.setAutoUpgrade(autoupgrade);
@@ -46,7 +48,14 @@ public class CurseProject {
 	public String toString() {
 		return "curse:"+getProject();
 	}
-		
+	
+	public String getMCVersion() {
+		return mcVersion;
+	}
+	public void setMCVersion(String mcVersion) {
+		this.mcVersion = mcVersion;
+	}
+	
 	public String getProject() {
 		return project;
 	}

@@ -7,6 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.mcupdater.api.Version;
 import org.mcupdater.model.CurseProject;
 
 public enum CurseModCache {
@@ -40,6 +41,9 @@ public enum CurseModCache {
 			}
 			
 			// TODO: re-request this, filtering by MC version on their end before proceeding
+			//if( Version.fuzzyMatch(a, b) ) {
+			//	
+			//}
 			
 			// TODO: identify and set file, then re-invoke fetchURL
 			Elements fileList = filesDoc.getElementsByClass("project-file-list-item");
