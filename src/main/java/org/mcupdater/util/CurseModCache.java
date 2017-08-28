@@ -1,8 +1,10 @@
 package org.mcupdater.util;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.logging.Level;
 
+import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,13 +16,19 @@ public enum CurseModCache {
 	INSTANCE;
 	
 	private static final String DOWNLOAD = "/download";
+	private static final String BASE_URL = "https://minecraft.curseforge.com/projects/";
 	
 	private CurseModCache() {
 		// TODO: handle a serialized data cache location (possibly lean on DownloadCache here?)
+		/**
+		 * This is primarily a performance concern, as re-scraping Curse with EVERY SINGLE LOAD
+		 * can get very slow very quickly. We don't want that, and we don't want Curse outages
+		 * to prevent people from loading the game. So caching results is important.
+		 */
 	}
 	
 	private static String baseURL(CurseProject curse) {
-		return "https://minecraft.curseforge.com/projects/"+curse.getProject();
+		return BASE_URL+curse.getProject();
 	}
 	
 	public static String fetchURL(CurseProject curse) {
@@ -123,6 +131,26 @@ public enum CurseModCache {
 		Element elMD5 = fileDoc.getElementsByClass("md5").first();
 		curse.setMD5(elMD5.text());
 		return curse.getMD5();
+	}
+	
+	public static String getTextID(long modID) {
+		final String origURL = BASE_URL+modID;
+		try {
+			final Response res = Jsoup.connect(origURL).followRedirects(true).execute();
+			final String newURL = res.url().getPath();
+			final String textID = newURL.substring(newURL.lastIndexOf('/')+1);
+			MCUpdater.apiLogger.log(Level.FINE, "Found text ID '"+textID+"' for curse:"+modID);
+			return textID;
+		} catch (IOException e) {
+			MCUpdater.apiLogger.log(Level.WARNING, "Unable to find text ID for curse:"+modID, e);
+			return Long.toString(modID);
+		}
+	}
+	public static String getTextID(CurseProject curse) {
+		final Long modID = Long.parseLong(curse.getProject());
+		final String textID = getTextID(modID);
+		curse.setProject(textID);
+		return textID;
 	}
 	
 	public static class ProjectFile {

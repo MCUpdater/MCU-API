@@ -1,6 +1,7 @@
 package org.mcupdater.util;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.model.*;
 import org.w3c.dom.Document;
@@ -225,6 +226,10 @@ public class ServerPackParser {
 				String type = elCurse.getAttribute("type");
 				boolean autoupgrade = parseBooleanWithDefault(elCurse.getAttribute("autoupgrade"),false);
 				curse = new CurseProject(project, mcVersion, file, type, autoupgrade);
+				if( StringUtils.isNumeric(project) ) {
+					// preempt this
+					CurseModCache.getTextID(curse);
+				}
 			}
 			
 			String loadPrefix = (String) xpath.evaluate("LoadPrefix", el, XPathConstants.STRING);
