@@ -44,6 +44,13 @@ public class CurseProject {
 		this.setReleaseType(typeStr);
 		this.setAutoUpgrade(autoupgrade);
 	}
+
+	public CurseProject(String project, int file, ReleaseType type, boolean autoupgrade) {
+		this.setProject(project);
+		this.setFile(file);
+		this.setReleaseType(type);
+		this.setAutoUpgrade(autoupgrade);
+	}
 	
 	public String toString() {
 		return "curse:"+getProject();

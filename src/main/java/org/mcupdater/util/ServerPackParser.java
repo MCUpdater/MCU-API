@@ -422,15 +422,25 @@ public class ServerPackParser {
 		}
 	}
 
-	public static List<RawServer> loadFromURL(String serverUrl) {
-		List<RawServer> packDefinition = new ArrayList<>();
+	public static ServerPack loadFromURL(String serverUrl) {
+		ServerPack packDefinition = null;
 		try {
 			Element docEle;
 			Document serverHeader = ServerPackParser.readXmlFromUrl(serverUrl);
+			String href;
+			try {
+				XPath xPath = XPathFactory.newInstance().newXPath();
+				String style = (String) xPath.compile("/processing-instruction('xml-stylesheet')").evaluate(serverHeader, XPathConstants.STRING);
+				int start = style.indexOf("href=\"");
+				href = style.substring(start + 6, style.indexOf("\"", start + 6));
+			} catch (StringIndexOutOfBoundsException e) {
+				href = "";
+			}
 			if (!(serverHeader == null)) {
 				Element parent = serverHeader.getDocumentElement();
 				if (parent.getNodeName().equals("ServerPack")) {
 					String mcuVersion = parent.getAttribute("version");
+					packDefinition = new ServerPack(href,mcuVersion);
 					NodeList servers = parent.getElementsByTagName("Server");
 					for (int i = 0; i < servers.getLength(); i++) {
 						docEle = (Element) servers.item(i);
@@ -459,12 +469,12 @@ public class ServerPackParser {
 								sl.getPackElements().add(m);
 							}
 						}
-						packDefinition.add(sl);
+						packDefinition.getServers().add(sl);
 					}
 				} else {
 					RawServer sl = new RawServer();
 					RawServer.fromElement("1.0", serverUrl, parent, sl);
-					packDefinition.add(sl);
+					packDefinition.getServers().add(sl);
 				}
 			} else {
 				MCUpdater.apiLogger.warning("Unable to get server information from " + serverUrl);

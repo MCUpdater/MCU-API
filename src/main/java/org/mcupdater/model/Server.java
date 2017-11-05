@@ -24,6 +24,7 @@ public abstract class Server implements Comparable<Server>{
 	String mainClass;
 	String serverClass;
 	Map<String,String> libOverrides = new HashMap<>();
+	String rawOverrides = "";
 	String launcherType = "Legacy";
 
 	public static void fromElement(String mcuVersion, String serverUrl, Element docEle, Server newSL) {
@@ -48,15 +49,17 @@ public abstract class Server implements Comparable<Server>{
 				newSL.setLauncherType("Vanilla");
 			}
 		}
-		Map<String,String> mapOverrides = new HashMap<>();
-		if (docEle.getAttribute("libOverrides").length() > 0) {
-			String[] overrides = docEle.getAttribute("libOverrides").split(" ");
-			for (String entry : overrides) {
-				String key = StringUtils.join(Arrays.copyOfRange(entry.split(":"), 0, 2), ":");
-				mapOverrides.put(key, entry);
-			}
-			newSL.setLibOverrides(mapOverrides);
+		newSL.setRawOverrides(docEle.getAttribute("libOverrides"));
+	}
+
+	private static Map<String,String> mapOverrides(String rawOverrides) {
+		Map<String,String> mapTemp = new HashMap<>();
+		String[] overrides = rawOverrides.split(" ");
+		for (String entry : overrides) {
+			String key = StringUtils.join(Arrays.copyOfRange(entry.split(":"), 0, 2), ":");
+			mapTemp.put(key, entry);
 		}
+		return mapTemp;
 	}
 
 	public String getName()
@@ -179,7 +182,7 @@ public abstract class Server implements Comparable<Server>{
 		return libOverrides;
 	}
 
-	public void setLibOverrides(Map<String, String> libOverrides) {
+	private void setLibOverrides(Map<String, String> libOverrides) {
 		this.libOverrides = libOverrides;
 	}
 
@@ -199,6 +202,18 @@ public abstract class Server implements Comparable<Server>{
 		this.serverClass = serverClass;
 	}
 
+	public String getRawOverrides() {
+		return rawOverrides;
+	}
+
+	public void setRawOverrides(String rawOverrides) {
+		this.rawOverrides = rawOverrides;
+		if (this.rawOverrides.length() > 0) {
+			setLibOverrides(mapOverrides(this.rawOverrides));
+		}
+
+	}
+
 	@Override
 	public int compareTo(Server that) {
 		return this.getName().compareTo(that.getName());
@@ -206,7 +221,7 @@ public abstract class Server implements Comparable<Server>{
 
 	@Override
 	public String toString() {
-		return this.name;
+		return (this.isFakeServer() ? "*" : " ") + "[" + this.getVersion() + "] " + this.name;
 	}
 
 }

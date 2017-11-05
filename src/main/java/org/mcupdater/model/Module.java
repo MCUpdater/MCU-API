@@ -34,7 +34,7 @@ public class Module extends GenericModule {
 		this.submodules = new ArrayList<>();
 	}
 
-    public List<ConfigFile> getConfigs()
+	public List<ConfigFile> getConfigs()
 	{
 		return configs;
 	}

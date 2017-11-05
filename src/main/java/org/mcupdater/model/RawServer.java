@@ -7,6 +7,7 @@ public class RawServer extends Server {
 
 	private List<IPackElement> packElements = new ArrayList<>();
 
+
 	public List<IPackElement> getPackElements() {
 		return packElements;
 	}
@@ -14,4 +15,5 @@ public class RawServer extends Server {
 	public void setPackElements(List<IPackElement> packElements) {
 		this.packElements = packElements;
 	}
+
 }
