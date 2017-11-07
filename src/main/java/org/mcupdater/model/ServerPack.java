@@ -3,7 +3,7 @@ package org.mcupdater.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerPack {
+public class ServerPack implements IPackElement{
 	private String xsltPath;
 	private String version;
 	private List<RawServer> servers;
@@ -40,6 +40,11 @@ public class ServerPack {
 
 	@Override
 	public String toString() {
+		return getFriendlyName();
+	}
+
+	@Override
+	public String getFriendlyName() {
 		return "ServerPack";
 	}
 }

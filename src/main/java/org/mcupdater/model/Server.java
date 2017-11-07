@@ -7,7 +7,7 @@ import org.w3c.dom.Element;
 
 import java.util.*;
 
-public abstract class Server implements Comparable<Server>{
+public abstract class Server implements Comparable<Server>, IPackElement{
 
 	protected String name;
 	String packUrl;
@@ -220,8 +220,13 @@ public abstract class Server implements Comparable<Server>{
 	}
 
 	@Override
-	public String toString() {
+	public String getFriendlyName() {
 		return (this.isFakeServer() ? "*" : " ") + "[" + this.getVersion() + "] " + this.name;
+	}
+
+	@Override
+	public String toString() {
+		return getFriendlyName();
 	}
 
 }
