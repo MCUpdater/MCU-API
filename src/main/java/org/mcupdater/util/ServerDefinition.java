@@ -384,4 +384,9 @@ public class ServerDefinition {
 		Collections.sort(values, new ModuleComparator(ModuleComparator.Mode.IMPORTANCE));
 		return values;
 	}
+
+	public void addForge(String mcVersion, String forgeVersion) {
+		this.addImport(new Import("http://files.mcupdater.com/example/forge.php?mc=" + mcVersion + "&forge=" + forgeVersion, "forge"));
+		this.addModule(new Module("Minecraft Forge", "forge-" + forgeVersion, new ArrayList<PrioritizedURL>(), null, "", true, ModType.Override, 0, false, false, true, "", new ArrayList<ConfigFile>(), "BOTH", "", new HashMap<String, String>(), "", "", new ArrayList<Submodule>(), ""));
+	}
 }
