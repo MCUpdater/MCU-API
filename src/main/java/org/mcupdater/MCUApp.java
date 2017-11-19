@@ -1,5 +1,6 @@
 package org.mcupdater;
 
+import org.mcupdater.auth.AuthManager;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.mojang.MinecraftVersion;

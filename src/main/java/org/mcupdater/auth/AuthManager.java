@@ -1,4 +1,4 @@
-package org.mcupdater;
+package org.mcupdater.auth;
 
 import org.mcupdater.settings.Profile;
 

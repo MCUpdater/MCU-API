@@ -15,9 +15,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-//import java.io.BufferedOutputStream;
-//import java.util.ArrayList;
-
 public class Archive {
 
 	public static void extractZip(File archive, File destination) {
