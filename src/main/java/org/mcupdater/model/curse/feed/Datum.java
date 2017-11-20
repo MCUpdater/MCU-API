@@ -81,7 +81,7 @@ public class Datum {
     private String primaryCategoryAvatarUrl;
     @SerializedName("Likes")
     @Expose
-    private Integer likes;
+    private Long likes;
     @SerializedName("CategorySection")
     @Expose
     private CategorySection categorySection;
@@ -288,11 +288,11 @@ public class Datum {
         this.primaryCategoryAvatarUrl = primaryCategoryAvatarUrl;
     }
 
-    public Integer getLikes() {
+    public Long getLikes() {
         return likes;
     }
 
-    public void setLikes(Integer likes) {
+    public void setLikes(Long likes) {
         this.likes = likes;
     }
 
