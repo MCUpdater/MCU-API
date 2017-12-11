@@ -8,11 +8,17 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
-public class Datum {
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="PROJECTS")
+public class Project {
 
     @SerializedName("Id")
     @Expose
-    private Integer id;
+    private Long id;
     @SerializedName("Name")
     @Expose
     private String name;
@@ -104,11 +110,11 @@ public class Datum {
     @Expose
     private Integer gamePopularityRank;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -367,10 +373,10 @@ public class Datum {
         if (other == this) {
             return true;
         }
-        if ((other instanceof Datum) == false) {
+        if ((other instanceof Project) == false) {
             return false;
         }
-        Datum rhs = ((Datum) other);
+        Project rhs = ((Project) other);
         return new EqualsBuilder().append(id, rhs.id).append(name, rhs.name).append(authors, rhs.authors).append(attachments, rhs.attachments).append(webSiteURL, rhs.webSiteURL).append(gameId, rhs.gameId).append(summary, rhs.summary).append(defaultFileId, rhs.defaultFileId).append(commentCount, rhs.commentCount).append(downloadCount, rhs.downloadCount).append(rating, rhs.rating).append(installCount, rhs.installCount).append(iconId, rhs.iconId).append(latestFiles, rhs.latestFiles).append(categories, rhs.categories).append(primaryAuthorName, rhs.primaryAuthorName).append(externalUrl, rhs.externalUrl).append(status, rhs.status).append(stage, rhs.stage).append(donationUrl, rhs.donationUrl).append(primaryCategoryId, rhs.primaryCategoryId).append(primaryCategoryName, rhs.primaryCategoryName).append(primaryCategoryAvatarUrl, rhs.primaryCategoryAvatarUrl).append(likes, rhs.likes).append(categorySection, rhs.categorySection).append(packageType, rhs.packageType).append(avatarUrl, rhs.avatarUrl).append(gameVersionLatestFiles, rhs.gameVersionLatestFiles).append(isFeatured, rhs.isFeatured).append(popularityScore, rhs.popularityScore).append(gamePopularityRank, rhs.gamePopularityRank).isEquals();
     }
 

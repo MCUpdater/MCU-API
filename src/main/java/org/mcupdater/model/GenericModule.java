@@ -5,10 +5,7 @@ import org.mcupdater.util.MCUpdater;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.logging.Level;
 
 public class GenericModule implements IPackElement {
@@ -102,6 +99,7 @@ public class GenericModule implements IPackElement {
 			}
 		}
 		// iterate any manually specified url's
+		Collections.sort(urls, new PriorityComparator());
 		for (PrioritizedURL entry : urls) {
 			try {
 				result.add(new URL(entry.getUrl()));

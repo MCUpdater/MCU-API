@@ -533,12 +533,7 @@ public class MCUpdater {
 				continue;
 			}
 			List<URL> configUrl = new ArrayList<>();
-			try {
-				configUrl.add(new URL(cfEntry.getUrl()));
-			} catch (MalformedURLException e) {
-				++errorCount;
-				apiLogger.log(Level.SEVERE, "General Error", e);
-			}
+			configUrl.addAll(cfEntry.getUrls());
 			generalFiles.add(new Downloadable(cfEntry.getPath(), cfEntry.getPath(), cfEntry.getMD5(), 10000, configUrl));
 		}
 

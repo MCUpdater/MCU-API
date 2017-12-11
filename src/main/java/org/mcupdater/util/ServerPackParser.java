@@ -355,11 +355,25 @@ public class ServerPackParser {
 	
 	private static ConfigFile getConfigFileV1(Element cfEl)
 	{
-		String url = getTextValue(cfEl,"URL");
-		String path = getTextValue(cfEl,"Path");
-		String md5 = getTextValue(cfEl,"MD5");
-		boolean noOverwrite = getBooleanValue(cfEl, "NoOverwrite");
-		return new ConfigFile(url,path,noOverwrite,md5);
+		try {
+			XPath xpath = XPathFactory.newInstance().newXPath();
+			List<PrioritizedURL> urls = new ArrayList<>();
+			NodeList nl;
+			nl = (NodeList) xpath.evaluate("URL", cfEl, XPathConstants.NODESET);
+			for (int i = 0; i < nl.getLength(); i++) {
+				Element elURL = (Element) nl.item(i);
+				String url = elURL.getTextContent();
+				int priority = parseInt(elURL.getAttribute("priority"));
+				urls.add(new PrioritizedURL(url, priority));
+			}
+			String path = getTextValue(cfEl, "Path");
+			String md5 = getTextValue(cfEl, "MD5");
+			boolean noOverwrite = getBooleanValue(cfEl, "NoOverwrite");
+			return new ConfigFile(urls, path, noOverwrite, md5);
+		} catch (XPathExpressionException e) {
+			apiLogger.log(Level.SEVERE, e.getMessage(), e);
+			return null;
+		}
 	}
 	
 	private static int getIntValue(Element ele, String tagName) {

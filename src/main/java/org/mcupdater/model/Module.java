@@ -60,5 +60,9 @@ public class Module extends GenericModule {
 	public String getFriendlyName() {
 		return "Module: " + getName();
 	}
+
+	public static Module createBlankModule() {
+		return new Module("New Mod","newmod",new ArrayList<PrioritizedURL>(),null,"",false,ModType.Regular, 0, false, false, false, "", new ArrayList<ConfigFile>(), "BOTH", "", null, "", "", new ArrayList<Submodule>(), null);
+	}
 }
 

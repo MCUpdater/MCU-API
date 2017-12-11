@@ -124,9 +124,9 @@ public class ServerDefinition {
 					if (moduleEntry.getCurseProject() != null) {
 						writer.write("\t\t\t<Curse" +
 								" project=\"" + moduleEntry.getCurseProject().getProject() + "\"" +
-								" file=" + Integer.toString(moduleEntry.getCurseProject().getFile()) +
+								" file=\"" + Integer.toString(moduleEntry.getCurseProject().getFile()) + "\"" +
 								" type=\"" + moduleEntry.getCurseProject().getReleaseType().toString() + "\"" +
-								" autoupgrade=\"" + Boolean.toString(moduleEntry.getCurseProject().getAutoUpgrade()) + "\">");
+								" autoupgrade=\"" + Boolean.toString(moduleEntry.getCurseProject().getAutoUpgrade()) + "\"/>");
 						writer.newLine();
 					}
 					if (!moduleEntry.getLoadPrefix().isEmpty()) {
@@ -254,8 +254,10 @@ public class ServerDefinition {
 				for (ConfigFile config : moduleEntry.getConfigs()) {
 					writer.write("\t\t\t<ConfigFile>");
 					writer.newLine();
-					writer.write("\t\t\t\t<URL>" + xmlEscape(config.getUrl()) + "</URL>");
-					writer.newLine();
+					for (PrioritizedURL url : config.getPrioritizedUrls()) {
+						writer.write("\t\t\t\t<URL priority=\"" + url.getPriority() + "\">" + xmlEscape(url.getUrl()) + "</URL>");
+						writer.newLine();
+					}
 					writer.write("\t\t\t\t<Path>" + xmlEscape(config.getPath()) + "</Path>");
 					writer.newLine();
 					writer.write("\t\t\t\t<NoOverwrite>" + config.isNoOverwrite() + "</NoOverwrite>");
