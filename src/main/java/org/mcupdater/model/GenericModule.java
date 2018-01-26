@@ -5,10 +5,7 @@ import org.mcupdater.util.MCUpdater;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.logging.Level;
 
 public class GenericModule implements IPackElement {
@@ -20,18 +17,13 @@ public class GenericModule implements IPackElement {
 	protected String path = "";
 	protected String depends = "";
 	protected boolean required = false;
-	//protected boolean inJar = false;
 	protected int order = 1;
 	protected boolean keepMeta = false;
-	//protected boolean extract = false;
 	protected boolean inRoot = false;
 	protected boolean isDefault = false;
-	//protected boolean coreMod = false;
-	//protected boolean litemod = false;
 	protected String md5 = "";
 	protected ModSide side = ModSide.BOTH;
 	protected HashMap<String,String> meta = new HashMap<>();
-	//protected boolean isLibrary = false;
 	protected String launchArgs = "";
 	protected String jreArgs = "";
 	protected ModType modType = ModType.Regular;
@@ -79,7 +71,7 @@ public class GenericModule implements IPackElement {
 		}
 	}
 
-	private void setJarOrder(int jarOrder) {
+	public void setJarOrder(int jarOrder) {
 		this.order = jarOrder;
 	}
 
@@ -107,6 +99,7 @@ public class GenericModule implements IPackElement {
 			}
 		}
 		// iterate any manually specified url's
+		Collections.sort(urls, new PriorityComparator());
 		for (PrioritizedURL entry : urls) {
 			try {
 				result.add(new URL(entry.getUrl()));
@@ -146,26 +139,7 @@ public class GenericModule implements IPackElement {
 	{
 		this.required=required;
 	}
-	
-/*
-	public boolean getInJar()
-	{
-		return inJar;
-	}
-	
-	public void setInJar(boolean inJar)
-	{
-		this.inJar=inJar;
-	}
 
-	public boolean getExtract() {
-		return extract;
-	}
-
-	public void setExtract(boolean extract) {
-		this.extract = extract;
-	}
-*/
 	public boolean getInRoot() {
 		return inRoot;
 	}
@@ -202,15 +176,6 @@ public class GenericModule implements IPackElement {
 		this.isDefault = isDefault;
 	}
 
-/*
-	public boolean getCoreMod() {
-		return coreMod;
-	}
-
-	public void setCoreMod(boolean coreMod) {
-		this.coreMod = coreMod;
-	}
-*/
 	public String getId() {
 		return id;
 	}
@@ -227,10 +192,6 @@ public class GenericModule implements IPackElement {
 		this.depends = depends;
 	}
 	
-	public String toDebugString() {
-		return "{id="+id+";name="+name+";type="+modType+";md5="+md5+";}";
-	}
-
 	public ModSide getSide() {
 		return side;
 	}
@@ -289,15 +250,7 @@ public class GenericModule implements IPackElement {
 	public void setLaunchArgs(String launchArgs) {
 		this.launchArgs = launchArgs;
 	}
-/*
-	public boolean getIsLibrary() {
-		return isLibrary;
-	}
 
-	public void setIsLibrary(boolean isLibrary) {
-		this.isLibrary = isLibrary;
-	}
-*/
 	public List<PrioritizedURL> getPrioritizedUrls() {
 		return this.urls;
 	}
@@ -369,6 +322,10 @@ public class GenericModule implements IPackElement {
 
 	public boolean isSideValid(ModSide testSide) {
 		return this.side.equals(ModSide.BOTH) || this.side.equals(testSide);
+	}
+
+	public String toDebugString() {
+		return "{id="+id+";name="+name+";type="+modType+";md5="+md5+";}";
 	}
 
 	@Override

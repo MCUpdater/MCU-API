@@ -13,6 +13,7 @@ import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
 import org.mcupdater.api.Version;
 import org.mcupdater.certs.SSLExpansion;
+import org.mcupdater.database.DatabaseManager;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.downloadlib.TaskableExecutor;
@@ -46,13 +47,13 @@ import java.util.logging.Logger;
 
 public class MCUpdater {
 	private final Path MCFolder;
+	private DatabaseManager dbManager;
 	private Path archiveFolder;
 	private Path instanceRoot;
 	private MCUApp parent;
 	private final String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
-	//private final Map<String,String> versionMap = new HashMap<>();
 	public static Logger apiLogger;
 	private int timeoutLength = 5000;
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -150,6 +151,7 @@ public class MCUpdater {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		dbManager = new DatabaseManager(archiveFolder);
 		/*
 		try {
 			long start = System.currentTimeMillis();
@@ -531,12 +533,7 @@ public class MCUpdater {
 				continue;
 			}
 			List<URL> configUrl = new ArrayList<>();
-			try {
-				configUrl.add(new URL(cfEntry.getUrl()));
-			} catch (MalformedURLException e) {
-				++errorCount;
-				apiLogger.log(Level.SEVERE, "General Error", e);
-			}
+			configUrl.addAll(cfEntry.getUrls());
 			generalFiles.add(new Downloadable(cfEntry.getPath(), cfEntry.getPath(), cfEntry.getMD5(), 10000, configUrl));
 		}
 
@@ -786,6 +783,10 @@ public class MCUpdater {
 			}
 		}
 		return Hex.encodeHexString(hash.toByteArray());
+	}
+
+	public DatabaseManager getDbManager() {
+		return dbManager;
 	}
 }
 

@@ -12,7 +12,7 @@ public class LatestFile {
 
     @SerializedName("Id")
     @Expose
-    private Integer id;
+    private Long id;
     @SerializedName("FileName")
     @Expose
     private String fileName;
@@ -36,7 +36,7 @@ public class LatestFile {
     private Boolean isAlternate;
     @SerializedName("AlternateFileId")
     @Expose
-    private Integer alternateFileId;
+    private Long alternateFileId;
     @SerializedName("Dependencies")
     @Expose
     private List<Dependency> dependencies = new ArrayList<Dependency>();
@@ -48,16 +48,16 @@ public class LatestFile {
     private List<Module> modules = new ArrayList<Module>();
     @SerializedName("PackageFingerprint")
     @Expose
-    private Integer packageFingerprint;
+    private Long packageFingerprint;
     @SerializedName("GameVersion")
     @Expose
     private List<String> gameVersion = new ArrayList<String>();
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -117,11 +117,11 @@ public class LatestFile {
         this.isAlternate = isAlternate;
     }
 
-    public Integer getAlternateFileId() {
+    public Long getAlternateFileId() {
         return alternateFileId;
     }
 
-    public void setAlternateFileId(Integer alternateFileId) {
+    public void setAlternateFileId(Long alternateFileId) {
         this.alternateFileId = alternateFileId;
     }
 
@@ -149,11 +149,11 @@ public class LatestFile {
         this.modules = modules;
     }
 
-    public Integer getPackageFingerprint() {
+    public Long getPackageFingerprint() {
         return packageFingerprint;
     }
 
-    public void setPackageFingerprint(Integer packageFingerprint) {
+    public void setPackageFingerprint(Long packageFingerprint) {
         this.packageFingerprint = packageFingerprint;
     }
 

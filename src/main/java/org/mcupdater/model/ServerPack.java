@@ -1,8 +1,18 @@
 package org.mcupdater.model;
 
-public class ServerPack {
+import java.util.ArrayList;
+import java.util.List;
+
+public class ServerPack implements IPackElement{
 	private String xsltPath;
 	private String version;
+	private List<RawServer> servers;
+
+	public ServerPack(String xsltPath, String version) {
+		this.xsltPath = xsltPath;
+		this.version = version;
+		this.servers = new ArrayList<>();
+	}
 
 	public String getXsltPath() {
 		return xsltPath;
@@ -20,8 +30,21 @@ public class ServerPack {
 		this.version = version;
 	}
 
+	public List<RawServer> getServers() {
+		return servers;
+	}
+
+	public void setServers(List<RawServer> servers) {
+		this.servers = servers;
+	}
+
 	@Override
 	public String toString() {
+		return getFriendlyName();
+	}
+
+	@Override
+	public String getFriendlyName() {
 		return "ServerPack";
 	}
 }

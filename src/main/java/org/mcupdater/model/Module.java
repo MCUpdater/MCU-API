@@ -34,7 +34,7 @@ public class Module extends GenericModule {
 		this.submodules = new ArrayList<>();
 	}
 
-    public List<ConfigFile> getConfigs()
+	public List<ConfigFile> getConfigs()
 	{
 		return configs;
 	}
@@ -59,6 +59,10 @@ public class Module extends GenericModule {
 	@Override
 	public String getFriendlyName() {
 		return "Module: " + getName();
+	}
+
+	public static Module createBlankModule() {
+		return new Module("New Mod","newmod",new ArrayList<PrioritizedURL>(),null,"",false,ModType.Regular, 0, false, false, false, "", new ArrayList<ConfigFile>(), "BOTH", "", null, "", "", new ArrayList<Submodule>(), null);
 	}
 }
 

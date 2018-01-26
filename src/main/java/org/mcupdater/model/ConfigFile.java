@@ -2,32 +2,63 @@ package org.mcupdater.model;
 
 import org.mcupdater.util.MCUpdater;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 public class ConfigFile implements IPackElement {
-	private String url;
+	protected List<PrioritizedURL> urls = new ArrayList<>();
 	private String path;
 	private String md5;
 	private boolean noOverwrite;
 	
 	public ConfigFile(String url, String path, boolean noOverwrite, String md5)
 	{
-		setUrl(url);
+		addUrl(new PrioritizedURL(url,0));
 		setPath(path);
 		setNoOverwrite(noOverwrite);
 		setMD5(md5);
 	}
-	
-	public String getUrl()
-	{
-		return url;
+
+	public ConfigFile(List<PrioritizedURL> urls, String path, boolean noOverwrite, String md5) {
+		setUrls(urls);
+		setPath(path);
+		setNoOverwrite(noOverwrite);
+		setMD5(md5);
 	}
-	
-	public void setUrl(String url)
+
+	public List<URL> getUrls()
 	{
-		this.url = url;
+		List<URL> result = new ArrayList<>();
+		Collections.sort(urls, new PriorityComparator());
+		for (PrioritizedURL entry : urls) {
+			try {
+				result.add(new URL(entry.getUrl()));
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
 	}
-	
+
+	public void setUrls(List<PrioritizedURL> urls)
+	{
+		this.urls = urls;
+	}
+
+	public void addUrl(PrioritizedURL url)
+	{
+		this.urls.add(url);
+	}
+
+	public List<PrioritizedURL> getPrioritizedUrls() {
+		return this.urls;
+	}
+
 	public String getPath()
 	{
 		return path;

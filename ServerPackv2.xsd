@@ -121,7 +121,15 @@
 
 	<xs:complexType name="ConfigType">
 		<xs:sequence>
-			<xs:element type="xs:anyURI" name="URL" />
+			<xs:element name="URL" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:anyURI">
+							<xs:attribute type="xs:integer" name="priority" />
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
 			<xs:element type="xs:string" name="Path" />
 			<xs:element type="xs:boolean" name="NoOverwrite" minOccurs="0"/>
 			<xs:element type="xs:string" name="MD5" />

@@ -8,7 +8,7 @@ import org.mcupdater.util.ServerStatus;
 public class TestPing {
 	public static void main(String[] args) {
 		try {
-			ServerStatus status = ServerStatus.getStatus("pack.glitchshelter.com");
+			ServerStatus status = ServerStatus.getStatus("mc.imaginescape.tk");
 			System.out.print(status.getMOTD() + "(" + status.getPlayers() + "/" + status.getMaxPlayers() + ")");
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -48,187 +48,248 @@ public class ServerDefinition {
 		configExceptions.put("resources", "ResourceLoader");
 	}
 
-	public void writeServerPack(String stylesheet, Path outputFile, List<Module> sortedModules, Boolean onlyOverrides) {
+	public void writeServerPack(String stylesheet, Path outputFile, List<Module> moduleList, Boolean onlyOverrides) {
 		try {
+			if (hasLitemods && !hasMod(moduleList, "liteloader")) {
+				moduleList.add(new Module("LiteLoader", "liteloader", Arrays.asList(new PrioritizedURL("http://dl.liteloader.com/versions/com/mumfrey/liteloader/" + this.getServerEntry().getVersion() + "/liteloader-" + this.getServerEntry().getVersion() + ".jar", 0)), null, "", false, ModType.Library, 100, false, false, true, "", null, "CLIENT", "", null, "--tweakClass com.mumfrey.liteloader.launch.LiteLoaderTweaker", "", null, ""));
+				moduleList = sortMods(moduleList);
+			}
+
 			BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-			fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-			fileWriter.newLine();
-			if (!stylesheet.isEmpty()) {
-				fileWriter.write("<?xml-stylesheet href=\"" + xmlEscape(stylesheet) + "\" type=\"text/xsl\" ?>");
-				fileWriter.newLine();
-			}
-			fileWriter.write("<ServerPack version=\"" + Version.API_VERSION + "\" xmlns=\"http://www.mcupdater.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.mcupdater.com http://files.mcupdater.com/ServerPackv2.xsd\">");
-			fileWriter.newLine();
-			fileWriter.write("\t<Server id=\"" + xmlEscape(this.getServerEntry().getServerId()) +
-					"\" name=\"" + xmlEscape(this.getServerEntry().getName()) +
-					"\" newsUrl=\"" + xmlEscape(this.getServerEntry().getNewsUrl()) +
-					"\" version=\"" + xmlEscape(this.getServerEntry().getVersion()) +
-					"\" mainClass=\"" + xmlEscape(this.getServerEntry().getMainClass()) +
-					(this.getServerEntry().getAddress().isEmpty() ? "" : ("\" serverAddress=\"" + xmlEscape(this.getServerEntry().getAddress()))) +
-					(this.getServerEntry().getIconUrl().isEmpty() ? "" : ("\" iconUrl=\"" + xmlEscape(this.getServerEntry().getIconUrl()))) +
-					"\" revision=\"" + xmlEscape(this.getServerEntry().getRevision()) +
-					"\" autoConnect=\"" + Boolean.toString(this.getServerEntry().isAutoConnect()) +
-					"\">");
-			fileWriter.newLine();
-			for (Import importEntry : this.getImports()) {
-				fileWriter.write("\t\t<Import" + (importEntry.getUrl().isEmpty() ? ">" : (" url=\"" + xmlEscape(importEntry.getUrl())) + "\">") + importEntry.getServerId() + "</Import>");
-				fileWriter.newLine();
-			}
-			if (hasLitemods && !onlyOverrides) {
-				fileWriter.write("\t\t<Module name=\"LiteLoader\" id=\"liteloader\">");
-				fileWriter.newLine();
-				fileWriter.write("\t\t\t<URL>http://dl.liteloader.com/versions/com/mumfrey/liteloader/" + this.getServerEntry().getVersion() + "/liteloader-" + this.getServerEntry().getVersion() + ".jar</URL>");
-				fileWriter.newLine();
-				fileWriter.write("\t\t\t<Required isDefault=\"true\">false</Required>");
-				fileWriter.newLine();
-				fileWriter.write("\t\t\t<ModType order=\"100\" launchArgs=\"--tweakClass com.mumfrey.liteloader.launch.LiteLoaderTweaker\">Library</ModType>");
-				fileWriter.newLine();
-				fileWriter.write("\t\t\t<MD5></MD5>");
-				fileWriter.newLine();
-				fileWriter.write("\t\t</Module>");
-				fileWriter.newLine();
-			}
-			for (Module moduleEntry : sortedModules) {
-				fileWriter.write("\t\t<Module name=\"" + xmlEscape(moduleEntry.getName()) + "\" id=\"" + moduleEntry.getId() + "\" depends=\"" + moduleEntry.getDepends() + "\" side=\"" + moduleEntry.getSide() + "\">");
-				fileWriter.newLine();
-				if (!onlyOverrides) {
-					for (PrioritizedURL url : moduleEntry.getPrioritizedUrls()) {
-						fileWriter.write("\t\t\t<URL priority=\"" + url.getPriority() + "\">" + xmlEscape(url.getUrl()) + "</URL>");
-						fileWriter.newLine();
-					}
-					if (!moduleEntry.getPath().isEmpty()) {
-						fileWriter.write("\t\t\t<ModPath>" + xmlEscape(moduleEntry.getPath()) + "</ModPath>");
-						fileWriter.newLine();
-					}
-					fileWriter.write("\t\t\t<Size>" + Long.toString(moduleEntry.getFilesize()) + "</Size>");
-					fileWriter.newLine();
-					fileWriter.write("\t\t\t<Required");
-					if (!moduleEntry.getRequired() && moduleEntry.getIsDefault()) {
-						fileWriter.write(" isDefault=\"true\"");
-					}
-					fileWriter.write(">" + (moduleEntry.getRequired() ? "true" : "false") + "</Required>");
-					fileWriter.newLine();
-					fileWriter.write("\t\t\t<ModType");
-					if (moduleEntry.getInRoot()) {
-						fileWriter.write(" inRoot=\"true\"");
-					}
-					if (moduleEntry.getJarOrder() > 0) {
-						fileWriter.write(" order=\"" + moduleEntry.getJarOrder() + "\"");
-					}
-					if (moduleEntry.getKeepMeta()) {
-						fileWriter.write(" keepMeta=\"true\"");
-					}
-					if (!moduleEntry.getLaunchArgs().isEmpty()) {
-						fileWriter.write(" launchArgs=\"" + xmlEscape(moduleEntry.getLaunchArgs()) + "\"");
-					}
-					if (!moduleEntry.getJreArgs().isEmpty()) {
-						fileWriter.write(" jreArgs=\"" + xmlEscape(moduleEntry.getJreArgs()));
-					}
-					fileWriter.write(">" + moduleEntry.getModType().toString() + "</ModType>");
-					fileWriter.newLine();
-					if (!moduleEntry.getMD5().isEmpty()) {
-						fileWriter.write("\t\t\t<MD5>" + moduleEntry.getMD5() + "</MD5>");
-						fileWriter.newLine();
-					}
-					if (moduleEntry.getMeta().size() > 0) {
-						fileWriter.write("\t\t\t<Meta>");
-						fileWriter.newLine();
-						for (Map.Entry<String, String> metaEntry : moduleEntry.getMeta().entrySet()) {
-							fileWriter.write("\t\t\t\t<" + xmlEscape(metaEntry.getKey()) + ">" + xmlEscape(metaEntry.getValue()) + "</" + xmlEscape(metaEntry.getKey()) + ">");
-							fileWriter.newLine();
-						}
-						fileWriter.write("\t\t\t</Meta>");
-						fileWriter.newLine();
-					}
-					for (GenericModule submodule : moduleEntry.getSubmodules()) {
-						fileWriter.write("\t\t\t<Submodule name=\"" + xmlEscape(submodule.getName()) + "\" id=\"" + submodule.getId() + "\" depends=\"" + submodule.getDepends() + "\" side=\"" + submodule.getSide() + "\">");
-						fileWriter.newLine();
-						for (PrioritizedURL url : submodule.getPrioritizedUrls()) {
-							fileWriter.write("\t\t\t\t<URL priority=\"" + url.getPriority() + "\">" + xmlEscape(url.getUrl()) + "</URL>");
-							fileWriter.newLine();
-						}
-						fileWriter.write("\t\t\t\t<Required");
-						if (!submodule.getRequired() && submodule.getIsDefault()) {
-							fileWriter.write(" isDefault=\"true\"");
-						}
-						fileWriter.write(">" + (submodule.getRequired() ? "true" : "false") + "</Required>");
-						fileWriter.newLine();
-						fileWriter.write("<ModType");
-						if (submodule.getInRoot()) {
-							fileWriter.write(" inRoot=\"true\"");
-						}
-						if (submodule.getJarOrder() > 0) {
-							fileWriter.write(" order=\"" + submodule.getJarOrder() + "\"");
-						}
-						if (submodule.getKeepMeta()) {
-							fileWriter.write(" keepMeta=\"true\"");
-						}
-						if (!submodule.getLaunchArgs().isEmpty()) {
-							fileWriter.write(" launchArgs=\"" + xmlEscape(submodule.getLaunchArgs()) + "\"");
-						}
-						if (!submodule.getJreArgs().isEmpty()) {
-							fileWriter.write(" jreArgs=\"" + xmlEscape(submodule.getJreArgs()));
-						}
-						fileWriter.write(">" + submodule.getModType().toString() + "</ModType>");
-						fileWriter.newLine();
-						fileWriter.write("\t\t\t\t<MD5>" + submodule.getMD5() + "</MD5>");
-						fileWriter.newLine();
-						if (submodule.getMeta().size() > 0) {
-							fileWriter.write("\t\t\t\t<Meta>");
-							fileWriter.newLine();
-							for (Map.Entry<String, String> metaEntry : submodule.getMeta().entrySet()) {
-								fileWriter.write("\t\t\t\t\t<" + xmlEscape(metaEntry.getKey()) + ">" + xmlEscape(metaEntry.getValue()) + "</" + xmlEscape(metaEntry.getKey()) + ">");
-								fileWriter.newLine();
-							}
-							fileWriter.write("\t\t\t\t</Meta>");
-							fileWriter.newLine();
-						}
-						fileWriter.write("\t\t\t</Submodule>");
-						fileWriter.newLine();
-					}
-				} else {
-					fileWriter.write("\t\t\t<Required");
-					if (!moduleEntry.getRequired() && moduleEntry.getIsDefault()) {
-						fileWriter.write(" isDefault=\"true\"");
-					}
-					fileWriter.write(">" + (moduleEntry.getRequired() ? "true" : "false") + "</Required>");
-					fileWriter.newLine();
-					fileWriter.write("\t\t\t<ModType>Override</ModType>");
-					fileWriter.newLine();
-				}
-				for (ConfigFile config : moduleEntry.getConfigs()) {
-					fileWriter.write("\t\t\t<ConfigFile>");
-					fileWriter.newLine();
-					fileWriter.write("\t\t\t\t<URL>" + xmlEscape(config.getUrl()) + "</URL>");
-					fileWriter.newLine();
-					fileWriter.write("\t\t\t\t<Path>" + xmlEscape(config.getPath()) + "</Path>");
-					fileWriter.newLine();
-					fileWriter.write("\t\t\t\t<NoOverwrite>" + config.isNoOverwrite() + "</NoOverwrite>");
-					fileWriter.newLine();
-					fileWriter.write("\t\t\t\t<MD5>" + xmlEscape(config.getMD5()) + "</MD5>");
-					fileWriter.newLine();
-					fileWriter.write("\t\t\t</ConfigFile>");
-					fileWriter.newLine();
-				}
-				fileWriter.write("\t\t</Module>");
-				fileWriter.newLine();
-			}
-			fileWriter.write("\t</Server>");
-			fileWriter.newLine();
-			fileWriter.write("</ServerPack>");
-			fileWriter.newLine();
+			generateServerPackHeaderXML(stylesheet, fileWriter);
+			generateServerHeaderXML(this.getServerEntry(), fileWriter);
+			generateServerDetailXML(fileWriter, this.imports, moduleList, onlyOverrides);
+			generateServerFooterXML(fileWriter);
+			generateServerPackFooterXML(fileWriter);
 			fileWriter.close();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private String xmlEscape(String input) {
+	private boolean hasMod(List<Module> moduleList, String modId) {
+		for (Module entry : moduleList) {
+			if (entry.getId().equals(modId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static void generateServerHeaderXML(Server server, BufferedWriter writer) throws IOException {
+		writer.write("\t<Server id=\"" + xmlEscape(server.getServerId()) +
+				"\" abstract=\"" + Boolean.toString(server.isFakeServer()) +
+				"\" name=\"" + xmlEscape(server.getName()) +
+				(server.getNewsUrl().isEmpty() ? "" : ("\" newsUrl=\"" + xmlEscape(server.getNewsUrl()))) +
+				(server.getIconUrl().isEmpty() ? "" : ("\" iconUrl=\"" + xmlEscape(server.getIconUrl()))) +
+				"\" version=\"" + xmlEscape(server.getVersion()) +
+				(server.getAddress().isEmpty() ? "" : ("\" serverAddress=\"" + xmlEscape(server.getAddress()))) +
+				"\" generateList=\"" + Boolean.toString(server.isGenerateList()) +
+				"\" autoConnect=\"" + Boolean.toString(server.isAutoConnect()) +
+				"\" revision=\"" + xmlEscape(server.getRevision()) +
+				"\" mainClass=\"" + xmlEscape(server.getMainClass()) +
+				"\" launcherType=\"" + server.getLauncherType() +
+				(server.getLibOverrides().size() == 0 ? "" : ("\" libOverrides=\"" + StringUtils.join(server.getLibOverrides().values()," "))) +
+				(server.getServerClass_Raw().isEmpty() ? "" : ("\" serverClass=\"" + server.getServerClass_Raw())) +
+				"\">");
+		writer.newLine();
+	}
+
+	public static void generateServerPackHeaderXML(String stylesheet, BufferedWriter writer) throws IOException {
+		writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		writer.newLine();
+		if (!stylesheet.isEmpty()) {
+			writer.write("<?xml-stylesheet href=\"" + xmlEscape(stylesheet) + "\" type=\"text/xsl\" ?>");
+			writer.newLine();
+		}
+		writer.write("<ServerPack version=\"" + Version.API_VERSION + "\" xmlns=\"http://www.mcupdater.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.mcupdater.com http://files.mcupdater.com/ServerPackv2.xsd\">");
+		writer.newLine();
+	}
+
+	public static void generateServerDetailXML(BufferedWriter writer, List<Import> importsList, List<Module> moduleList, Boolean onlyOverrides) throws IOException {
+
+			for (Import importEntry : importsList) {
+				writer.write("\t\t<Import" + (importEntry.getUrl().isEmpty() ? ">" : (" url=\"" + xmlEscape(importEntry.getUrl())) + "\">") + importEntry.getServerId() + "</Import>");
+				writer.newLine();
+			}
+			for (Module moduleEntry : moduleList) {
+				writer.write("\t\t<Module name=\"" + xmlEscape(moduleEntry.getName()) + "\" id=\"" + moduleEntry.getId() + "\" depends=\"" + moduleEntry.getDepends() + "\" side=\"" + moduleEntry.getSide() + "\">");
+				writer.newLine();
+				if (!onlyOverrides) {
+					for (PrioritizedURL url : moduleEntry.getPrioritizedUrls()) {
+						writer.write("\t\t\t<URL priority=\"" + url.getPriority() + "\">" + xmlEscape(url.getUrl()) + "</URL>");
+						writer.newLine();
+					}
+					if (moduleEntry.getCurseProject() != null) {
+						writer.write("\t\t\t<Curse" +
+								" project=\"" + moduleEntry.getCurseProject().getProject() + "\"" +
+								" file=\"" + Integer.toString(moduleEntry.getCurseProject().getFile()) + "\"" +
+								" type=\"" + moduleEntry.getCurseProject().getReleaseType().toString() + "\"" +
+								" autoupgrade=\"" + Boolean.toString(moduleEntry.getCurseProject().getAutoUpgrade()) + "\"/>");
+						writer.newLine();
+					}
+					if (!moduleEntry.getLoadPrefix().isEmpty()) {
+						writer.write("\t\t\t<LoadPrefix>" + xmlEscape(moduleEntry.getLoadPrefix()) + "</LoadPrefix>");
+						writer.newLine();
+					}
+					if (!moduleEntry.getPath().isEmpty()) {
+						writer.write("\t\t\t<ModPath>" + xmlEscape(moduleEntry.getPath()) + "</ModPath>");
+						writer.newLine();
+					}
+					writer.write("\t\t\t<Size>" + Long.toString(moduleEntry.getFilesize()) + "</Size>");
+					writer.newLine();
+					writer.write("\t\t\t<Required");
+					if (!moduleEntry.getRequired() && moduleEntry.getIsDefault()) {
+						writer.write(" isDefault=\"true\"");
+					}
+					writer.write(">" + (moduleEntry.getRequired() ? "true" : "false") + "</Required>");
+					writer.newLine();
+					writer.write("\t\t\t<ModType");
+					if (moduleEntry.getInRoot()) {
+						writer.write(" inRoot=\"true\"");
+					}
+					if (moduleEntry.getJarOrder() > 0 && moduleEntry.getModType().equals(ModType.Jar)) {
+						writer.write(" order=\"" + moduleEntry.getJarOrder() + "\"");
+					}
+					if (moduleEntry.getKeepMeta()) {
+						writer.write(" keepMeta=\"true\"");
+					}
+					if (!moduleEntry.getLaunchArgs().isEmpty()) {
+						writer.write(" launchArgs=\"" + xmlEscape(moduleEntry.getLaunchArgs()) + "\"");
+					}
+					if (!moduleEntry.getJreArgs().isEmpty()) {
+						writer.write(" jreArgs=\"" + xmlEscape(moduleEntry.getJreArgs()));
+					}
+					writer.write(">" + moduleEntry.getModType().toString() + "</ModType>");
+					writer.newLine();
+					if (!moduleEntry.getMD5().isEmpty()) {
+						writer.write("\t\t\t<MD5>" + moduleEntry.getMD5() + "</MD5>");
+						writer.newLine();
+					}
+					if (moduleEntry.getMeta().size() > 0) {
+						writer.write("\t\t\t<Meta>");
+						writer.newLine();
+						for (Map.Entry<String, String> metaEntry : moduleEntry.getMeta().entrySet()) {
+							writer.write("\t\t\t\t<" + xmlEscape(metaEntry.getKey()) + ">" + xmlEscape((metaEntry.getValue() == null ? "" : metaEntry.getValue())) + "</" + xmlEscape(metaEntry.getKey()) + ">");
+							writer.newLine();
+						}
+						writer.write("\t\t\t</Meta>");
+						writer.newLine();
+					}
+					for (GenericModule submodule : moduleEntry.getSubmodules()) {
+						writer.write("\t\t\t<Submodule name=\"" + xmlEscape(submodule.getName()) + "\" id=\"" + submodule.getId() + "\" depends=\"" + submodule.getDepends() + "\" side=\"" + submodule.getSide() + "\">");
+						writer.newLine();
+						for (PrioritizedURL url : submodule.getPrioritizedUrls()) {
+							writer.write("\t\t\t\t<URL priority=\"" + url.getPriority() + "\">" + xmlEscape(url.getUrl()) + "</URL>");
+							writer.newLine();
+						}
+						if (submodule.getCurseProject() != null) {
+							writer.write("\t\t\t\t<Curse" +
+									" project=\"" + submodule.getCurseProject().getProject() + "\"" +
+									" file=" + Integer.toString(submodule.getCurseProject().getFile()) +
+									" type=\"" + submodule.getCurseProject().getReleaseType().toString() + "\"" +
+									" autoupgrade=\"" + Boolean.toString(submodule.getCurseProject().getAutoUpgrade()) + "\">");
+							writer.newLine();
+						}
+						if (!submodule.getLoadPrefix().isEmpty()) {
+							writer.write("\t\t\t\t<LoadPrefix>" + xmlEscape(submodule.getLoadPrefix()) + "</LoadPrefix>");
+							writer.newLine();
+						}
+						if (!submodule.getPath().isEmpty()) {
+							writer.write("\t\t\t\t<ModPath>" + xmlEscape(submodule.getPath()) + "</ModPath>");
+							writer.newLine();
+						}
+						writer.write("\t\t\t\t<Size>" + Long.toString(submodule.getFilesize()) + "</Size>");
+						writer.newLine();
+						writer.write("\t\t\t\t<Required");
+						if (!submodule.getRequired() && submodule.getIsDefault()) {
+							writer.write(" isDefault=\"true\"");
+						}
+						writer.write(">" + (submodule.getRequired() ? "true" : "false") + "</Required>");
+						writer.newLine();
+						writer.write("<ModType");
+						if (submodule.getInRoot()) {
+							writer.write(" inRoot=\"true\"");
+						}
+						if (submodule.getJarOrder() > 0 && submodule.getModType().equals(ModType.Jar)) {
+							writer.write(" order=\"" + submodule.getJarOrder() + "\"");
+						}
+						if (submodule.getKeepMeta()) {
+							writer.write(" keepMeta=\"true\"");
+						}
+						if (!submodule.getLaunchArgs().isEmpty()) {
+							writer.write(" launchArgs=\"" + xmlEscape(submodule.getLaunchArgs()) + "\"");
+						}
+						if (!submodule.getJreArgs().isEmpty()) {
+							writer.write(" jreArgs=\"" + xmlEscape(submodule.getJreArgs()));
+						}
+						writer.write(">" + submodule.getModType().toString() + "</ModType>");
+						writer.newLine();
+						writer.write("\t\t\t\t<MD5>" + submodule.getMD5() + "</MD5>");
+						writer.newLine();
+						if (submodule.getMeta().size() > 0) {
+							writer.write("\t\t\t\t<Meta>");
+							writer.newLine();
+							for (Map.Entry<String, String> metaEntry : submodule.getMeta().entrySet()) {
+								writer.write("\t\t\t\t\t<" + xmlEscape(metaEntry.getKey()) + ">" + xmlEscape(metaEntry.getValue()) + "</" + xmlEscape(metaEntry.getKey()) + ">");
+								writer.newLine();
+							}
+							writer.write("\t\t\t\t</Meta>");
+							writer.newLine();
+						}
+						writer.write("\t\t\t</Submodule>");
+						writer.newLine();
+					}
+				} else {
+					writer.write("\t\t\t<Required");
+					if (!moduleEntry.getRequired() && moduleEntry.getIsDefault()) {
+						writer.write(" isDefault=\"true\"");
+					}
+					writer.write(">" + (moduleEntry.getRequired() ? "true" : "false") + "</Required>");
+					writer.newLine();
+					writer.write("\t\t\t<ModType>Override</ModType>");
+					writer.newLine();
+				}
+				for (ConfigFile config : moduleEntry.getConfigs()) {
+					writer.write("\t\t\t<ConfigFile>");
+					writer.newLine();
+					for (PrioritizedURL url : config.getPrioritizedUrls()) {
+						writer.write("\t\t\t\t<URL priority=\"" + url.getPriority() + "\">" + xmlEscape(url.getUrl()) + "</URL>");
+						writer.newLine();
+					}
+					writer.write("\t\t\t\t<Path>" + xmlEscape(config.getPath()) + "</Path>");
+					writer.newLine();
+					writer.write("\t\t\t\t<NoOverwrite>" + config.isNoOverwrite() + "</NoOverwrite>");
+					writer.newLine();
+					writer.write("\t\t\t\t<MD5>" + xmlEscape(config.getMD5()) + "</MD5>");
+					writer.newLine();
+					writer.write("\t\t\t</ConfigFile>");
+					writer.newLine();
+				}
+				writer.write("\t\t</Module>");
+				writer.newLine();
+			}
+	}
+
+	public static void generateServerFooterXML(BufferedWriter writer) throws IOException {
+		writer.write("\t</Server>");
+		writer.newLine();
+	}
+
+	public static void generateServerPackFooterXML(BufferedWriter writer) throws IOException {
+		writer.write("</ServerPack>");
+		writer.newLine();
+	}
+
+	private static String xmlEscape(String input) {
 		String result;
 		try {
 			result = input.replace("&", "&amp;").replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;");
 		} catch (Exception e) {
 			result = "!!!! Error !!!!";
+			System.out.println(input);
+			e.printStackTrace();
 		}
 		return result;
 	}
@@ -318,8 +379,16 @@ public class ServerDefinition {
 	}
 
 	public List<Module> sortMods() {
-		List<Module> sorted = new ArrayList<>(modules.values());
-		Collections.sort(sorted, new ModuleComparator(ModuleComparator.Mode.IMPORTANCE));
-		return sorted;
+		return sortMods(new ArrayList<>(modules.values()));
+	}
+
+	private List<Module> sortMods(List<Module> values) {
+		Collections.sort(values, new ModuleComparator(ModuleComparator.Mode.IMPORTANCE));
+		return values;
+	}
+
+	public void addForge(String mcVersion, String forgeVersion) {
+		this.addImport(new Import("http://files.mcupdater.com/example/forge.php?mc=" + mcVersion + "&forge=" + forgeVersion, "forge"));
+		this.addModule(new Module("Minecraft Forge", "forge-" + forgeVersion, new ArrayList<PrioritizedURL>(), null, "", true, ModType.Override, 0, false, false, true, "", new ArrayList<ConfigFile>(), "BOTH", "", new HashMap<String, String>(), "", "", new ArrayList<Submodule>(), ""));
 	}
 }

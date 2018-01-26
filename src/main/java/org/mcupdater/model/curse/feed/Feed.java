@@ -12,25 +12,25 @@ public class Feed {
 
     @SerializedName("timestamp")
     @Expose
-    private Integer timestamp;
+    private Long timestamp;
     @SerializedName("data")
     @Expose
-    private List<Datum> data = new ArrayList<Datum>();
+    private List<Project> projects = new ArrayList<Project>();
 
-    public Integer getTimestamp() {
+    public Long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Integer timestamp) {
+    public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
 
-    public List<Datum> getData() {
-        return data;
+    public List<Project> getProjects() {
+        return projects;
     }
 
-    public void setData(List<Datum> data) {
-        this.data = data;
+    public void setProjects(List<Project> projects) {
+        this.projects = projects;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class Feed {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(timestamp).append(data).toHashCode();
+        return new HashCodeBuilder().append(timestamp).append(projects).toHashCode();
     }
 
     @Override
@@ -52,7 +52,7 @@ public class Feed {
             return false;
         }
         Feed rhs = ((Feed) other);
-        return new EqualsBuilder().append(timestamp, rhs.timestamp).append(data, rhs.data).isEquals();
+        return new EqualsBuilder().append(timestamp, rhs.timestamp).append(projects, rhs.projects).isEquals();
     }
 
 }

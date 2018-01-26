@@ -13,7 +13,7 @@ public class Module {
     private String foldername;
     @SerializedName("Fingerprint")
     @Expose
-    private Integer fingerprint;
+    private Long fingerprint;
 
     public String getFoldername() {
         return foldername;
@@ -23,11 +23,11 @@ public class Module {
         this.foldername = foldername;
     }
 
-    public Integer getFingerprint() {
+    public Long getFingerprint() {
         return fingerprint;
     }
 
-    public void setFingerprint(Integer fingerprint) {
+    public void setFingerprint(Long fingerprint) {
         this.fingerprint = fingerprint;
     }
 
