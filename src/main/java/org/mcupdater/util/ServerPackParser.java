@@ -51,7 +51,7 @@ public class ServerPackParser {
 	public static Document readXmlFromUrl(String serverUrl) throws Exception
 	{
 		apiLogger.fine("readXMLFromUrl(" + serverUrl + ")");
-		if (serverUrl.equals("http://www.example.org/ServerPack.xml") || serverUrl.isEmpty()) {
+		if (serverUrl == null || serverUrl.equals("http://www.example.org/ServerPack.xml") || serverUrl.isEmpty()) {
 			return null;
 		}
 		//_log("Reading "+serverUrl+"...");
