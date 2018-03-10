@@ -79,9 +79,14 @@ public class VersionManifest {
 		public String getUrl() {
 			return url;
 		}
+
+		@Override
+		public String toString() {
+			return type + ": " + id;
+		}
 	}
 
-	protected class VersionNotFoundException extends Exception {
+	public class VersionNotFoundException extends Exception {
 
 		public VersionNotFoundException() {
 			super("Requested version not found.");

@@ -43,9 +43,18 @@ public class ServerDefinition {
 		configExceptions.put("cofh/Lexicon-Whitelist", "CoFHCore");
 		configExceptions.put("hqm", "HardcoreQuesting");
 		configExceptions.put("forgeChunkLoading", "forge-\\d+.\\d+.\\d+.\\d+");
+		configExceptions.put("forge.cfg", "forge-\\d+.\\d+.\\d+.\\d+");
+		configExceptions.put("splash.properties", "forge-\\d+.\\d+.\\d+.\\d+");
 		configExceptions.put("scripts", "MineTweaker3");
 		configExceptions.put(".zs", "MineTweaker3");
 		configExceptions.put("resources", "ResourceLoader");
+		configExceptions.put("advRocketry","advancedRocketry");
+		configExceptions.put("AppliedEnergistics2","appliedenergistics2");
+		configExceptions.put("brandon3055","brandonscore");
+		configExceptions.put("Extreme Reactors","bigreactors");
+		configExceptions.put("Tiny Progressions","tp");
+		configExceptions.put("DEPSAMarker.txt","draconicevolution");
+		configExceptions.put("WirelessCraftingTerminal.cfg","wct");
 	}
 
 	public void writeServerPack(String stylesheet, Path outputFile, List<Module> moduleList, Boolean onlyOverrides) {
@@ -68,7 +77,7 @@ public class ServerDefinition {
 		}
 	}
 
-	private boolean hasMod(List<Module> moduleList, String modId) {
+	public boolean hasMod(List<Module> moduleList, String modId) {
 		for (Module entry : moduleList) {
 			if (entry.getId().equals(modId)) {
 				return true;
@@ -321,23 +330,27 @@ public class ServerDefinition {
 		return imports;
 	}
 
-	public void assignConfigs(boolean debug) {
+	public void assignConfigs(Map<String,String> issues, boolean debug) {
 		System.out.println("Assigning configs to mods\n===============");
 		//this.modules.get(0).setConfigs(tempConfigs);
 		Soundex snd = new Soundex();
 		int distance;
 		for (ConfigFile config : tempConfigs) {
+			int potential = 0;
 			System.out.println(config.getPath() + ":");
 			Module tempModule = null;
 			distance = 10000;
-			String configName = config.getPath().substring(config.getPath().indexOf("/"), config.getPath().lastIndexOf("."));
+			String configName = config.getPath().substring(config.getPath().indexOf("/"), config.getPath().contains(".") ? config.getPath().lastIndexOf(".") : config.getPath().length()) ;
 			for (Module mod : modules.values()) {
 				try {
 					int newDistance = StringUtils.getLevenshteinDistance(configName, mod.getId());
 					for (Map.Entry<String, String> exception : configExceptions.entrySet()) {
 						if (config.getPath().contains(exception.getKey()) && mod.getId().matches(exception.getValue())) {
-							newDistance -= 15;
+							newDistance -= 20;
 						}
+					}
+					if (Arrays.asList(config.getPath().toLowerCase().split("/")).contains(mod.getId().toLowerCase())) {
+						newDistance -= 20;
 					}
 					if (configName.toLowerCase().contains(mod.getId().toLowerCase())) {
 						newDistance -= 10;
@@ -352,6 +365,7 @@ public class ServerDefinition {
 					}
 					if (newDistance <= 5 || debug) {
 						System.out.println("   >" + mod.getId() + " - " + newDistance + " (potential)");
+						potential++;
 					}
 					if (newDistance < distance) {
 						tempModule = mod;
@@ -366,6 +380,9 @@ public class ServerDefinition {
 				System.out.println(config.getPath() + ": " + tempModule.getName() + " (" + distance + ")\n");
 				if (tempModule.getSide().equals(ModSide.CLIENT)) {
 					config.setNoOverwrite(true);
+				}
+				if ((distance > 5 && potential > 1) || distance > 10) {
+					issues.put(config.getPath(),tempModule.getName());
 				}
 				modules.get(tempModule.getId()).getConfigs().add(config);
 			} else {

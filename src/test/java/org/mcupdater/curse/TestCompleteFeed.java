@@ -10,7 +10,9 @@ import java.util.Map;
 public class TestCompleteFeed {
 
     public static void main(String[] args) {
+        long tsStart = System.currentTimeMillis();
         Feed complete = FeedImporter.getFeed(true);
+        System.out.println("Feed import time: " + (System.currentTimeMillis()-tsStart)/1000D + " sec");
         Map<String,Long> categories = new HashMap<>();
         for (Project entry : complete.getProjects()) {
             System.out.println(entry.getCategorySection().getName() + ": " + entry.getName());

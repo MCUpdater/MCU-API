@@ -8,6 +8,8 @@ import java.util.List;
 
 public class RawServer extends Server {
 
+	private List<IPackElement> packElements = new ArrayList<>();
+
 	public RawServer() {
 		setMCUVersion(mcuVersion);
 		setPackUrl("");
@@ -27,8 +29,24 @@ public class RawServer extends Server {
 		setServerClass("");
 	}
 
-	private List<IPackElement> packElements = new ArrayList<>();
-
+	public RawServer(Server source) {
+		setMCUVersion(source.mcuVersion);
+		setPackUrl(source.packUrl);
+		setServerId(source.serverId);
+		setName(source.name);
+		setNewsUrl(source.newsUrl);
+		setIconUrl(source.iconUrl);
+		setVersion(source.version);
+		setAddress(source.address);
+		setGenerateList(source.generateList);
+		setAutoConnect(source.autoConnect);
+		setRevision(source.revision);
+		setFakeServer(source.fakeServer);
+		setMainClass(source.mainClass);
+		setLauncherType(source.launcherType);
+		setRawOverrides(source.rawOverrides);
+		setServerClass(source.serverClass);
+	}
 
 	public List<IPackElement> getPackElements() {
 		return packElements;

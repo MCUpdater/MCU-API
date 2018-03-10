@@ -195,7 +195,7 @@ public abstract class Server implements Comparable<Server>, IPackElement{
 	}
 
 	public String getServerClass_Raw() {
-		return serverClass;
+		return (serverClass != null ? serverClass : "");
 	}
 
 	public void setServerClass(String serverClass) {

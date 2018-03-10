@@ -1,5 +1,6 @@
 package org.mcupdater.util;
 
+import org.mcupdater.api.Version;
 import org.mcupdater.model.Module;
 import org.mcupdater.model.ServerList;
 import org.mcupdater.util.PathWalker;
@@ -32,6 +33,11 @@ public class FastPack {
 		entry.setRevision(revision);
 		entry.setAutoConnect(autoConnect);
 		entry.setVersion(MCVersion);
+		if (Version.requestedFeatureLevel(MCVersion,"1.6")) {
+			entry.setLauncherType("Vanilla");
+		} else {
+			entry.setLauncherType("Legacy");
+		}
 		definition.setServerEntry(entry);
 
 		PathWalker pathWalk = new PathWalker(definition, searchPath, baseURL);

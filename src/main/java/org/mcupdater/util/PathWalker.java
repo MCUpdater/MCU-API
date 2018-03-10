@@ -114,6 +114,11 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 	            modType = ModType.Litemod;
             }
             String cleanPath = relativePath.toString().replace("\\","/");
+			if (cleanPath.contains("OpenTerrainGenerator/")) {
+				ConfigFile newConfig = new ConfigFile(downloadURL, cleanPath, false, md5);
+				server.addConfig(newConfig);
+				return FileVisitResult.CONTINUE;
+			}
             if (cleanPath.split("/")[1].matches("\\d+(\\.\\d+)*")) {
                 modPath = cleanPath.replaceAll("^(optional|client|server)", "mods");
             }
