@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.mcupdater.api.Version;
 import org.mcupdater.model.CurseProject;
+import org.mcupdater.model.CurseProject.ReleaseType;
 
 public enum CurseModCache {
 	INSTANCE;
@@ -51,6 +52,12 @@ public enum CurseModCache {
 			
 			// TODO: re-request this, filtering by MC version on their end before proceeding
 			
+			// for better error messaging
+			final String pack_mc_version = curse.getMCVersion();
+			final CurseProject.ReleaseType min_release_type = curse.getReleaseType();
+			CurseProject.ReleaseType best_release_type = null;
+			int version_matches = 0;
+
 			// identify and set file, then re-invoke fetchURL
 			Elements fileList = filesDoc.getElementsByClass("project-file-list-item");
 			ProjectFile file = new ProjectFile();
@@ -61,18 +68,25 @@ public enum CurseModCache {
 				final String fileNum = href.substring(href.lastIndexOf('/')+1);
 				final int id = Integer.parseInt(fileNum);
 
+				// filter for MC version first
+				final String mc_version = el.getElementsByClass("version-label").first().text();
+				if( !Version.fuzzyMatch(mc_version, pack_mc_version) ) {
+					MCUpdater.apiLogger.log(Level.FINE, "Skipping "+curse+":"+id+", mc version mismatch, "+mc_version);
+					continue;
+				} else {
+					++version_matches;
+				}
+
+				// then filter by release type
 				final Element elRelease = el.getElementsByClass("project-file-release-type").first();
 				final String release_type = elRelease.children().first().attr("title");
 				CurseProject.ReleaseType type = CurseProject.ReleaseType.parse(release_type);
-				if( type.worseThan(curse.getReleaseType()) || type.worseThan(file.release_type) ) {
+				if( type.worseThan(min_release_type) || type.worseThan(file.release_type) ) {
 					MCUpdater.apiLogger.log(Level.FINE, "Skipping "+curse+":"+id+", release type mismatch, "+type);
-					continue;
-				}
-
-				// filter for MC version
-				final String mc_version = el.getElementsByClass("version-label").first().text();
-				if( !Version.fuzzyMatch(mc_version, curse.getMCVersion()) ) {
-					MCUpdater.apiLogger.log(Level.FINE, "Skipping "+curse+":"+id+", mc version mismatch, "+mc_version);
+					// notice if we found something -slightly- better
+					if( best_release_type == null || best_release_type.worseThan(file.release_type) ) {
+						best_release_type = file.release_type;
+					}
 					continue;
 				}
 				
@@ -94,7 +108,15 @@ public enum CurseModCache {
 				curse.setFile(file.id);
 				return fetchURL(curse);
 			} else {
-				MCUpdater.apiLogger.log(Level.SEVERE, "Unable to find candidate for "+curse+" after checking "+fileList.size()+" files");
+				String errMsg = "Unable to find candidate for "+curse+" after checking "+fileList.size()+" files";
+				if( fileList.size() == 0 ) {
+					errMsg += ". MCU found zero public releases for this project.";
+				} else if( best_release_type != null && best_release_type.worseThan(min_release_type) ) {
+					errMsg += ". Best mc "+pack_mc_version+" release found was "+best_release_type+", but pack requested "+min_release_type+".";
+				} else if( version_matches == 0 ) {
+					errMsg += ". Found zero releases for mc "+pack_mc_version+".";
+				}
+				MCUpdater.apiLogger.log(Level.SEVERE, errMsg);
 			}
 		}
 		
