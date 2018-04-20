@@ -132,6 +132,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		}
 		id = name.replace(" ", "");
 		id = id.replaceAll("\\d","").replaceAll("[^a-zA-Z]*$","");
+		id = id.replaceAll("[-_.]+", "-");
 		try {
 			ZipFile zf = new ZipFile(file.toFile());
 			System.out.println(file.toString() + ": " + zf.size() + " entries in file.");
