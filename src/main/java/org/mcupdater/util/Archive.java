@@ -1,6 +1,7 @@
 package org.mcupdater.util;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.mcupdater.MCUApp;
 
 import java.io.*;
@@ -17,11 +18,11 @@ import java.util.zip.ZipOutputStream;
 
 public class Archive {
 
-	public static void extractZip(File archive, File destination) {
-		extractZip(archive, destination, false);
+	public static boolean extractZip(File archive, File destination) {
+		return extractZip(archive, destination, false);
 	}
 	
-	public static void extractZip(File archive, File destination, Boolean keepMeta) {
+	public static boolean extractZip(File archive, File destination, Boolean keepMeta) {
 		try{
 			ZipInputStream zis = new ZipInputStream(new FileInputStream(archive));
 			ZipEntry entry;
@@ -60,11 +61,28 @@ public class Archive {
 				entry = zis.getNextEntry();
 			}
 			zis.close();
+			return true;
 		} catch (FileNotFoundException fnf) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "File not found", fnf);
 		} catch (IOException ioe) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
+		return false;
+	}
+	
+	// https://stackoverflow.com/questions/33934178/how-to-identify-a-zip-file-in-java
+	public static boolean isArchive(File f) {
+	    int fileSignature = 0;
+	    RandomAccessFile raf = null;
+	    try {
+	        raf = new RandomAccessFile(f, "r");
+	        fileSignature = raf.readInt();
+	    } catch (IOException e) {
+	        // handle if you like
+	    } finally {
+	        IOUtils.closeQuietly(raf);
+	    }
+	    return fileSignature == 0x504B0304 || fileSignature == 0x504B0506 || fileSignature == 0x504B0708;
 	}
 
 	public static void createZip(File archive, List<File> files, Path mCFolder, MCUApp parent) throws IOException

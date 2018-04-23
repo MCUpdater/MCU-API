@@ -53,4 +53,37 @@ public class FastPack {
 		}
 		return definition;
 	}
+	
+	public static ServerDefinition doImport(String importURL, String serverName, String serverId, String serverAddr, String mainClass, String newsURL, String iconURL, Boolean autoConnect, boolean debug) {
+		ServerDefinition definition = new ServerDefinition();
+		ServerList entry = new ServerList();
+
+		entry.setName(serverName);
+		entry.setServerId(serverId);
+		entry.setAddress(serverAddr);
+		entry.setMainClass(mainClass);
+		entry.setNewsUrl(newsURL);
+		entry.setIconUrl(iconURL);
+		entry.setAutoConnect(autoConnect);
+		
+		CurseImporter importer = new CurseImporter(importURL);
+		importer.run(definition, entry);
+		definition.setServerEntry(entry);
+
+		/*
+		PathWalker pathWalk = new PathWalker(definition, searchPath, baseURL);
+		try {
+			Files.walkFileTree(searchPath, pathWalk);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		*/
+		if (debug) {
+			for (Module modEntry : definition.getModules().values()) {
+				System.out.println(modEntry.toString());
+			}
+		}
+
+		return definition;
+	}
 }
