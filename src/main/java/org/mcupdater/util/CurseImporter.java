@@ -9,6 +9,8 @@ import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 import org.mcupdater.api.Version;
+import org.mcupdater.model.CurseProject;
+import org.mcupdater.model.Module;
 import org.mcupdater.model.ServerList;
 import org.mcupdater.model.curse.manifest.Manifest;
 import org.mcupdater.model.curse.manifest.Minecraft;
@@ -18,8 +20,6 @@ import com.google.gson.Gson;
 
 public class CurseImporter {
 	private File tmp;
-	
-	// test url: https://minecraft.curseforge.com/projects/automaton/files/2539593/download
 	
 	public CurseImporter(String importURL) {
 		tmp = new File(importURL);
@@ -109,6 +109,23 @@ public class CurseImporter {
 					final String rev = manifest.getVersion();
 					entry.setRevision(rev);
 					System.out.println("[import] Pack: "+name+" v"+rev);
+					
+					// get mods
+					for( org.mcupdater.model.curse.manifest.File modData : manifest.getFiles() ) {
+						Module mod = Module.createBlankModule();
+						CurseProject proj = new CurseProject(modData.getProjectID().toString(), mcVersion);
+						proj.setFile(modData.getFileID());
+						mod.setCurseProject(proj);
+						mod.setRequired(modData.getRequired());
+						
+						// TODO: get actual human readables from curse here instead
+						mod.setId("_"+modData.getProjectID());
+						mod.setName(mod.getId());
+						
+						definition.addModule(mod);
+					}
+					
+					// TODO: add overrides as special case unzip
 					
 				} catch (IOException e) {
 					e.printStackTrace();

@@ -70,14 +70,6 @@ public class FastPack {
 		importer.run(definition, entry);
 		definition.setServerEntry(entry);
 
-		/*
-		PathWalker pathWalk = new PathWalker(definition, searchPath, baseURL);
-		try {
-			Files.walkFileTree(searchPath, pathWalk);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		*/
 		if (debug) {
 			for (Module modEntry : definition.getModules().values()) {
 				System.out.println(modEntry.toString());
