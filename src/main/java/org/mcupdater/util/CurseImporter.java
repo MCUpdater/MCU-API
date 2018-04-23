@@ -99,7 +99,17 @@ public class CurseImporter {
 						} else {
 							// TODO: support other modloaders...
 						}
-					}					
+					}
+					
+					// get pack name
+					final String name = manifest.getName();
+					entry.setName(name);
+					
+					// get pack revision
+					final String rev = manifest.getVersion();
+					entry.setRevision(rev);
+					System.out.println("[import] Pack: "+name+" v"+rev);
+					
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -107,11 +117,15 @@ public class CurseImporter {
 				System.out.println("[import] unable to find/read manifest" );
 			}
 			
+			/*
+			 * TODO: recursively delete the temp dir
+			 * 
 			try {
 				Files.deleteIfExists(dir);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			 */
 		} else {
 			System.out.println( "[import] no pack found, nothing to do." );
 		}
