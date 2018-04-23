@@ -113,14 +113,14 @@ public class CurseImporter {
 					// get mods
 					for( org.mcupdater.model.curse.manifest.File modData : manifest.getFiles() ) {
 						Module mod = Module.createBlankModule();
-						CurseProject proj = new CurseProject(modData.getProjectID().toString(), mcVersion);
+						final String projId = CurseModCache.getTextID(modData.getProjectID());
+						CurseProject proj = new CurseProject(projId, mcVersion);
 						proj.setFile(modData.getFileID());
 						mod.setCurseProject(proj);
 						mod.setRequired(modData.getRequired());
 						
-						// TODO: get actual human readables from curse here instead
-						mod.setId("_"+modData.getProjectID());
-						mod.setName(mod.getId());
+						mod.setId(projId);
+						mod.setName(projId);
 						
 						definition.addModule(mod);
 					}
