@@ -38,6 +38,10 @@ public class CurseProject {
 		this.setProject(project);
 		this.setMCVersion(mcVersion);
 	}
+	public CurseProject(String project, int file) {
+		this.setProject(project);
+		this.setFile(file);
+	}
 	public CurseProject(String project, String mcVersion, int file, String typeStr, boolean autoupgrade) {
 		this(project, mcVersion);
 		this.setFile(file);
