@@ -1,17 +1,16 @@
 package org.mcupdater.util;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.logging.Level;
-
-import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.mcupdater.api.Version;
 import org.mcupdater.model.CurseProject;
-import org.mcupdater.model.CurseProject.ReleaseType;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.logging.Level;
 
 public enum CurseModCache {
 	INSTANCE;
@@ -158,8 +157,17 @@ public enum CurseModCache {
 	public static String getTextID(long modID) {
 		final String origURL = BASE_URL+modID;
 		try {
-			final Response res = Jsoup.connect(origURL).followRedirects(true).execute();
-			final String newURL = res.url().getPath();
+			URL sourceURL = new URL(origURL);
+			HttpURLConnection conn = (HttpURLConnection) sourceURL.openConnection();
+			conn.setUseCaches(false);
+			conn.setInstanceFollowRedirects(false);
+			String newURL = "";
+			if (conn.getResponseCode() / 100 == 3) {
+				newURL = conn.getHeaderField("Location");
+				if (newURL.startsWith("//")) { //Handling of schemeless URLs - protocol comes from context.
+					newURL = sourceURL.getProtocol() + ":" + newURL;
+				}
+			}
 			final String textID = newURL.substring(newURL.lastIndexOf('/')+1);
 			MCUpdater.apiLogger.log(Level.FINE, "Found text ID '"+textID+"' for curse:"+modID);
 			return textID;
@@ -168,6 +176,7 @@ public enum CurseModCache {
 			return Long.toString(modID);
 		}
 	}
+
 	public static String getTextID(CurseProject curse) {
 		final Long modID = Long.parseLong(curse.getProject());
 		final String textID = getTextID(modID);
