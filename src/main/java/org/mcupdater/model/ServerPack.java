@@ -6,7 +6,7 @@ import java.util.List;
 public class ServerPack implements IPackElement{
 	private String xsltPath;
 	private String version;
-	private List<RawServer> servers;
+	private List<Server> servers;
 
 	public ServerPack(String xsltPath, String version) {
 		this.xsltPath = xsltPath;
@@ -30,11 +30,11 @@ public class ServerPack implements IPackElement{
 		this.version = version;
 	}
 
-	public List<RawServer> getServers() {
+	public List<Server> getServers() {
 		return servers;
 	}
 
-	public void setServers(List<RawServer> servers) {
+	public void setServers(List<Server> servers) {
 		this.servers = servers;
 	}
 

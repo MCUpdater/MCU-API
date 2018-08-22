@@ -3,6 +3,7 @@ package org.mcupdater.util;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
+import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 import static org.mcupdater.util.MCUpdater.apiLogger;
@@ -436,7 +438,7 @@ public class ServerPackParser {
 		}
 	}
 
-	public static ServerPack loadFromURL(String serverUrl) {
+	public static ServerPack loadFromURL(String serverUrl, boolean raw) {
 		ServerPack packDefinition = null;
 		try {
 			Element docEle;
@@ -458,32 +460,46 @@ public class ServerPackParser {
 					NodeList servers = parent.getElementsByTagName("Server");
 					for (int i = 0; i < servers.getLength(); i++) {
 						docEle = (Element) servers.item(i);
-						RawServer sl = new RawServer();
-						RawServer.fromElement(mcuVersion, serverUrl, docEle, sl);
-						NodeList nl;
-						nl = docEle.getElementsByTagName("Import");
-						if (nl != null && nl.getLength() > 0) {
-							for(int j = 0; j < nl.getLength(); j++) {
-								Element el = (Element) nl.item(j);
-								Import newImport = new Import();
-								String importURL = null;
-								importURL = el.getAttribute("url");
-								if (importURL != null && !importURL.isEmpty()) {
-									newImport.setUrl(importURL);
+						if (raw) {
+							RawServer sl = new RawServer();
+							RawServer.fromElement(mcuVersion, serverUrl, docEle, sl);
+							NodeList nl;
+							nl = docEle.getElementsByTagName("Import");
+							if (nl != null && nl.getLength() > 0) {
+								for (int j = 0; j < nl.getLength(); j++) {
+									Element el = (Element) nl.item(j);
+									Import newImport = new Import();
+									String importURL = null;
+									importURL = el.getAttribute("url");
+									if (importURL != null && !importURL.isEmpty()) {
+										newImport.setUrl(importURL);
+									}
+									newImport.setServerId(el.getTextContent());
+									sl.getPackElements().add(newImport);
 								}
-								newImport.setServerId(el.getTextContent());
-								sl.getPackElements().add(newImport);
 							}
-						}
-						nl = docEle.getElementsByTagName("Module");
-						if (nl != null && nl.getLength() > 0) {
-							for(int j = 0; j < nl.getLength(); j++) {
-								Element el = (Element) nl.item(j);
-								Module m = getModuleV2(el, sl.getVersion(), null);
-								sl.getPackElements().add(m);
+							nl = docEle.getElementsByTagName("Module");
+							if (nl != null && nl.getLength() > 0) {
+								for (int j = 0; j < nl.getLength(); j++) {
+									Element el = (Element) nl.item(j);
+									Module m = getModuleV2(el, sl.getVersion(), null);
+									sl.getPackElements().add(m);
+								}
 							}
+							packDefinition.getServers().add(sl);
+						} else {
+							ServerList sl = new ServerList();
+							ServerList.fromElement(mcuVersion, serverUrl, docEle, sl);
+							if (!sl.isFakeServer()) {
+								ServerList newEntry = ServerPackParser.parseDocument(serverHeader,sl.getServerId(),new HashMap<String,Module>(), sl.getServerId(), sl.getVersion());
+								newEntry.setPackUrl(serverUrl);
+								if (!packDefinition.getXsltPath().isEmpty()) {
+									newEntry.setStylesheet(true);
+								}
+								packDefinition.getServers().add(newEntry);
+							}
+
 						}
-						packDefinition.getServers().add(sl);
 					}
 				} else {
 					RawServer sl = new RawServer();

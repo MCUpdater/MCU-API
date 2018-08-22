@@ -6,6 +6,8 @@ public class ServerList extends Server {
     private Map<String,Module> modules = new HashMap<>();
 
 	private State state = State.UNKNOWN;
+	private boolean stylesheet;
+
 	public enum State {
 		UNKNOWN,
 		READY, UPDATE, ERROR
@@ -62,5 +64,13 @@ public class ServerList extends Server {
 	public State getState() { return state; }
 
 	public void setState(State state) { this.state = state; }
+
+	public boolean hasStylesheet() {
+		return stylesheet;
+	}
+
+	public void setStylesheet(boolean stylesheet) {
+		this.stylesheet = stylesheet;
+	}
 
 }
