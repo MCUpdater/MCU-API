@@ -49,11 +49,12 @@ public class CurseProject {
 		this.setAutoUpgrade(autoupgrade);
 	}
 
-	public CurseProject(String project, int file, ReleaseType type, boolean autoupgrade) {
+	public CurseProject(String project, int file, ReleaseType type, boolean autoupgrade, String mcVersion) {
 		this.setProject(project);
 		this.setFile(file);
 		this.setReleaseType(type);
 		this.setAutoUpgrade(autoupgrade);
+		this.setMCVersion(mcVersion);
 	}
 	
 	public String toString() {

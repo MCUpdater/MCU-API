@@ -196,7 +196,7 @@ public class ServerDefinition {
 						if (submodule.getCurseProject() != null) {
 							writer.write("\t\t\t\t<Curse" +
 									" project=\"" + submodule.getCurseProject().getProject() + "\"" +
-									" file=" + Integer.toString(submodule.getCurseProject().getFile()) +
+									(submodule.getCurseProject().getFile() != -1 ? " file=" + Integer.toString(submodule.getCurseProject().getFile()) : "") +
 									" type=\"" + submodule.getCurseProject().getReleaseType().toString() + "\"" +
 									" autoupgrade=\"" + Boolean.toString(submodule.getCurseProject().getAutoUpgrade()) + "\">");
 							writer.newLine();

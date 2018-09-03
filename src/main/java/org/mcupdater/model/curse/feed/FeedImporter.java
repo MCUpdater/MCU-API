@@ -13,10 +13,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class FeedImporter {
-    private static String COMPLETE_FEED = "http://clientupdate-v6.cursecdn.com/feed/addons/432/v10/complete.json.bz2";
-    private static String HOURLY_FEED = "http://clientupdate-v6.cursecdn.com/feed/addons/432/v10/hourly.json.bz2";
+    private static String COMPLETE_FEED = "https://clientupdate-v6.cursecdn.com/feed/addons/432/v10/complete.json.bz2";
+    private static String HOURLY_FEED = "https://clientupdate-v6.cursecdn.com/feed/addons/432/v10/hourly.json.bz2";
 
     public static Feed getFeed(boolean complete) {
         GsonBuilder builder = new GsonBuilder();
@@ -37,8 +38,15 @@ public class FeedImporter {
 
     public static void createTables() {
     	try {
-		    Connection conn = MCUpdater.getInstance().getDbManager().getConnection();
-		    conn.prepareStatement("CREATE TABLE");
+		    DatabaseManager dbManager = MCUpdater.getInstance().getDbManager();
+		    Connection conn = dbManager.getConnection();
+		    Statement statement = conn.createStatement();
+		    if (!dbManager.tableExists("feed_meta")) {
+		    	statement.executeUpdate("CREATE TABLE feed_meta (feedtype as VARCHAR(10), timestamp as BIGINT)");
+		    }
+		    if (!dbManager.tableExists("feed_projects")) {
+		    	statement.executeUpdate("CREATE TABLE feed_projects ()");
+		    }
 	    } catch (SQLException e) {
 		    e.printStackTrace();
 	    }

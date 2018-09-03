@@ -20,10 +20,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -529,25 +526,30 @@ public class ServerPackParser {
 			return conn;
 		}
 		HttpURLConnection conn = (HttpURLConnection) target.openConnection();
+		conn.setConnectTimeout(5000);
 		conn.setRequestProperty("User-Agent","MCUpdater/" + Version.API_VERSION);
+		try {
 /*
 		if (tracker.getQueue().getMCUser() != null) {
 			conn.setRequestProperty("MC-User", tracker.getQueue().getMCUser());
 		}
 */
-		if (referer != null) {
-			conn.setRequestProperty("Referer", referer.toString());
+			if (referer != null) {
+				conn.setRequestProperty("Referer", referer.toString());
+			}
+			if (target.getUserInfo() != null) {
+				String basicAuth = "Basic " + new String(new Base64().encode(target.getUserInfo().getBytes()));
+				conn.setRequestProperty("Authorization", basicAuth);
+			}
+			conn.setUseCaches(false);
+			conn.setInstanceFollowRedirects(false);
+			if (conn.getResponseCode() / 100 == 3) {
+				return redirectAndConnect(new URL(conn.getHeaderField("Location")), target);
+			}
+			conn.connect();
+		} catch (IOException e) {
+			apiLogger.severe("Failed to connect to " + target.toString());
 		}
-		if (target.getUserInfo() != null) {
-			String basicAuth = "Basic " + new String(new Base64().encode(target.getUserInfo().getBytes()));
-			conn.setRequestProperty("Authorization", basicAuth);
-		}
-		conn.setUseCaches(false);
-		conn.setInstanceFollowRedirects(false);
-		if (conn.getResponseCode() / 100 == 3) {
-			return redirectAndConnect(new URL(conn.getHeaderField("Location")), target);
-		}
-		conn.connect();
 		return conn;
 	}
 

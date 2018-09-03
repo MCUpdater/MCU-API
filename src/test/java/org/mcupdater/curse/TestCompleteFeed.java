@@ -15,18 +15,8 @@ public class TestCompleteFeed {
         System.out.println("Feed import time: " + (System.currentTimeMillis()-tsStart)/1000D + " sec");
         Map<String,Long> categories = new HashMap<>();
         for (Project entry : complete.getProjects()) {
-            System.out.println(entry.getCategorySection().getName() + ": " + entry.getName());
-            Long catCount =  categories.get(entry.getCategorySection().getName());
-            if (catCount == null) {
-                catCount = 1L;
-            } else {
-                catCount++;
-            }
-            categories.put(entry.getCategorySection().getName(),catCount);
+            System.out.println(entry.getId() + ": " + entry.getName());
         }
         System.out.println("============");
-        for (Map.Entry<String, Long> category : categories.entrySet()) {
-            System.out.println(category.getKey() + ": " + category.getValue().toString());
-        }
     }
 }
