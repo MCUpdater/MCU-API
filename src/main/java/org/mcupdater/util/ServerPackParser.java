@@ -9,6 +9,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -20,6 +21,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +33,19 @@ import java.util.logging.Level;
 import static org.mcupdater.util.MCUpdater.apiLogger;
 
 public class ServerPackParser {
+
+	public static Document readXmlFromReader(Reader reader) throws Exception
+	{
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		try {
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource source = new InputSource(reader);
+			return db.parse(source);
+		} catch(ParserConfigurationException | SAXException pce) {
+			apiLogger.log(Level.SEVERE, "Parser error", pce);
+		}
+		return null;
+	}
 
 	public static Document readXmlFromFile(File packFile) throws Exception
 	{
@@ -423,8 +438,13 @@ public class ServerPackParser {
 	
 	public static ServerList loadFromURL(String serverUrl, String serverId)
 	{
+		return loadFromURL(serverUrl, serverId, null);
+	}
+
+	public static ServerList loadFromURL(String serverUrl, String serverId, String version)
+	{
 		try {
-			ServerList server = parseDocument(readXmlFromUrl(serverUrl), serverId, new HashMap<String, Module>(), serverId, null);
+			ServerList server = parseDocument(readXmlFromUrl(serverUrl), serverId, new HashMap<String, Module>(), serverId, version);
 			if (server != null) {
 				server.setPackUrl(serverUrl);
 			}

@@ -45,6 +45,9 @@ public class SettingsManager {
 			BufferedReader reader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8);
 			this.settings = gson.fromJson(reader, Settings.class);
 			reader.close();
+			if(this.settings.getJvmOpts().equals("")) {
+				this.settings.setJvmOpts(MCUpdater.defaultJVMArgs);
+			}
 			Path jrePath = Paths.get(this.settings.getJrePath());
 			if (!jrePath.toFile().exists()) {
 				this.settings.setJrePath(System.getProperty("java.home"));
@@ -90,7 +93,7 @@ public class SettingsManager {
 		newSettings.setResHeight(Integer.parseInt(oldConfig.getProperty("height","720")));
 		newSettings.setFullScreen(false);
 		newSettings.setJrePath(oldConfig.getProperty("jrePath",System.getProperty("java.home")));
-		newSettings.setJvmOpts(oldConfig.getProperty("jvmOpts","-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts"));
+		newSettings.setJvmOpts(oldConfig.getProperty("jvmOpts",MCUpdater.defaultJVMArgs));
 		newSettings.setInstanceRoot(oldConfig.getProperty("instanceRoot",MCUpdater.getInstance().getArchiveFolder().resolve("instances").toString()));
 		newSettings.setProgramWrapper(oldConfig.getProperty("jvmContainer",""));
 		newSettings.setTimeoutLength(Integer.parseInt(oldConfig.getProperty("timeoutLength","5000")));
@@ -122,7 +125,7 @@ public class SettingsManager {
 		newSettings.setResHeight(720);
 		newSettings.setFullScreen(false);
 		newSettings.setJrePath(System.getProperty("java.home"));
-		newSettings.setJvmOpts("");
+		newSettings.setJvmOpts(MCUpdater.defaultJVMArgs);
 		newSettings.setInstanceRoot(MCUpdater.getInstance().getArchiveFolder().resolve("instances").toString());
 		newSettings.setProgramWrapper("");
 		newSettings.setTimeoutLength(5000);

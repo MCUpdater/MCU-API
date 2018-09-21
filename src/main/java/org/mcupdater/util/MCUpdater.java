@@ -57,8 +57,9 @@ public class MCUpdater {
 	public static Logger apiLogger;
 	private int timeoutLength = 5000;
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	public static String defaultMemory = "1G";
+	public static String defaultMemory = "4G";
 	public static String defaultPermGen = "128M";
+	public static String defaultJVMArgs = "-XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M";
 	private static MCUpdater INSTANCE;
 
 	public static MCUpdater getInstance(File file) {
@@ -783,6 +784,11 @@ public class MCUpdater {
 			}
 		}
 		return Hex.encodeHexString(hash.toByteArray());
+	}
+
+	public List<Module> sortMods(List<Module> values) {
+		Collections.sort(values, new ModuleComparator(ModuleComparator.Mode.IMPORTANCE));
+		return values;
 	}
 
 	public DatabaseManager getDbManager() {

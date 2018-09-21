@@ -61,7 +61,7 @@ public class ServerDefinition {
 		try {
 			if (hasLitemods && !hasMod(moduleList, "liteloader")) {
 				moduleList.add(new Module("LiteLoader", "liteloader", Arrays.asList(new PrioritizedURL("http://dl.liteloader.com/versions/com/mumfrey/liteloader/" + this.getServerEntry().getVersion() + "/liteloader-" + this.getServerEntry().getVersion() + ".jar", 0)), null, "", false, ModType.Library, 100, false, false, true, "", null, "CLIENT", "", null, "--tweakClass com.mumfrey.liteloader.launch.LiteLoaderTweaker", "", null, ""));
-				moduleList = sortMods(moduleList);
+				moduleList = MCUpdater.getInstance().sortMods(moduleList);
 			}
 
 			BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
@@ -133,7 +133,7 @@ public class ServerDefinition {
 					if (moduleEntry.getCurseProject() != null) {
 						writer.write("\t\t\t<Curse" +
 								" project=\"" + moduleEntry.getCurseProject().getProject() + "\"" +
-								" file=\"" + Integer.toString(moduleEntry.getCurseProject().getFile()) + "\"" +
+								(moduleEntry.getCurseProject().getFile() != 0 ? (" file=\"" + Integer.toString(moduleEntry.getCurseProject().getFile()) + "\"") : "") +
 								" type=\"" + moduleEntry.getCurseProject().getReleaseType().toString() + "\"" +
 								" autoupgrade=\"" + Boolean.toString(moduleEntry.getCurseProject().getAutoUpgrade()) + "\"/>");
 						writer.newLine();
@@ -396,12 +396,7 @@ public class ServerDefinition {
 	}
 
 	public List<Module> sortMods() {
-		return sortMods(new ArrayList<>(modules.values()));
-	}
-
-	private List<Module> sortMods(List<Module> values) {
-		Collections.sort(values, new ModuleComparator(ModuleComparator.Mode.IMPORTANCE));
-		return values;
+		return MCUpdater.getInstance().sortMods(new ArrayList<>(modules.values()));
 	}
 
 	public void addForge(String mcVersion, String forgeVersion) {
