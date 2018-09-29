@@ -33,7 +33,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		this.setUrlBase(urlBase);
 	}
 	
-	public static void handleOneFile(ServerDefinition server, File file, String downloadUrl) {
+	public static IPackElement handleOneFile(ServerDefinition server, File file, String downloadUrl) {
 		final Path searchPath;
 		if( file.getParent() == null ) {
 			searchPath = new File(".").toPath();
@@ -44,22 +44,23 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		final PathWalker walker = new PathWalker(server,searchPath,(downloadUrl==null?"[PATH]":"[URL]"));
 		try {
 			if( downloadUrl == null ) {
-				walker.handleFile(file.toPath());
+				return walker.handleFile(file.toPath());
 			} else {
-				walker.handleFile(file.toPath(), downloadUrl);
+				return walker.handleFile(file.toPath(), downloadUrl);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 
-	public void handleFile(Path file) throws IOException {
+	public IPackElement handleFile(Path file) throws IOException {
 		Path relativePath = rootPath.relativize(file);
 		String downloadURL = urlBase + "/" + relativePath.toString().replace("\\","/").replace(" ", "%20");
-		handleFile( file, downloadURL );
+		return handleFile(file,downloadURL);
 	}
 	
-	public void handleFile(Path file, String downloadURL) throws IOException {
+	public IPackElement handleFile(Path file, String downloadURL) throws IOException {
 		Path relativePath = rootPath.relativize(file);
 		long size = Files.size(file);
 		InputStream is = Files.newInputStream(file);
@@ -74,7 +75,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
         ModSide side = ModSide.BOTH;
 		HashMap<String,String> mapMeta = new HashMap<>();
 		//System.out.println(relativePath.toString());
-		if (relativePath.toString().contains(".DS_Store")) { return; }
+		if (relativePath.toString().contains(".DS_Store")) { return null; }
 		if (relativePath.toString().contains(sep)) {
 			switch (relativePath.toString().substring(0, relativePath.toString().indexOf(sep))) {
 				case "asm":
@@ -89,7 +90,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 				case "lib":
 				case "libraries":
 				case "versions":
-					return;
+					return null;
 				//
 				case "instMods":
 				case "jar":
@@ -119,8 +120,8 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 					if (newPath.contains("client")) {
 						newConfig.setNoOverwrite(true);
 					}
-					server.addConfig(newConfig);
-					return;
+					//server.addConfig(newConfig);
+					return newConfig;
 				}
 				case "optional":
 					required = false;
@@ -140,8 +141,8 @@ public class PathWalker extends SimpleFileVisitor<Path> {
             String cleanPath = relativePath.toString().replace("\\","/");
 			if (cleanPath.contains("OpenTerrainGenerator/")) {
 				ConfigFile newConfig = new ConfigFile(downloadURL, cleanPath, false, md5);
-				server.addConfig(newConfig);
-				return;
+				//server.addConfig(newConfig);
+				return newConfig;
 			}
             if (cleanPath.split("/")[1].matches("\\d+(\\.\\d+)*")) {
                 modPath = cleanPath.replaceAll("^(optional|client|server)", "mods");
@@ -152,7 +153,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 			name = name.substring(0,name.lastIndexOf("."));
 		} catch (StringIndexOutOfBoundsException e) {
 			System.out.println("Unable to process filename without '.' Skipping:" + name);
-			return;
+			return null;
 		}
 		id = name.replace(" ", "");
 		id = id.toLowerCase();
@@ -230,7 +231,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 			zf.close();
 		} catch (ZipException e) {
 		    System.out.println("Unable to process, not a zipfile? Skipping:" + name);
-		    return;
+		    return null;
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -250,14 +251,23 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 			if (!modPath.isEmpty()) {
 				newMod.setPath(modPath);
 			}
-			server.addModule(newMod);
+			//server.addModule(newMod);
+			return newMod;
 		}
-		return;
 	}
 
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-		handleFile(file);
+		IPackElement element = handleFile(file);
+		if (element != null) {
+			if (element instanceof ConfigFile) {
+				server.addConfig((ConfigFile) element);
+				return FileVisitResult.CONTINUE;
+			}
+			if (element instanceof Module) {
+				server.addModule((Module) element);
+			}
+		}
 		return FileVisitResult.CONTINUE;
 	}
 

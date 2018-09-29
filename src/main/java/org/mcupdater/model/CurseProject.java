@@ -5,7 +5,7 @@ public class CurseProject {
 		ALPHA(0),BETA(1),RELEASE(2);
 		public final int val;
 		
-		private ReleaseType(int val) {
+		ReleaseType(int val) {
 			this.val = val;
 		}
 		

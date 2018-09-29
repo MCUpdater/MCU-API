@@ -2,8 +2,7 @@ package org.mcupdater.mojang;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import org.mcupdater.model.JSON;
 
 import java.io.IOException;
@@ -32,12 +31,14 @@ public class MinecraftVersion {
 	private List<Rule> compatibilityRules;
 	private Map<DownloadType, DownloadInfo> downloads = Maps.newEnumMap(DownloadType.class);
 	private AssetIndexInfo assetIndex;
+	private Arguments arguments;
 	
 	public String getId(){ return id; }
 	public String getTime(){ return time; }
 	public String getReleaseTime(){ return releaseTime; }
 	public String getType(){ return type; }
 	public String getMinecraftArguments(){ return minecraftArguments; }
+	public Arguments getArguments(){ return arguments; }
 	public int getMinimumLauncherVersion(){ return minimumLauncherVersion; }
 	public List<Library> getLibraries(){ return libraries; }
 	public String getMainClass(){ return mainClass; }
@@ -79,6 +80,23 @@ public class MinecraftVersion {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public String getEffectiveArguments() {
+		if (this.minecraftArguments != null) {
+			return this.minecraftArguments;
+		} else {
+			if (this.arguments != null) {
+				StringBuilder argBuilder = new StringBuilder();
+				for (JsonElement entry : this.arguments.getGame()) {
+					if (entry.isJsonPrimitive()) {
+						argBuilder.append(entry.getAsString()).append(" ");
+					}
+				}
+				return argBuilder.toString().trim();
+			}
+		}
+		return "";
 	}
 	
 }
