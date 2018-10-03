@@ -379,7 +379,7 @@ public class MCUpdater {
 			break;
 		case SERVER:
 			downloadInfo = version.getDownloadInfo(DownloadType.SERVER);
-			productionJar = instancePath.resolve("minecraft_server.jar");
+			productionJar = instancePath.resolve("minecraft_server." + server.getVersion() + ".jar");
 			try {
 				if (downloadInfo != null) {
 					jarUrl.add(downloadInfo.getUrl());
