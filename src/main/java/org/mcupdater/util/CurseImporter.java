@@ -2,16 +2,19 @@ package org.mcupdater.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.mcupdater.api.Version;
-import org.mcupdater.model.CurseProject;
-import org.mcupdater.model.Module;
-import org.mcupdater.model.ServerList;
+import org.mcupdater.model.*;
 import org.mcupdater.model.curse.manifest.Manifest;
 import org.mcupdater.model.curse.manifest.Minecraft;
 import org.mcupdater.model.curse.manifest.ModLoader;
@@ -59,7 +62,8 @@ public class CurseImporter {
 				try {
 					dir = Files.createTempDirectory("import");
 					Archive.extractZip(tmp, dir.toFile());
-					
+
+					json = dir.resolve("manifest.json").toFile();
 					json = new File(dir+File.separator+"manifest.json");
 					json.deleteOnExit();
 				} catch (IOException e) {
@@ -124,8 +128,28 @@ public class CurseImporter {
 						
 						definition.addModule(mod);
 					}
-					
+
 					// TODO: add overrides as special case unzip
+					File overrides = dir.resolve("overrides").toFile();
+					File outputOverrides = MCUpdater.getInstance().getArchiveFolder().resolve("FastPack").resolve(entry.getName() + "-overrides.zip").toFile();
+					Archive.createZip(outputOverrides, new ArrayList<>(FileUtils.listFiles(overrides, null, true)), overrides.toPath(), null);
+					System.out.println("[import] overrides recreated as separate zip at " + outputOverrides.getAbsolutePath());
+					long size = Files.size(outputOverrides.toPath());
+					InputStream is = Files.newInputStream(outputOverrides.toPath());
+					String md5 = DigestUtils.md5Hex(is);
+
+					Module modOverrides = Module.createBlankModule();
+					modOverrides.setName("Overrides");
+					modOverrides.setId("overrides");
+					modOverrides.addUrl(new PrioritizedURL(outputOverrides.toURI().toURL().toString(),0));
+					modOverrides.setRequired(true);
+					modOverrides.setMD5(md5);
+					modOverrides.setFilesize(size);
+					modOverrides.setModType(ModType.Extract);
+					modOverrides.setInRoot(true);
+					modOverrides.setSide(ModSide.BOTH);
+
+					definition.addModule(modOverrides);
 					
 				} catch (IOException e) {
 					e.printStackTrace();

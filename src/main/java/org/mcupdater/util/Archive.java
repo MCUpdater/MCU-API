@@ -95,7 +95,7 @@ public class Archive {
 		int filePos = 0;
 		for (File entry : files) {
 			filePos++;
-			parent.setStatus("Writing backup: (" + filePos + "/" + fileCount + ")");
+			if (parent != null ) parent.setStatus("Writing backup: (" + filePos + "/" + fileCount + ")");
 			String relPath = entry.getPath().replace(mCFolder.toString(), "");
 			MCUpdater.apiLogger.finest(relPath);
 			if (entry.isDirectory()) {
@@ -115,7 +115,7 @@ public class Archive {
 			}
 		}
 		out.close();
-		parent.setStatus("Backup written");
+		if (parent != null) parent.setStatus("Backup written");
 	}
 
 	public static void addToZip(File archive, List<File> files, File basePath) throws IOException
