@@ -193,6 +193,12 @@ public class Archive {
 			}
 			BufferedInputStream in;
 			for (File entry : inputFiles) {
+				// On some systems, the first entry provided is the root directory, but it is missing
+				// the path separator - making it not caught by the replace() call below, and added
+				// as a full path entry, malforming the created .JAR.
+				if (basePath.startsWith(entry.getPath())) {
+					continue;
+				}
 				String path = entry.getPath().replace(basePath, "").replace("\\", "/");
 				if (entry.isDirectory()) {
 					if (!path.isEmpty()) {
