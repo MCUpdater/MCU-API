@@ -409,14 +409,14 @@ public class ServerDefinition {
 	}
 
 	public void addFabric(String mcVersion, String fabricVersion, String yarnVersion) {
-		// reference: http://fabric.asie.pl/wiki/modpack:mcupdater
+		// reference: https://fabricmc.net/wiki/modpack:mcupdater
 
 		final String baseUrl = "https://fabricmc.net/download/mcupdater/";
 		final String fabricMainClass = "net.fabricmc.loader.launch.knot.KnotClient";
 
 		// if yarn version is unspecified, we need to look this up
 		if ( yarnVersion.equals("latest") ) {
-			final String mavenUrl = "http://maven.modmuss50.me/net/fabricmc/yarn/maven-metadata.xml";
+			final String mavenUrl = "https://maven.fabricmc.net/net/fabricmc/yarn/maven-metadata.xml";
 			System.out.println("Scanning "+mavenUrl+" for yarn version...");
 			try {
 				final Document xml = ServerPackParser.readXmlFromUrl(mavenUrl);
