@@ -403,4 +403,19 @@ public class ServerDefinition {
 		this.addImport(new Import("http://files.mcupdater.com/example/forge.php?mc=" + mcVersion + "&forge=" + forgeVersion, "forge"));
 		this.addModule(new Module("Minecraft Forge", "forge-" + forgeVersion, new ArrayList<PrioritizedURL>(), null, "", true, ModType.Override, 0, false, false, true, "", new ArrayList<ConfigFile>(), "BOTH", "", new HashMap<String, String>(), "", "", new ArrayList<Submodule>(), ""));
 	}
+
+	public void addFabric(String mcVersion, String fabricVersion, String yarnVersion) {
+		// reference: http://fabric.asie.pl/wiki/modpack:mcupdater
+
+		final String baseUrl = "https://fabricmc.net/download/mcupdater/";
+		final String fabricMainClass = "net.fabricmc.loader.launch.knot.KnotClient";
+
+		// TODO: if yarn version is unspecified, we need to look this up
+		if ( yarnVersion.equals("latest") ) {
+			final String mavenUrl = "http://maven.modmuss50.me/net/fabricmc/yarn/maven-metadata.xml";
+		}
+
+		this.addImport(new Import(baseUrl + "?yarn=" + yarnVersion + "&loader=" + fabricVersion, "fabric"));
+		this.getServerEntry().setMainClass(fabricMainClass);
+	}
 }
