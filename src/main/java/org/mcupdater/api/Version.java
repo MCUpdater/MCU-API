@@ -4,6 +4,8 @@ import org.mcupdater.MCUApp;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Version {
 	public static final int MAJOR_VERSION;
@@ -79,7 +81,15 @@ public class Version {
 			}
 			return true;
 		} catch( NumberFormatException e ) {
-			log("Got non-numerical pack format version '"+packVersion+"'");
+			// try as a snapshot before throwing the exception
+			if (isSnapshot(packVersion)) {
+				final SnapshotVersion ss = new SnapshotVersion(packVersion);
+				final String releaseFamily = ss.toReleaseFamily();
+				log("Got snapshot pack version '"+packVersion+"', parsed as "+ss+", treating like release version '"+releaseFamily+"'");
+				return requestedFeatureLevel(releaseFamily, featureLevelVersion);
+			} else {
+				log("Got non-numerical pack format version '" + packVersion + "'");
+			}
 		} catch( ArrayIndexOutOfBoundsException e ) {
 			log("Got malformed pack format version '"+packVersion+"'");
 		}
@@ -103,6 +113,86 @@ public class Version {
 			_app.log(msg);
 		} else {
 			System.out.println(msg);
+		}
+	}
+
+	// snapshot handling ////////////////////////////////////////////////////
+
+	private static final String snapshotRegex = "^(?<year>\\d+)w(?<week>\\d+)(?<build>[a-z])$";
+	public static boolean isSnapshot(String version) {
+		return version.matches(snapshotRegex);
+	}
+
+	public static class SnapshotVersion {
+		public final int YEAR;
+		public final int WEEK;
+		public final char BUILD;
+
+		public SnapshotVersion(String version) {
+			Pattern p = Pattern.compile(snapshotRegex);
+			Matcher m = p.matcher(version);
+
+			if (m.find()) {
+				YEAR = Integer.parseInt(m.group("year"));
+				WEEK = Integer.parseInt(m.group("week"));
+				BUILD = m.group("build").charAt(0);
+			} else {
+				throw new IllegalArgumentException();
+			}
+		}
+
+		public String toString() {
+			// NB: this isn't right because mojang 0-pads their weeks
+			return YEAR+"w"+WEEK+BUILD;
+		}
+
+		// TODO: make this prettier
+		public String toReleaseFamily() {
+			if( YEAR >= 18 && WEEK >= 43 ) {
+				// 18w43a = 1.14
+				return "1.14";
+			} else if( YEAR >= 17 && WEEK >= 43 ) {
+				// 17w43a = 1.13
+				return "1.13";
+			} else if( YEAR >= 17 && WEEK >= 6 ) {
+				// 17w06a = 1.12
+				return "1.12";
+			} else if( YEAR >= 16 && WEEK >= 32 ) {
+				// 16w32a = 1.11
+				return "1.11";
+			} else if( YEAR >= 16 && WEEK >= 20 ) {
+				// 16w20a = 1.10
+				return "1.10";
+			} else if( YEAR >= 15 && WEEK >= 31 ) {
+				// 15w31a = 1.9
+				return "1.9";
+			} else if( YEAR >= 14 && WEEK >= 2 ) {
+				// 14w02a = 1.8
+				return "1.8";
+			} else if( YEAR >= 13 && WEEK >= 36 ) {
+				// 13w36a = 1.7
+				return "1.7";
+			} else if( YEAR >= 13 && WEEK >= 16 ) {
+				// 13w16a = 1.6
+				return "1.6";
+			} else if( YEAR >= 13 && WEEK >= 1 ) {
+				// 13w01a = 1.5
+				return "1.5";
+			} else if( YEAR >= 12 && WEEK >= 32 ) {
+				// 12w32a = 1.4
+				return "1.4";
+			} else if( YEAR >= 12 && WEEK >= 15 ) {
+				// 12w15a = 1.3
+				return "1.3";
+			} else if( YEAR >= 12 && WEEK >= 3 ) {
+				// 12w03a = 1.2
+				return "1.2";
+			} else if( YEAR >= 11 && WEEK >= 47 ) {
+				// 11w47a = 1.1
+				return "1.1";
+			} else {
+				return "1.0";
+			}
 		}
 	}
 }
