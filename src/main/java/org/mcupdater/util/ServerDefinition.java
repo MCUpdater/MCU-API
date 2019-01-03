@@ -4,6 +4,10 @@ import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.model.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -410,9 +414,52 @@ public class ServerDefinition {
 		final String baseUrl = "https://fabricmc.net/download/mcupdater/";
 		final String fabricMainClass = "net.fabricmc.loader.launch.knot.KnotClient";
 
-		// TODO: if yarn version is unspecified, we need to look this up
+		// if yarn version is unspecified, we need to look this up
 		if ( yarnVersion.equals("latest") ) {
 			final String mavenUrl = "http://maven.modmuss50.me/net/fabricmc/yarn/maven-metadata.xml";
+			System.out.println("Scanning "+mavenUrl+" for yarn version...");
+			try {
+				final Document xml = ServerPackParser.readXmlFromUrl(mavenUrl);
+				final String yarnPrefix = mcVersion+".";
+				String foundVersion = null;
+				// NB: I despise sifting through random xml, so we're doing it quick and ugly
+				NodeList tmp = xml.getElementsByTagName("versioning");
+				for( int i = 0; i < tmp.getLength(); ++i ) {
+					NodeList children = tmp.item(i).getChildNodes();
+					for( int j = 0; j < children.getLength(); ++j ) {
+						Node child = children.item(j);
+						if( child.getNodeName().equals("release") ) {
+							String version = child.getTextContent();
+							if( version.startsWith(yarnPrefix) ) {
+								// our snapshot matches the current release, use that
+								System.out.println("Current yarn release is "+version+", using");
+								foundVersion = version;
+							}
+						} else if( child.getNodeName().equals("versions") ) {
+							// we're here, start digging
+							NodeList versions = child.getChildNodes();
+							// scan backwards, the list should be sorted ascending
+							for( int k = versions.getLength()-1; k > 0; --k ) {
+								final Node v = versions.item(k);
+								String version = v.getTextContent();
+								if( version.startsWith(yarnPrefix) ) {
+									// we found one, use it
+									System.out.println("Found yarn build "+version+", using");
+									foundVersion = version;
+									break;
+								}
+							}
+						}
+						// export the version we found and go
+						if( foundVersion != null ) {
+							yarnVersion = foundVersion;
+							break;
+						}
+					}
+				}
+			} catch( Exception e ) {
+				System.out.println("Failed to parse yarn maven metadata xml, please specify yarn version manually.");
+			}
 		}
 
 		this.addImport(new Import(baseUrl + "?yarn=" + yarnVersion + "&loader=" + fabricVersion, "fabric"));
