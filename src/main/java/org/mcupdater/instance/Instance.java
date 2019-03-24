@@ -7,6 +7,8 @@ import java.util.Map;
 
 public class Instance {
 	private String mcversion;
+	private String packName;
+	private String packId;
 	private String revision;
 	private String hash = "";
 	private List<FileInfo> instanceFiles = new ArrayList<>();
@@ -119,4 +121,19 @@ public class Instance {
 		return serializer.toString();
 	}
 
+	public String getPackName() {
+		return packName;
+	}
+
+	public void setPackName(String packName) {
+		this.packName = packName;
+	}
+
+	public String getPackId() {
+		return packId;
+	}
+
+	public void setPackId(String packId) {
+		this.packId = packId;
+	}
 }

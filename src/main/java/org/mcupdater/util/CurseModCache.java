@@ -1,5 +1,7 @@
 package org.mcupdater.util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -8,8 +10,12 @@ import org.mcupdater.api.Version;
 import org.mcupdater.model.CurseProject;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 public enum CurseModCache {
@@ -17,6 +23,8 @@ public enum CurseModCache {
 	
 	private static final String DOWNLOAD = "/download";
 	private static final String BASE_URL = "https://minecraft.curseforge.com/projects/";
+	private static final Map<String,Integer> versions = new HashMap<>();
+	private static final String GAMEVERSIONS_URL = "https://minecraft.curseforge.com/api/game/versions?token=a98e4aa8-f43e-4c6a-b245-70327d9c2f85";
 	
 	private CurseModCache() {
 		// TODO: handle a serialized data cache location (possibly lean on DownloadCache here?)
@@ -39,8 +47,23 @@ public enum CurseModCache {
 			return curse.getURL();
 		} else {
 			// autodiscovery scraping time
+			final String pack_mc_version = curse.getMCVersion();
+			final CurseProject.ReleaseType min_release_type = curse.getReleaseType();
 			MCUpdater.apiLogger.log(Level.INFO, "Performing URL autodiscovery for "+curse);
-			final String filesURL = baseURL(curse)+"/files";
+			if (versions.size() == 0) {
+				MCUpdater.apiLogger.log(Level.INFO, "Populating CurseForge version map");
+				Gson gson = new GsonBuilder().create();
+				try {
+					URLConnection conn = new URL(GAMEVERSIONS_URL).openConnection();
+					GameVersion[] curseversions = gson.fromJson(new InputStreamReader(conn.getInputStream()),GameVersion[].class);
+					for (int i = 0; i < curseversions.length; i++) {
+						versions.put(curseversions[i].getName(),curseversions[i].getId());
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			final String filesURL = baseURL(curse)+"/files?filter-game-version=2020709689:" + versions.get(pack_mc_version);
 			Document filesDoc;
 			try {
 				filesDoc = Jsoup.connect(filesURL).validateTLSCertificates(false).get();
@@ -52,8 +75,6 @@ public enum CurseModCache {
 			// TODO: re-request this, filtering by MC version on their end before proceeding
 			
 			// for better error messaging
-			final String pack_mc_version = curse.getMCVersion();
-			final CurseProject.ReleaseType min_release_type = curse.getReleaseType();
 			CurseProject.ReleaseType best_release_type = null;
 			int version_matches = 0;
 
