@@ -7,6 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.mcupdater.api.Version;
+import org.mcupdater.downloadlib.DownloadUtil;
 import org.mcupdater.model.CurseProject;
 
 import java.io.IOException;
@@ -179,7 +180,7 @@ public enum CurseModCache {
 		final String origURL = BASE_URL+modID;
 		try {
 			URL sourceURL = new URL(origURL);
-			HttpURLConnection conn = (HttpURLConnection) sourceURL.openConnection();
+			HttpURLConnection conn = DownloadUtil.getMCUHttpURLConnection(sourceURL);
 			conn.setUseCaches(false);
 			conn.setInstanceFollowRedirects(false);
 			String newURL = "";
