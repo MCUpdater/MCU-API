@@ -14,6 +14,7 @@ import java.util.HashMap;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.mcupdater.api.Version;
+import org.mcupdater.downloadlib.DownloadUtil;
 import org.mcupdater.model.*;
 import org.mcupdater.model.curse.manifest.Manifest;
 import org.mcupdater.model.curse.manifest.Minecraft;
@@ -32,7 +33,7 @@ public class CurseImporter {
 			try {
 				final URL url = new URL(importURL);
 				tmp = File.createTempFile("import", "zip");			
-				FileUtils.copyURLToFile(url, tmp);
+				DownloadUtil.get(url, tmp);
 				System.out.println( "[import] downloaded "+Files.size(tmp.toPath())+" bytes...");
 				downloaded = true;
 			} catch (MalformedURLException e) {
@@ -117,6 +118,7 @@ public class CurseImporter {
 					// get mods
 					for( org.mcupdater.model.curse.manifest.File modData : manifest.getFiles() ) {
 						Module mod = Module.createBlankModule();
+						System.out.println("[import] Project ID: " + modData.getProjectID());
 						final String projId = CurseModCache.getTextID(modData.getProjectID());
 						CurseProject proj = new CurseProject(projId, mcVersion);
 						proj.setFile(modData.getFileID());

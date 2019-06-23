@@ -618,6 +618,8 @@ public class MCUpdater {
 				if (server.isGenerateList() && side != ModSide.SERVER) { writeMCServerFile(instancePath, server.getName(), server.getAddress()); }
 				instData.setMCVersion(server.getVersion());
 				instData.setRevision(server.getRevision());
+				instData.setPackName(server.getName());
+				instData.setPackId(server.getServerId());
 				String jsonOut = gson.toJson(instData);
 				try {
 					BufferedWriter writer = Files.newBufferedWriter(instancePath.resolve("instance.json"), StandardCharsets.UTF_8);
@@ -794,5 +796,6 @@ public class MCUpdater {
 	public DatabaseManager getDbManager() {
 		return dbManager;
 	}
+
 }
 
