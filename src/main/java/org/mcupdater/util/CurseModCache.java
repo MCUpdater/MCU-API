@@ -16,14 +16,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
 public enum CurseModCache {
 	INSTANCE;
 	
-	private static final String DOWNLOAD = "/download";
+	private static final String DOWNLOAD = "/download/";
+	private static final String FILE = "/file";
 	private static final String BASE_URL = "https://minecraft.curseforge.com/projects/";
+	private static final String BASE_URL2 = "https://www.curseforge.com/minecraft/mc-mods/";
 	private static final Map<String,Integer> versions = new HashMap<>();
 	private static final String GAMEVERSIONS_URL = "https://minecraft.curseforge.com/api/game/versions?token=a98e4aa8-f43e-4c6a-b245-70327d9c2f85";
 	
@@ -39,11 +42,14 @@ public enum CurseModCache {
 	private static String baseURL(CurseProject curse) {
 		return BASE_URL+curse.getProject();
 	}
-	
+	private static String baseURL2(CurseProject curse) {
+		return BASE_URL2+curse.getProject();
+	}
+
 	public static String fetchURL(CurseProject curse) {
 		if( curse.getFile() > 0 ) {
 			// if we have a file, just go there
-			final String url = baseURL(curse)+"/files/"+curse.getFile()+DOWNLOAD;
+			final String url = baseURL2(curse)+DOWNLOAD+curse.getFile()+FILE;
 			curse.setURL(url);
 			return curse.getURL();
 		} else {
@@ -150,20 +156,14 @@ public enum CurseModCache {
 			fetchURL(curse);
 		}
 		
-		final String downloadURL = curse.getURL();
+		final String downloadURL = baseURL2(curse)+"/files/"+curse.getFile();
 		if( downloadURL.isEmpty() ) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Unable to fetch MD5 for "+curse+" with no URL");
 			return null;
 		}
 		
-		final String fileURL;
-		if( downloadURL.endsWith(DOWNLOAD) )
-			fileURL = downloadURL.substring(0, downloadURL.length() - DOWNLOAD.length());
-		else {
-			MCUpdater.apiLogger.log(Level.SEVERE, "Download URL for "+curse+" did not end with "+DOWNLOAD+", refusing to look for MD5");
-			return null;
-		}
-		
+		final String fileURL = downloadURL;
+
 		Document fileDoc;
 		try {
 			fileDoc = Jsoup.connect(fileURL).validateTLSCertificates(false).get();
@@ -171,8 +171,14 @@ public enum CurseModCache {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Unable to read file data for "+curse, e);
 			return null;
 		}
-		Element elMD5 = fileDoc.getElementsByClass("md5").first();
-		curse.setMD5(elMD5.text());
+		MCUpdater.apiLogger.finest(fileDoc.toString());
+		List<Element> textElements = fileDoc.getElementsByClass("text-sm");
+		for (Element el : textElements) {
+			if(el.text().length() == 32) {
+				curse.setMD5(el.text());
+			}
+		}
+		//curse.setMD5(elMD5.text());
 		return curse.getMD5();
 	}
 	

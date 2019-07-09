@@ -65,6 +65,9 @@ public class FastPack {
 		entry.setNewsUrl(newsURL);
 		entry.setIconUrl(iconURL);
 		entry.setAutoConnect(autoConnect);
+		if(importURL.contains("curseforge.com") && !importURL.endsWith("/file")) {
+			importURL = importURL.concat(importURL.endsWith("/") ? "" : "/" + "file");
+		}
 		
 		CurseImporter importer = new CurseImporter(importURL);
 		importer.run(definition, entry);

@@ -79,6 +79,7 @@ public class CurseImporter {
 				System.out.println( "[import] parsing manifest" );
 				try {
 					String data = FileUtils.readFileToString(json);
+					MCUpdater.apiLogger.finest(data + "\n");
 					Gson gson = new Gson();
 					Manifest manifest = gson.fromJson(data, Manifest.class);
 					
