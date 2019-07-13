@@ -1,8 +1,18 @@
 package org.mcupdater.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import javafx.collections.ObservableList;
+import org.mcupdater.downloadlib.Downloadable;
+import org.mcupdater.util.CurseModCache;
+import org.mcupdater.util.MCUpdater;
+import org.mcupdater.util.PathWalker;
+import org.mcupdater.util.ServerDefinition;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 
 public class Module extends GenericModule {
@@ -32,6 +42,44 @@ public class Module extends GenericModule {
 			this.configs = new ArrayList<>();
 		}
 		this.submodules = new ArrayList<>();
+	}
+
+	public static Module parseFile(CurseProject curseProject, List<PrioritizedURL> urls) throws Exception {
+		File tmp = null;
+		Path path;
+		List<PrioritizedURL> downloadUrls = new ArrayList<>();
+		Integer curseFile = null;
+		if (curseProject != null){
+			downloadUrls.add(new PrioritizedURL(CurseModCache.fetchURL(curseProject), 0));
+			curseFile = curseProject.getFile();
+		}
+		if (urls.size() > 0) downloadUrls.addAll(urls);
+		if (downloadUrls.size() == 0) {
+			throw new Exception("No URLs to download from");
+		}
+		URL finalUrl = null;
+		for (PrioritizedURL url : downloadUrls) {
+			try {
+				tmp = File.createTempFile("import", ".jar");
+				finalUrl = new URL(url.getUrl());
+				System.out.println("Temp file: " + tmp.getAbsolutePath());
+				Downloadable downloadable = new Downloadable("import.jar", tmp.getAbsolutePath(), "force", 0, new ArrayList<>(Collections.singleton(finalUrl)));
+				downloadable.download(tmp.getParentFile().getParentFile(), MCUpdater.getInstance().getArchiveFolder().resolve("cache").toFile());
+				tmp.deleteOnExit();
+				path = tmp.toPath();
+				if (Files.size(path) == 0) {
+					System.out.println("!! got zero bytes from " + url);
+				}
+			} catch(IOException e){
+				System.out.println("!! Unable to download " + url);
+				e.printStackTrace();
+			}
+		}
+		final ServerDefinition definition = new ServerDefinition();
+		final String fname = finalUrl.toString();
+		Module parsed = (Module) PathWalker.handleOneFile(definition, tmp, fname);
+		parsed.setCurseProject(curseProject);
+		return parsed;
 	}
 
 	public List<ConfigFile> getConfigs()
