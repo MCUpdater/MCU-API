@@ -70,7 +70,7 @@ public enum CurseModCache {
 					e.printStackTrace();
 				}
 			}
-			final String filesURL = baseURL(curse)+"/files?filter-game-version=2020709689:" + versions.get(pack_mc_version);
+			final String filesURL = baseURL2(curse)+"/files?filter-game-version=2020709689:" + versions.get(pack_mc_version);
 			Document filesDoc;
 			try {
 				filesDoc = Jsoup.connect(filesURL).validateTLSCertificates(false).get();
@@ -86,17 +86,19 @@ public enum CurseModCache {
 			int version_matches = 0;
 
 			// identify and set file, then re-invoke fetchURL
-			Elements fileList = filesDoc.getElementsByClass("project-file-list-item");
+			Element downloadTable = filesDoc.getElementsByClass("project-file-listing").first();
+			Elements fileList = downloadTable.getElementsByTag("tbody").first().getElementsByTag("tr");
 			ProjectFile file = new ProjectFile();
 			for( Element el : fileList) {
-				final Element elFname = el.getElementsByClass("project-file-name-container").first().children().first();
+				System.out.println(el.children().toString());
+				final Element elFname = el.getElementsByAttribute("data-action").first();
 				//MCUpdater.apiLogger.log(Level.FINEST, elFname.toString());
 				final String href = elFname.attr("href");
 				final String fileNum = href.substring(href.lastIndexOf('/')+1);
 				final int id = Integer.parseInt(fileNum);
 
 				// filter for MC version first
-				final String mc_version = el.getElementsByClass("version-label").first().text();
+				final String mc_version = el.getElementsByClass("mr-2").first().text();
 				if( !Version.fuzzyMatch(mc_version, pack_mc_version) ) {
 					MCUpdater.apiLogger.log(Level.FINE, "Skipping "+curse+":"+id+", mc version mismatch, "+mc_version);
 					continue;
@@ -105,8 +107,8 @@ public enum CurseModCache {
 				}
 
 				// then filter by release type
-				final Element elRelease = el.getElementsByClass("project-file-release-type").first();
-				final String release_type = elRelease.children().first().attr("title");
+				final Element elRelease = el.getElementsByClass("w-5").first();
+				final String release_type = convertReleaseType(elRelease.children().first().text());
 				CurseProject.ReleaseType type = CurseProject.ReleaseType.parse(release_type);
 				if( type.worseThan(min_release_type) || type.worseThan(file.release_type) ) {
 					MCUpdater.apiLogger.log(Level.FINE, "Skipping "+curse+":"+id+", release type mismatch, "+type);
@@ -149,20 +151,39 @@ public enum CurseModCache {
 		
 		return null;
 	}
-	
+
+	private static String convertReleaseType(String text) {
+		switch (text){
+			case "B":
+				return "BETA";
+			case "A":
+				return "ALPHA";
+			case "R":
+			default:
+				return "RELEASE";
+		}
+	}
+
 	public static String fetchMD5(CurseProject curse) {
 		// must have a URL before we can look for an MD5 for it
 		if( curse.getURL().isEmpty() ) {
 			fetchURL(curse);
 		}
 		
-		final String downloadURL = baseURL2(curse)+"/files/"+curse.getFile();
+		//final String downloadURL = baseURL2(curse)+"/files/"+curse.getFile();
+		final String downloadURL = fetchURL(curse);
 		if( downloadURL.isEmpty() ) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Unable to fetch MD5 for "+curse+" with no URL");
 			return null;
 		}
-		
-		final String fileURL = downloadURL;
+
+		final String fileURL;
+		if( downloadURL.endsWith(FILE) )
+			fileURL = downloadURL.substring(0, downloadURL.length() - FILE.length());
+		else {
+			MCUpdater.apiLogger.log(Level.SEVERE, "Download URL for "+curse+" did not end with "+FILE+", refusing to look for MD5");
+			return null;
+		}
 
 		Document fileDoc;
 		try {
