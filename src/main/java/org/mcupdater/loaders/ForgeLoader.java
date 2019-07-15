@@ -1,0 +1,125 @@
+package org.mcupdater.loaders;
+
+import org.apache.commons.lang3.StringUtils;
+import org.mcupdater.downloadlib.Downloadable;
+import org.mcupdater.model.Loader;
+import org.mcupdater.model.ModSide;
+import org.mcupdater.model.PrioritizedURL;
+import org.mcupdater.mojang.Library;
+import org.mcupdater.mojang.MinecraftVersion;
+import org.mcupdater.settings.SettingsManager;
+import org.mcupdater.util.MCUpdater;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+
+public class ForgeLoader implements ILoader {
+
+	private final String FORGE_BASE = "http://files.minecraftforge.net/maven/net/minecraftforge/forge/";
+	private final Loader loader;
+
+	public ForgeLoader(Loader loader) {
+		this.loader = loader;
+	}
+
+	@Override
+	public void install(Path installPath, ModSide side) {
+		try {
+			Path javaPath = getJava();
+			Path mcuPath = MCUpdater.getInstance().getArchiveFolder();
+			File tmp = null;
+			List<PrioritizedURL> downloadUrls = new ArrayList<>();
+			downloadUrls.add(new PrioritizedURL(FORGE_BASE + loader.getVersion() + "/forge-" + loader.getVersion() + "-installer.jar", 0));
+			URL finalUrl;
+			for (PrioritizedURL url : downloadUrls) {
+				try {
+					tmp = File.createTempFile("installer", ".jar");
+					finalUrl = new URL(url.getUrl());
+					System.out.println("Temp file: " + tmp.getAbsolutePath());
+					Downloadable downloadable = new Downloadable("installer.jar", tmp.getAbsolutePath(), "force", 0, new ArrayList<>(Collections.singleton(finalUrl)));
+					downloadable.download(tmp.getParentFile().getParentFile(), MCUpdater.getInstance().getArchiveFolder().resolve("cache").toFile());
+					tmp.deleteOnExit();
+					if (Files.size(tmp.toPath()) == 0) {
+						System.out.println("!! got zero bytes from " + url);
+					}
+				} catch(IOException e){
+					System.out.println("!! Unable to download " + url);
+					e.printStackTrace();
+				}
+			}
+			List<String> args = new ArrayList<>();
+			args.add(javaPath.toString());
+			args.add("-cp");
+			args.add(mcuPath.resolve("lib").resolve("MCU-ForgeLoader.jar").toString() + System.getProperty("path.separator") + tmp.getAbsolutePath());
+			args.add("org.mcupdater.forgeloader.ForgeLoader");
+			args.add(installPath.toAbsolutePath().toString());
+			args.add(side.toString());
+			final ProcessBuilder pb = new ProcessBuilder(args);
+			pb.directory(installPath.toFile());
+			pb.redirectErrorStream(true);
+			final Thread installThread = new Thread(new Runnable(){
+				@Override
+				public void run() {
+					try {
+						Process task = pb.start();
+						BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
+						String line;
+						while ((line = buffRead.readLine()) != null) {
+							if (line.length() > 0) {
+								MCUpdater.apiLogger.info("[ForgeLoader] " + line);
+							}
+						}
+					} catch (IOException e) {
+						MCUpdater.apiLogger.log(Level.SEVERE, "[ForgeLoader] " + e.getMessage(), e);
+					}
+				}
+			});
+			installThread.start();
+		} catch (Exception e) {
+			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public List<String> getClasspathEntries(File instancePath) {
+		List<String> libs = new ArrayList<>();
+		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, this.loader.getVersion().replace("-","-forge-"));
+		for (Library lib : forgeVersion.getLibraries()) {
+			if (lib.validForOS() && !lib.hasNatives()) {
+				libs.add("libraries/" + lib.getFilename());
+			}
+		}
+		return libs;
+	}
+
+	@Override
+	public String getArguments(File instancePath) {
+		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, this.loader.getVersion().replace("-","-forge-"));
+		return " " + forgeVersion.getEffectiveArguments();
+	}
+
+	private Path getJava() throws Exception {
+		Path javaFile;
+		if (System.getProperty("os.name").startsWith("Win")) {
+			javaFile = new File(SettingsManager.getInstance().getSettings().getJrePath()).toPath().resolve("bin").resolve("javaw.exe");
+		} else {
+			javaFile = new File(SettingsManager.getInstance().getSettings().getJrePath()).toPath().resolve("bin").resolve("java");
+		}
+		if (Files.exists(javaFile)) {
+			return javaFile;
+		} else {
+			throw new Exception("Java executable not found at specified JRE path!");
+		}
+	}
+
+}

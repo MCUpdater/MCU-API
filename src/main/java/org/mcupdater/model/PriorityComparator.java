@@ -8,7 +8,7 @@ public class PriorityComparator implements Comparator<PrioritizedURL> {
 		if (o1.getPriority() == o2.getPriority()) {
 			return o1.getUrl().compareTo(o2.getUrl());
 		} else {
-			return Integer.valueOf(o1.getPriority()).compareTo(Integer.valueOf(o2.getPriority()));
+			return Integer.compare(o1.getPriority(), o2.getPriority());
 		}
 	}
 }

@@ -5,6 +5,8 @@ import com.google.common.collect.Maps;
 import com.google.gson.*;
 import org.mcupdater.model.JSON;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -77,6 +79,21 @@ public class MinecraftVersion {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (VersionManifest.VersionNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static MinecraftVersion loadLocalVersion(File instanceLocation, String version) {
+		GsonBuilder builder = new GsonBuilder();
+		builder.registerTypeAdapterFactory(new LowerCaseEnumTypeAdapterFactory());
+		builder.enableComplexMapKeySerialization();
+		Gson gson = builder.create();
+
+		try {
+			File versionFile = new File(instanceLocation, "versions/" + version + "/" + version + ".json");
+			return gson.fromJson(new InputStreamReader(new FileInputStream(versionFile)),MinecraftVersion.class);
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;

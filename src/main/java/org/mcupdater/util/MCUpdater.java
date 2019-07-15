@@ -549,6 +549,10 @@ public class MCUpdater {
 					Archive.extractZip(instancePath.resolve("libraries").resolve(entry).toFile(), instancePath.resolve("libraries").resolve("natives").toFile(), false);
 				}
 				parent.log("Library file extraction complete");
+				server.getLoaders().sort(new OrderComparator());
+				for (Loader loader : server.getLoaders()) {
+					loader.getILoader().install(instancePath, side);
+				}
 			}});
         if (libraryQueue != null) {
             libraryQueue.processQueue(libExecutor);
