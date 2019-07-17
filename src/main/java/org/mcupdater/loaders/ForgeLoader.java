@@ -1,6 +1,7 @@
 package org.mcupdater.loaders;
 
 import org.apache.commons.lang3.StringUtils;
+import org.mcupdater.api.Version;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.model.Loader;
 import org.mcupdater.model.ModSide;
@@ -60,28 +61,40 @@ public class ForgeLoader implements ILoader {
 			List<String> args = new ArrayList<>();
 			args.add(javaPath.toString());
 			args.add("-cp");
-			args.add(mcuPath.resolve("lib").resolve("MCU-ForgeLoader.jar").toString() + System.getProperty("path.separator") + tmp.getAbsolutePath());
+			String loaderLib;
+			loaderLib = Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") ? "MCU-ForgeLoader.jar" : "MCU-LegacyForgeLoader.jar";
+			args.add(mcuPath.resolve("lib").resolve(loaderLib).toString() + System.getProperty("path.separator") + tmp.getAbsolutePath());
 			args.add("org.mcupdater.forgeloader.ForgeLoader");
 			args.add(installPath.toAbsolutePath().toString());
 			args.add(side.toString());
 			final ProcessBuilder pb = new ProcessBuilder(args);
 			pb.directory(installPath.toFile());
 			pb.redirectErrorStream(true);
-			final Thread installThread = new Thread(new Runnable(){
-				@Override
-				public void run() {
-					try {
-						Process task = pb.start();
-						BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
-						String line;
-						while ((line = buffRead.readLine()) != null) {
-							if (line.length() > 0) {
-								MCUpdater.apiLogger.info("[ForgeLoader] " + line);
+			final File instancePath = installPath.toFile();
+			final Thread installThread = new Thread(() -> {
+				try {
+					Process task = pb.start();
+					BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
+					String line;
+					while ((line = buffRead.readLine()) != null) {
+						if (line.length() > 0) {
+							MCUpdater.apiLogger.info("[ForgeLoader] " + line);
+						}
+					}
+					File libPath = new File(instancePath, "libraries");
+					MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, getVersionFilename());
+					for (Library lib : forgeVersion.getLibraries()) {
+						String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"),0,2),":");
+						if (lib.validForOS()) {
+							if (!new File(libPath, lib.getFilename()).exists()) {
+								Downloadable downloadable = new Downloadable(lib.getName(), lib.getFilename(), "force", 0, new ArrayList<>(Collections.singleton(new URL(lib.getDownloadUrl()))));
+								downloadable.download(libPath, MCUpdater.getInstance().getArchiveFolder().resolve("cache").toFile());
+								System.out.println(lib.getFilename());
 							}
 						}
-					} catch (IOException e) {
-						MCUpdater.apiLogger.log(Level.SEVERE, "[ForgeLoader] " + e.getMessage(), e);
 					}
+				} catch (IOException e) {
+					MCUpdater.apiLogger.log(Level.SEVERE, "[ForgeLoader] " + e.getMessage(), e);
 				}
 			});
 			installThread.start();
@@ -90,10 +103,15 @@ public class ForgeLoader implements ILoader {
 		}
 	}
 
+	private String getVersionFilename() {
+		return Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") ? this.loader.getVersion().replace("-","-forge-") : this.loader.getVersion().split("-")[0] + "-forge" + this.loader.getVersion();
+	}
+
 	@Override
 	public List<String> getClasspathEntries(File instancePath) {
 		List<String> libs = new ArrayList<>();
-		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, this.loader.getVersion().replace("-","-forge-"));
+		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, getVersionFilename());
+		System.out.println(forgeVersion);
 		for (Library lib : forgeVersion.getLibraries()) {
 			if (lib.validForOS() && !lib.hasNatives()) {
 				libs.add("libraries/" + lib.getFilename());
@@ -104,7 +122,7 @@ public class ForgeLoader implements ILoader {
 
 	@Override
 	public String getArguments(File instancePath) {
-		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, this.loader.getVersion().replace("-","-forge-"));
+		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, getVersionFilename());
 		return " " + forgeVersion.getEffectiveArguments();
 	}
 
