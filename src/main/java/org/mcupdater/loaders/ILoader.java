@@ -8,9 +8,11 @@ import java.util.List;
 
 public interface ILoader {
 
-	void install(Path installPath, ModSide side);
+	boolean install(Path installPath, ModSide side);
 
 	List<String> getClasspathEntries(File instancePath);
 
 	String getArguments(File instancePath);
+
+	String getMainClassClient();
 }

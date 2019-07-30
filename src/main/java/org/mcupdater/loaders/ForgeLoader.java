@@ -1,6 +1,5 @@
 package org.mcupdater.loaders;
 
-import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.model.Loader;
@@ -19,10 +18,11 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
+
+import static java.lang.Thread.sleep;
 
 public class ForgeLoader implements ILoader {
 
@@ -34,7 +34,7 @@ public class ForgeLoader implements ILoader {
 	}
 
 	@Override
-	public void install(Path installPath, ModSide side) {
+	public boolean install(Path installPath, ModSide side) {
 		try {
 			Path javaPath = getJava();
 			Path mcuPath = MCUpdater.getInstance().getArchiveFolder();
@@ -84,7 +84,6 @@ public class ForgeLoader implements ILoader {
 					File libPath = new File(instancePath, "libraries");
 					MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, getVersionFilename());
 					for (Library lib : forgeVersion.getLibraries()) {
-						String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"),0,2),":");
 						if (lib.validForOS()) {
 							if (!new File(libPath, lib.getFilename()).exists()) {
 								Downloadable downloadable = new Downloadable(lib.getName(), lib.getFilename(), "force", 0, new ArrayList<>(Collections.singleton(new URL(lib.getDownloadUrl()))));
@@ -98,8 +97,14 @@ public class ForgeLoader implements ILoader {
 				}
 			});
 			installThread.start();
+			while(installThread.isAlive()) {
+				sleep(500);
+			}
+			MCUpdater.apiLogger.log(Level.INFO, "[ForgeLoader] Forge " + this.loader.getVersion() + " installed!");
+			return true;
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
+			return false;
 		}
 	}
 
@@ -137,6 +142,15 @@ public class ForgeLoader implements ILoader {
 			return javaFile;
 		} else {
 			throw new Exception("Java executable not found at specified JRE path!");
+		}
+	}
+
+	@Override
+	public String getMainClassClient() {
+		if (Version.requestedFeatureLevel(this.loader.getVersion().split("-")[0],"1.13")) {
+			return "cpw.mods.modlauncher.Launcher";
+		} else {
+			return "net.minecraft.launchwrapper.Launch";
 		}
 	}
 
