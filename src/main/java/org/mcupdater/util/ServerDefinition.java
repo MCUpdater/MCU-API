@@ -343,6 +343,10 @@ public class ServerDefinition {
 		return imports;
 	}
 
+	public List<Loader> getLoaders() {
+		return loaders;
+	}
+
 	public void assignConfigs(Map<String,String> issues, boolean debug) {
 		System.out.println("Assigning configs to mods\n===============");
 		//this.modules.get(0).setConfigs(tempConfigs);

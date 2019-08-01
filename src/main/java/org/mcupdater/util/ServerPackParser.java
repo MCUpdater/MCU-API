@@ -522,6 +522,16 @@ public class ServerPackParser {
 									sl.getPackElements().add(newImport);
 								}
 							}
+							nl = docEle.getElementsByTagName("Loader");
+							if(nl !=null && nl.getLength() > 0)
+							{
+								for(int j = 0; j < nl.getLength(); j++)
+								{
+									Element el = (Element)nl.item(j);
+									Loader l = getLoaderV2(el);
+									sl.getPackElements().add(l);
+								}
+							}
 							nl = docEle.getElementsByTagName("Module");
 							if (nl != null && nl.getLength() > 0) {
 								for (int j = 0; j < nl.getLength(); j++) {
