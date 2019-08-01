@@ -432,6 +432,7 @@ public class MCUpdater {
 		}
         libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("libraries").toFile(), DownloadCache.getDir());
 		Boolean updateJar = clearExisting;
+		/*
 		if (side == ModSide.CLIENT) {
 			if (!productionJar.toFile().exists()) {
 				updateJar = true;
@@ -442,6 +443,7 @@ public class MCUpdater {
 		} else {
 			updateJar = true;
 		}			
+		 */
 		Iterator<GenericModule> iMods = toInstall.iterator();
 		List<String> modIds = new ArrayList<>();
 		Map<String,String> newFilenames = new HashMap<>();
@@ -508,8 +510,8 @@ public class MCUpdater {
 			switch (entry.getModType()) {
 				case Jar:
 					if (updateJar) {
-						jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),entry.getFilesize(),entry.getUrls()));
-						keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
+						jarMods.add(new Downloadable(entry.getName(), entry.getJarOrder() + "-" + entry.getId() + ".jar",entry.getMD5(),entry.getFilesize(),entry.getUrls()));
+						keepMeta.put(entry.getJarOrder() + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
 						instData.addJarMod(entry.getId(), entry.getMD5());
 						jarModCount++;
 					}
@@ -549,25 +551,34 @@ public class MCUpdater {
 					Archive.extractZip(instancePath.resolve("libraries").resolve(entry).toFile(), instancePath.resolve("libraries").resolve("natives").toFile(), false);
 				}
 				parent.log("Library file extraction complete");
+				server.getLoaders().sort(new OrderComparator());
+				for (Loader loader : server.getLoaders()) {
+					loader.getILoader().install(instancePath, side);
+				}
 			}});
         if (libraryQueue != null) {
             libraryQueue.processQueue(libExecutor);
         }
-		final File branding = new File(tmpFolder, "fmlbranding.properties");
-		try {
-			branding.createNewFile();
-			Properties propBrand = new Properties();
-			propBrand.setProperty("fmlbranding", "MCUpdater: " + server.getName() + " (rev " + server.getRevision() + ")");
-			propBrand.store(new FileOutputStream(branding), "MCUpdater ServerPack branding");
-		} catch (IOException e1) {
-			apiLogger.log(Level.SEVERE, "I/O Error", e1);
+		File branding = new File(tmpFolder, "fmlbranding.properties");
+        boolean doBranding = false;
+		if (!Version.requestedFeatureLevel(server.getVersion(),"1.13")) {
+			try {
+				doBranding = true;
+				branding.createNewFile();
+				Properties propBrand = new Properties();
+				propBrand.setProperty("fmlbranding", "MCUpdater: " + server.getName() + " (rev " + server.getRevision() + ")");
+				propBrand.store(new FileOutputStream(branding), "MCUpdater ServerPack branding");
+			} catch (IOException e1) {
+				apiLogger.log(Level.SEVERE, "I/O Error", e1);
+			}
 		}
 		final boolean doJarUpdate = updateJar;
+		final boolean finalDoBranding = doBranding;
 		TaskableExecutor jarExecutor = new TaskableExecutor(2, new Runnable() {
 			
 			@Override
 			public void run() {
-				if (!doJarUpdate) {
+				if (!doJarUpdate && finalDoBranding) {
 					parent.log("Updating FML branding");
 					try {
 						Archive.updateArchive(productionJar.toFile(), new File[]{ branding });
