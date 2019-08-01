@@ -44,11 +44,13 @@ public class ForgeLoader implements ILoader {
 			URL finalUrl;
 			for (PrioritizedURL url : downloadUrls) {
 				try {
-					tmp = File.createTempFile("installer", ".jar");
+					File tempFolder = MCUpdater.getInstance().getArchiveFolder().resolve("temp").toFile();
+					tempFolder.mkdirs();
+					tmp = File.createTempFile("installer", ".jar", tempFolder);
 					finalUrl = new URL(url.getUrl());
-					System.out.println("Temp file: " + tmp.getAbsolutePath());
-					Downloadable downloadable = new Downloadable("installer.jar", tmp.getAbsolutePath(), "force", 0, new ArrayList<>(Collections.singleton(finalUrl)));
-					downloadable.download(tmp.getParentFile().getParentFile(), MCUpdater.getInstance().getArchiveFolder().resolve("cache").toFile());
+					System.out.println("Temp file: " + tmp.getName());
+					Downloadable downloadable = new Downloadable("installer.jar", tmp.getName(), "force", 0, new ArrayList<>(Collections.singleton(finalUrl)));
+					downloadable.download(tempFolder, MCUpdater.getInstance().getArchiveFolder().resolve("cache").toFile());
 					tmp.deleteOnExit();
 					if (Files.size(tmp.toPath()) == 0) {
 						System.out.println("!! got zero bytes from " + url);
