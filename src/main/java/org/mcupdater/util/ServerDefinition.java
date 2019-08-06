@@ -4,6 +4,7 @@ import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.model.*;
+import org.mcupdater.mojang.nbt.TagCompound;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -25,9 +26,11 @@ public class ServerDefinition {
 	private List<Import> imports;
 	private Map<String, Module> modules;
 	private List<ConfigFile> tempConfigs;
+	private List<Loader> loaders;
 
 	public ServerDefinition() {
 		this.entry = new ServerList();
+		this.loaders = new ArrayList<>();
 		this.imports = new ArrayList<>();
 		this.modules = new HashMap<>();
 		this.tempConfigs = new ArrayList<>();
@@ -71,7 +74,7 @@ public class ServerDefinition {
 			BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
 			generateServerPackHeaderXML(stylesheet, fileWriter);
 			generateServerHeaderXML(this.getServerEntry(), fileWriter);
-			generateServerDetailXML(fileWriter, this.imports, moduleList, onlyOverrides);
+			generateServerDetailXML(fileWriter, this.imports, this.loaders, moduleList, onlyOverrides);
 			generateServerFooterXML(fileWriter);
 			generateServerPackFooterXML(fileWriter);
 			fileWriter.close();
@@ -120,10 +123,14 @@ public class ServerDefinition {
 		writer.newLine();
 	}
 
-	public static void generateServerDetailXML(BufferedWriter writer, List<Import> importsList, List<Module> moduleList, Boolean onlyOverrides) throws IOException {
+	public static void generateServerDetailXML(BufferedWriter writer, List<Import> importsList, List<Loader> loaderList, List<Module> moduleList, Boolean onlyOverrides) throws IOException {
 
 			for (Import importEntry : importsList) {
 				writer.write("\t\t<Import" + (importEntry.getUrl().isEmpty() ? ">" : (" url=\"" + xmlEscape(importEntry.getUrl())) + "\">") + importEntry.getServerId() + "</Import>");
+				writer.newLine();
+			}
+			for (Loader loaderEntry : loaderList) {
+				writer.write("\t\t<Loader type=\"" + xmlEscape(loaderEntry.getType()) + "\" version=\"" + xmlEscape(loaderEntry.getVersion()) + "\" loadOrder=\"" + xmlEscape(String.valueOf(loaderEntry.getLoadOrder())) + "\"/>");
 				writer.newLine();
 			}
 			for (Module moduleEntry : moduleList) {
@@ -307,6 +314,8 @@ public class ServerDefinition {
 		return result;
 	}
 
+	private void addLoader(Loader newLoader) { this.loaders.add(newLoader);	}
+
 	public void addImport(Import newImport) {
 		this.imports.add(newImport);
 	}
@@ -332,6 +341,10 @@ public class ServerDefinition {
 
 	public List<Import> getImports() {
 		return imports;
+	}
+
+	public List<Loader> getLoaders() {
+		return loaders;
 	}
 
 	public void assignConfigs(Map<String,String> issues, boolean debug) {
@@ -404,8 +417,8 @@ public class ServerDefinition {
 	}
 
 	public void addForge(String mcVersion, String forgeVersion) {
-		this.addImport(new Import("http://files.mcupdater.com/example/forge.php?mc=" + mcVersion + "&forge=" + forgeVersion, "forge"));
-		this.addModule(new Module("Minecraft Forge", "forge-" + forgeVersion, new ArrayList<PrioritizedURL>(), null, "", true, ModType.Override, 0, false, false, true, "", new ArrayList<ConfigFile>(), "BOTH", "", new HashMap<String, String>(), "", "", new ArrayList<Submodule>(), ""));
+		this.addLoader(new Loader("Forge",forgeVersion,0));
+		this.addModule(new Module("Minecraft Forge", "forge-" + forgeVersion, new ArrayList<PrioritizedURL>(), null, "", true, ModType.Regular, 0, false, false, true, "", new ArrayList<ConfigFile>(), "BOTH", "", new HashMap<String, String>(), "", "", new ArrayList<Submodule>(), ""));
 	}
 
 	public void addFabric(String mcVersion, String fabricVersion, String yarnVersion) {

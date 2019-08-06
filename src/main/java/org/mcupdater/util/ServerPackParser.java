@@ -138,6 +138,16 @@ public class ServerPackParser {
 				}
 			}
             sl.setModules(modList);
+			nl = server.serverElement.getElementsByTagName("Loader");
+			if(nl !=null && nl.getLength() > 0)
+			{
+				for(int i = 0; i < nl.getLength(); i++)
+				{
+					Element el = (Element)nl.item(i);
+					Loader l = getLoaderV2(el);
+					sl.getLoaders().add(l);
+				}
+			}
 			return sl;
 			
 		case 1:
@@ -212,6 +222,23 @@ public class ServerPackParser {
 		return parseDocument(dom, el.getTextContent(), modList, hierarchy + "/" + el.getTextContent(), parent.getVersion());
 
 	}
+
+	private static Loader getLoaderV2(Element el) throws Loader.InvalidTypeException {
+		String type = el.getAttribute("type");
+		String version = el.getAttribute("version");
+		int loadOrder = Integer.valueOf(el.getAttribute("loadOrder"));
+		Loader newLoader = new Loader();
+		if (!Loader.isValidType(type)) {
+			throw new Loader.InvalidTypeException(type);
+		} else {
+			newLoader.setType(type);
+			newLoader.setVersion(version);
+			newLoader.setLoadOrder(loadOrder);
+			//FUTURE: Handle child nodes
+			return newLoader;
+		}
+	}
+
 
 	private static Module getModuleV2(Element el, String mcVersion, String hierarchy) throws MalformedModPackException {
 		XPath xpath = XPathFactory.newInstance().newXPath();
@@ -493,6 +520,16 @@ public class ServerPackParser {
 									}
 									newImport.setServerId(el.getTextContent());
 									sl.getPackElements().add(newImport);
+								}
+							}
+							nl = docEle.getElementsByTagName("Loader");
+							if(nl !=null && nl.getLength() > 0)
+							{
+								for(int j = 0; j < nl.getLength(); j++)
+								{
+									Element el = (Element)nl.item(j);
+									Loader l = getLoaderV2(el);
+									sl.getPackElements().add(l);
 								}
 							}
 							nl = docEle.getElementsByTagName("Module");

@@ -4,6 +4,7 @@ import java.util.*;
 
 public class ServerList extends Server {
     private Map<String,Module> modules = new HashMap<>();
+    private List<Loader> loaders = new ArrayList<>();
 
 	private State state = State.UNKNOWN;
 	private boolean stylesheet;
@@ -39,6 +40,10 @@ public class ServerList extends Server {
     public void setModules(Map<String, Module> modules) {
         this.modules = modules;
     }
+
+	public List<Loader> getLoaders() { return loaders; }
+
+	public void setLoaders(List<Loader> loaders) { this.loaders = loaders; }
 
 	public Set<String> getDigests() {
 		Set<String> digests = new HashSet<>();

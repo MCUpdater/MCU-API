@@ -20,8 +20,8 @@
 					</xs:simpleContent>
 				</xs:complexType>
 			</xs:element>
-			<xs:element type="tns:ModuleType" name="Module" maxOccurs="unbounded"
-				minOccurs="0" />
+			<xs:element type="tns:LoaderType" name="Loader" minOccurs="0" maxOccurs="unbounded" />
+			<xs:element type="tns:ModuleType" name="Module" maxOccurs="unbounded" minOccurs="0" />
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="id" use="required" />
 		<xs:attribute type="xs:boolean" name="abstract" use="optional" />
@@ -37,6 +37,23 @@
 		<xs:attribute type="xs:string" name="launcherType" use="optional" />
 		<xs:attribute type="xs:string" name="libOverrides" use="optional" />
 		<xs:attribute type="xs:string" name="serverClass" use="optional" />
+	</xs:complexType>
+
+	<xs:complexType name="LoaderType">
+		<xs:sequence>
+			<!-- Allows for future extensible subelements -->
+			<xs:any processContents="skip" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute name="type">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<!-- Forge is the only supported one currently -->
+					<xs:enumeration value="Forge"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="version"/>
+		<xs:attribute type="xs:integer" name="loadOrder" default="0"/>
 	</xs:complexType>
 
 	<xs:complexType name="ModuleType">
