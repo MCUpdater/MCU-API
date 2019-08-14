@@ -432,7 +432,6 @@ public class MCUpdater {
 		}
         libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("libraries").toFile(), DownloadCache.getDir());
 		Boolean updateJar = clearExisting;
-		/*
 		if (side == ModSide.CLIENT) {
 			if (!productionJar.toFile().exists()) {
 				updateJar = true;
@@ -442,8 +441,8 @@ public class MCUpdater {
 			}
 		} else {
 			updateJar = true;
-		}			
-		 */
+		}
+
 		Iterator<GenericModule> iMods = toInstall.iterator();
 		List<String> modIds = new ArrayList<>();
 		Map<String,String> newFilenames = new HashMap<>();
