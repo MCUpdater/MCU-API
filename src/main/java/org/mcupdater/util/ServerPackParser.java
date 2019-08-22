@@ -110,6 +110,9 @@ public class ServerPackParser {
                     if (sl.getServerClass_Raw().isEmpty() && !child.getServerClass_Raw().isEmpty()) {
                     	sl.setServerClass(child.getServerClass());
                     }
+                    if (child.getLoaders().size() > 0) {
+                    	sl.getLoaders().addAll(child.getLoaders());
+                    }
 					//modList.putAll(child.getModules());
 				}
 			}
