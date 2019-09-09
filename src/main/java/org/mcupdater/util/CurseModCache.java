@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 public enum CurseModCache {
 	INSTANCE;
@@ -29,6 +30,7 @@ public enum CurseModCache {
 	private static final String BASE_URL2 = "https://www.curseforge.com/minecraft/mc-mods/";
 	private static final Map<String,Integer> versions = new HashMap<>();
 	private static final String GAMEVERSIONS_URL = "https://minecraft.curseforge.com/api/game/versions?token=a98e4aa8-f43e-4c6a-b245-70327d9c2f85";
+	private static Pattern md5Pattern = Pattern.compile("[a-fA-F0-9]{32}"); // regex pattern to match MD5 strings
 	
 	private CurseModCache() {
 		// TODO: handle a serialized data cache location (possibly lean on DownloadCache here?)
@@ -195,7 +197,7 @@ public enum CurseModCache {
 		MCUpdater.apiLogger.finest(fileDoc.toString());
 		List<Element> textElements = fileDoc.getElementsByClass("text-sm");
 		for (Element el : textElements) {
-			if(el.text().length() == 32) {
+			if(md5Pattern.matcher(el.text()).matches()) {
 				curse.setMD5(el.text());
 			}
 		}
