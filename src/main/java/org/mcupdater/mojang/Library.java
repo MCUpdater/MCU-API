@@ -19,12 +19,19 @@ public class Library {
 	public Map<OperatingSystem, String> getNatives(){ return natives; }
 	public Extract getExtract(){ return extract; }
 	public String getUrl(){ return url; }
+
+	public static final boolean FORCE_LWJGL_3_2_3 = true;
 	
 	public String getDownloadUrl() {
 		if (this.url != null) {
 			return this.url;
 		} else {
+			String[] parts = this.name.split(":",3);
 			String baseUrl = "https://libraries.minecraft.net/";
+			if (parts[0].equals("org.lwjgl") && FORCE_LWJGL_3_2_3) {
+				baseUrl = "https://build.lwjgl.org/release/3.2.3/bin/";
+			}
+
 			if (this.natives != null) {
 				if (this.natives.containsKey(OperatingSystem.getCurrentPlatform())) {
 					return baseUrl + getLibraryPath(natives.get(OperatingSystem.getCurrentPlatform()));
@@ -39,9 +46,13 @@ public class Library {
 
 	public String getLibraryPath(String classifier) {
 		String[] parts = this.name.split(":",3);
-		return String.format("%s/%s/%s/%s-%s%s.jar", parts[0].replaceAll("\\.", "/"),parts[1],parts[2],parts[1],parts[2], (classifier == null ? "" : "-" + classifier)).replace("${arch}", System.getProperty("sun.arch.data.model"));
+		if (parts[0].equals("org.lwjgl") && FORCE_LWJGL_3_2_3) {
+			return String.format("%s/%s.jar", parts[1], parts[1], (classifier == null ? "" : "-" + classifier)).replace("${arch}", System.getProperty("sun.arch.data.model"));
+		} else {
+			return String.format("%s/%s/%s/%s-%s%s.jar", parts[0].replaceAll("\\.", "/"), parts[1], parts[2], parts[1], parts[2], (classifier == null ? "" : "-" + classifier)).replace("${arch}", System.getProperty("sun.arch.data.model"));
+		}
 	}
-	
+
 	public boolean validForOS() {
 		if (this.rules == null) { return true; }
 		Rule.Action lastAction = Rule.Action.DISALLOW;
