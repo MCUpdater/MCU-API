@@ -23,24 +23,30 @@ public class Library {
 	public static final boolean FORCE_LWJGL_3_2_3 = true;
 	
 	public String getDownloadUrl() {
-		if (this.url != null) {
+		String[] parts = this.name.split(":",3);
+		boolean hackLWJGL = parts[0].equals("org.lwjgl") && FORCE_LWJGL_3_2_3;
+
+		if (this.url != null && !hackLWJGL) {
 			return this.url;
 		} else {
-			String[] parts = this.name.split(":",3);
 			String baseUrl = "https://libraries.minecraft.net/";
-			if (parts[0].equals("org.lwjgl") && FORCE_LWJGL_3_2_3) {
+			if (hackLWJGL) {
 				baseUrl = "https://build.lwjgl.org/release/3.2.3/bin/";
+				this.name = String.format("%s:%s:3.2.3", parts[0], parts[1]);
 			}
 
+			final String url;
 			if (this.natives != null) {
 				if (this.natives.containsKey(OperatingSystem.getCurrentPlatform())) {
-					return baseUrl + getLibraryPath(natives.get(OperatingSystem.getCurrentPlatform()));
+					url = baseUrl + getLibraryPath(natives.get(OperatingSystem.getCurrentPlatform()));
 				} else {
 					return null;
 				}
 			} else {
-				return baseUrl + getLibraryPath(null);
+				url = baseUrl + getLibraryPath(null);
 			}
+
+			return url;
 		}
 	}
 
