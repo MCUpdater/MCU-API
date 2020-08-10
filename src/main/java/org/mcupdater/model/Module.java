@@ -1,6 +1,5 @@
 package org.mcupdater.model;
 
-import javafx.collections.ObservableList;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.util.CurseModCache;
 import org.mcupdater.util.MCUpdater;
