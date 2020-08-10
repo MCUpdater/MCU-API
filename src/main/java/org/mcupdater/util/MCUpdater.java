@@ -604,18 +604,20 @@ public class MCUpdater {
 							doManifest = false;
 						}
 					}
-					parent.log("Packaging updated jar...");
-					try {
-						Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep, doManifest);
-					} catch (IOException e1) {
-						parent.log("Failed to create jar!");
-						apiLogger.log(Level.SEVERE, "I/O Error", e1);
-					}
-					try {
-						Files.createDirectories(productionJar.getParent());
-						Files.copy(buildJar.toPath(), productionJar, StandardCopyOption.REPLACE_EXISTING);
-					} catch (IOException e) {
-						apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
+					if (tmpFolder.listFiles().length > 0) {
+						parent.log("Packaging updated jar...");
+						try {
+							Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep, doManifest);
+						} catch (IOException e1) {
+							parent.log("Failed to create jar!");
+							apiLogger.log(Level.SEVERE, "I/O Error", e1);
+						}
+						try {
+							Files.createDirectories(productionJar.getParent());
+							Files.copy(buildJar.toPath(), productionJar, StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
+						}
 					}
 					parent.log("Jar build/update complete");
 				}

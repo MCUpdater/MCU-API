@@ -13,9 +13,10 @@ public class TestCompleteFeed {
         long tsStart = System.currentTimeMillis();
         Feed complete = FeedImporter.getFeed(true);
         System.out.println("Feed import time: " + (System.currentTimeMillis()-tsStart)/1000D + " sec");
+        System.out.println("Timestamp: " + complete.getTimestamp());
         Map<String,Long> categories = new HashMap<>();
         for (Project entry : complete.getProjects()) {
-            System.out.println(entry.getId() + ": " + entry.getName());
+            System.out.println(entry.getId() + ": " + entry.getName() + " (" + entry.getLatestFiles().get(0).getDownloadURL() + ")");
         }
         System.out.println("============");
     }

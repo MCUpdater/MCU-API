@@ -2,6 +2,7 @@ package org.mcupdater.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 public enum CurseModCache {
 	INSTANCE;
@@ -29,6 +31,7 @@ public enum CurseModCache {
 	private static final String BASE_URL2 = "https://www.curseforge.com/minecraft/mc-mods/";
 	private static final Map<String,Integer> versions = new HashMap<>();
 	private static final String GAMEVERSIONS_URL = "https://minecraft.curseforge.com/api/game/versions?token=a98e4aa8-f43e-4c6a-b245-70327d9c2f85";
+	private static Pattern md5Pattern = Pattern.compile("[a-fA-F0-9]{32}"); // regex pattern to match MD5 strings
 	
 	private CurseModCache() {
 		// TODO: handle a serialized data cache location (possibly lean on DownloadCache here?)
@@ -73,7 +76,7 @@ public enum CurseModCache {
 			final String filesURL = baseURL2(curse)+"/files?filter-game-version=2020709689:" + versions.get(pack_mc_version);
 			Document filesDoc;
 			try {
-				filesDoc = Jsoup.connect(filesURL).validateTLSCertificates(false).get();
+				filesDoc = Jsoup.connect(filesURL).get();
 			} catch (IOException e) {
 				MCUpdater.apiLogger.log(Level.SEVERE, "Unable to read project data for "+curse, e);
 				return null;
@@ -187,7 +190,7 @@ public enum CurseModCache {
 
 		Document fileDoc;
 		try {
-			fileDoc = Jsoup.connect(fileURL).validateTLSCertificates(false).get();
+			fileDoc = Jsoup.connect(fileURL).get();
 		} catch (IOException e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Unable to read file data for "+curse, e);
 			return null;
@@ -195,7 +198,7 @@ public enum CurseModCache {
 		MCUpdater.apiLogger.finest(fileDoc.toString());
 		List<Element> textElements = fileDoc.getElementsByClass("text-sm");
 		for (Element el : textElements) {
-			if(el.text().length() == 32) {
+			if(md5Pattern.matcher(el.text()).matches()) {
 				curse.setMD5(el.text());
 			}
 		}

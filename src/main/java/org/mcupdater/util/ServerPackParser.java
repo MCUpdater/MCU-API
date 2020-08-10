@@ -338,9 +338,8 @@ public class ServerPackParser {
 				}
 			}
 			
-			Module out = new Module(name, id, urls, curse, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
+			Module out = new Module(name, id, urls, curse, size, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
 			out.setLoadPrefix(loadPrefix);
-			out.setFilesize(size);
 			return out;
 		} catch (XPathExpressionException e) {
 			apiLogger.log(Level.SEVERE, e.getMessage(), e);
