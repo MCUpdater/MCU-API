@@ -30,12 +30,13 @@ public class GenericModule implements IPackElement {
 	protected String loadPrefix = "";
 	protected long filesize = 100000;
 
-	public GenericModule(String name, String id, List<PrioritizedURL> url, CurseProject curse, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent) {
+	public GenericModule(String name, String id, List<PrioritizedURL> url, CurseProject curse, long filesize, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent) {
 		this.setName(name);
 		this.setId(id);
 		this.setUrls(url);
 		this.setCurseProject(curse);
 		this.setDepends(depends);
+		this.setFilesize(filesize);
 		this.setRequired(required);
 		this.setModType(type);
 		this.setJarOrder(jarOrder + 1);
@@ -56,12 +57,14 @@ public class GenericModule implements IPackElement {
 		}
 	}
 
+	/* No usages found
 	public GenericModule(String name, String id, List<PrioritizedURL> url, CurseProject curse, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs) {
 		this(name, id, url, curse, depends, required, type, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs, "unspecified");
 	}
+	 */
 
 	public GenericModule(String name, String id, List<PrioritizedURL> url, CurseProject curse, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent){
-		this(name, id, url, curse, depends, required, ModType.Regular, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs, parent);
+		this(name, id, url, curse, 100000, depends, required, ModType.Regular, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs, parent);
 		if (inJar) {
 			this.setModType(ModType.Jar);
 		} else if (extract) {

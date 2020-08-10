@@ -2,6 +2,7 @@ package org.mcupdater.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -75,7 +76,7 @@ public enum CurseModCache {
 			final String filesURL = baseURL2(curse)+"/files?filter-game-version=2020709689:" + versions.get(pack_mc_version);
 			Document filesDoc;
 			try {
-				filesDoc = Jsoup.connect(filesURL).validateTLSCertificates(false).get();
+				filesDoc = Jsoup.connect(filesURL).get();
 			} catch (IOException e) {
 				MCUpdater.apiLogger.log(Level.SEVERE, "Unable to read project data for "+curse, e);
 				return null;
@@ -189,7 +190,7 @@ public enum CurseModCache {
 
 		Document fileDoc;
 		try {
-			fileDoc = Jsoup.connect(fileURL).validateTLSCertificates(false).get();
+			fileDoc = Jsoup.connect(fileURL).get();
 		} catch (IOException e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Unable to read file data for "+curse, e);
 			return null;

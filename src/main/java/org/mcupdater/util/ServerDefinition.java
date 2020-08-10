@@ -62,12 +62,13 @@ public class ServerDefinition {
 		configExceptions.put("Tiny Progressions","tp");
 		configExceptions.put("DEPSAMarker.txt","draconicevolution");
 		configExceptions.put("WirelessCraftingTerminal.cfg","wct");
+		configExceptions.put("structures","reccomplex");
 	}
 
 	public void writeServerPack(String stylesheet, Path outputFile, List<Module> moduleList, Boolean onlyOverrides) {
 		try {
 			if (hasLitemods && !hasMod(moduleList, "liteloader")) {
-				moduleList.add(new Module("LiteLoader", "liteloader", Arrays.asList(new PrioritizedURL("http://dl.liteloader.com/versions/com/mumfrey/liteloader/" + this.getServerEntry().getVersion() + "/liteloader-" + this.getServerEntry().getVersion() + ".jar", 0)), null, "", false, ModType.Library, 100, false, false, true, "", null, "CLIENT", "", null, "--tweakClass com.mumfrey.liteloader.launch.LiteLoaderTweaker", "", null, ""));
+				moduleList.add(new Module("LiteLoader", "liteloader", Arrays.asList(new PrioritizedURL("http://dl.liteloader.com/versions/com/mumfrey/liteloader/" + this.getServerEntry().getVersion() + "/liteloader-" + this.getServerEntry().getVersion() + ".jar", 0)), null,100000, "", false, ModType.Library, 100, false, false, true, "", null, "CLIENT", "", null, "--tweakClass com.mumfrey.liteloader.launch.LiteLoaderTweaker", "", null, ""));
 				moduleList = MCUpdater.getInstance().sortMods(moduleList);
 			}
 
@@ -228,7 +229,7 @@ public class ServerDefinition {
 						}
 						writer.write(">" + (submodule.getRequired() ? "true" : "false") + "</Required>");
 						writer.newLine();
-						writer.write("<ModType");
+						writer.write("\t\t\t\t<ModType");
 						if (submodule.getInRoot()) {
 							writer.write(" inRoot=\"true\"");
 						}
@@ -305,6 +306,7 @@ public class ServerDefinition {
 	private static String xmlEscape(String input) {
 		String result;
 		try {
+			if (input.isEmpty()) return input;
 			result = input.replace("&", "&amp;").replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;");
 		} catch (Exception e) {
 			result = "!!!! Error !!!!";
@@ -418,7 +420,7 @@ public class ServerDefinition {
 
 	public void addForge(String mcVersion, String forgeVersion) {
 		this.addLoader(new Loader("Forge",forgeVersion,0));
-		this.addModule(new Module("Minecraft Forge", "forge-" + forgeVersion, new ArrayList<PrioritizedURL>(), null, "", true, ModType.Regular, 0, false, false, true, "", new ArrayList<ConfigFile>(), "BOTH", "", new HashMap<String, String>(), "", "", new ArrayList<Submodule>(), ""));
+		this.addModule(new Module("Minecraft Forge", "forge-" + forgeVersion, new ArrayList<PrioritizedURL>(), null, 100000,"", true, ModType.Regular, 0, false, false, true, "", new ArrayList<ConfigFile>(), "BOTH", "", new HashMap<String, String>(), "", "", new ArrayList<Submodule>(), ""));
 	}
 
 	public void addFabric(String mcVersion, String fabricVersion, String yarnVersion) {

@@ -64,7 +64,7 @@ public class ForgeLoader implements ILoader {
 			args.add(javaPath.toString());
 			args.add("-cp");
 			String loaderLib;
-			loaderLib = Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") ? "MCU-ForgeLoader.jar" : "MCU-LegacyForgeLoader.jar";
+			loaderLib = (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "14.23.5.2851")) ? "MCU-ForgeLoader.jar" : "MCU-LegacyForgeLoader.jar";
 			args.add(mcuPath.resolve("lib").resolve(loaderLib).toString() + System.getProperty("path.separator") + tmp.getAbsolutePath());
 			args.add("org.mcupdater.forgeloader.ForgeLoader");
 			args.add(installPath.toAbsolutePath().toString());
@@ -111,7 +111,7 @@ public class ForgeLoader implements ILoader {
 	}
 
 	private String getVersionFilename() {
-		return Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") ? this.loader.getVersion().replace("-","-forge-") : this.loader.getVersion().split("-")[0] + "-forge" + this.loader.getVersion();
+		return (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "14.23.5.2851")) ? this.loader.getVersion().replace("-","-forge-") : this.loader.getVersion().split("-")[0] + "-forge" + this.loader.getVersion();
 	}
 
 	@Override
