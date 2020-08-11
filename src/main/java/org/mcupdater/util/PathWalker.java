@@ -6,6 +6,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.mcupdater.model.*;
+import org.tomlj.Toml;
+import org.tomlj.TomlParseResult;
+import org.tomlj.TomlArray;
 
 import java.io.*;
 import java.nio.file.FileVisitResult;
@@ -182,6 +185,60 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 					reader.close();
 				}
 			} else {
+				if (zf.getEntry("META-INF/mods.toml") != null) {
+					// Parse Forge mods.toml format
+					String whichFile = "META-INF/mods.toml";
+					BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zf.getEntry(whichFile))));
+					TomlParseResult parsed = Toml.parse(reader);
+					System.out.println("TOML:");
+					parsed.dottedKeySet().stream().forEach(entry -> {
+						System.out.println("\t" + entry + " : " + parsed.get(entry).getClass().getCanonicalName());
+						if (parsed.isArray(entry)) {
+							System.out.println("\t\t" + parsed.getArray(entry).get(0).getClass().getCanonicalName());
+						}
+					});
+					name = parsed.getArray("mods").getTable(0).getString("displayName");
+					id = parsed.getArray("mods").getTable(0).getString("modId");
+					mapMeta.put("version", parsed.getArray("mods").getTable(0).getString("version"));
+					mapMeta.put("authors", parsed.getArray("mods").getTable(0).getString("authors"));
+					mapMeta.put("description", parsed.getArray("mods").getTable(0).getString("description"));
+					if (parsed.contains("license")) {
+						mapMeta.put("license", parsed.getString("license"));
+					}
+					if (parsed.contains("dependencies." + id)) {
+						StringBuilder deps = new StringBuilder();
+						TomlArray localDeps = parsed.getArray("dependencies." + id);
+						for (int index=0; index < localDeps.size(); index++) {
+							if (!localDeps.getTable(index).getString("modId").equals("forge")) { // ignore forge because it is not a "normal" mod
+								deps.append(localDeps.getTable(index).getString("modId")).append(" ");
+							}
+						}
+						depends = deps.toString().trim();
+					}
+					reader.close();
+				}
+				if (zf.getEntry("fabric.mod.json") != null) {
+					String whichFile = "fabric.mod.json";
+					BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zf.getEntry(whichFile))));
+					FabricModInfo info;
+					JsonParser parser = new JsonParser();
+					JsonElement rootElement = parser.parse(reader);
+					info = gson.fromJson(rootElement, FabricModInfo.class);
+					if (!(info.modId.equals("examplemod") || info.modId.isEmpty())) {
+						id = info.modId;
+						name = info.name;
+						String authors;
+						authors = info.authors.toString();
+						mapMeta.put("version", info.version);
+						mapMeta.put("authors", authors.substring(1, authors.length() - 1));
+						mapMeta.put("description", info.description);
+						mapMeta.put("license", info.license);
+					}
+					if (name.isEmpty()) {
+						name = id;
+					}
+					reader.close();
+				}
 				if (zf.getEntry("mcmod.info") != null || zf.getEntry("neimod.info") != null || zf.getEntry("cccmod.info") != null) {
 					String whichFile = "mcmod.info";
 					if (zf.getEntry("neimod.info") != null) {
