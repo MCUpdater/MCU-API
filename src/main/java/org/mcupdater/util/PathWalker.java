@@ -217,6 +217,28 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 					}
 					reader.close();
 				}
+				if (zf.getEntry("fabric.mod.json") != null) {
+					String whichFile = "fabric.mod.json";
+					BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zf.getEntry(whichFile))));
+					FabricModInfo info;
+					JsonParser parser = new JsonParser();
+					JsonElement rootElement = parser.parse(reader);
+					info = gson.fromJson(rootElement, FabricModInfo.class);
+					if (!(info.modId.equals("examplemod") || info.modId.isEmpty())) {
+						id = info.modId;
+						name = info.name;
+						String authors;
+						authors = info.authors.toString();
+						mapMeta.put("version", info.version);
+						mapMeta.put("authors", authors.substring(1, authors.length() - 1));
+						mapMeta.put("description", info.description);
+						mapMeta.put("license", info.license);
+					}
+					if (name.isEmpty()) {
+						name = id;
+					}
+					reader.close();
+				}
 				if (zf.getEntry("mcmod.info") != null || zf.getEntry("neimod.info") != null || zf.getEntry("cccmod.info") != null) {
 					String whichFile = "mcmod.info";
 					if (zf.getEntry("neimod.info") != null) {
