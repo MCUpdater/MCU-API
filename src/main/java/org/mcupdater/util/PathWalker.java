@@ -209,7 +209,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 						StringBuilder deps = new StringBuilder();
 						TomlArray localDeps = parsed.getArray("dependencies." + id);
 						for (int index=0; index < localDeps.size(); index++) {
-							if (!localDeps.getTable(index).getString("modId").equals("forge")) { // ignore forge because it is not a "normal" mod
+							if (!localDeps.getTable(index).getString("modId").equals("forge") && !localDeps.getTable(index).getString("modId").equals("minecraft")) { // ignore forge and minecraft because they are not "normal" mods
 								deps.append(localDeps.getTable(index).getString("modId")).append(" ");
 							}
 						}
