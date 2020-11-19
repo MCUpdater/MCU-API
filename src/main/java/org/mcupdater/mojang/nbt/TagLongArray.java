@@ -7,29 +7,29 @@ import java.util.List;
 /**
  * Created by sbarbour on 2/15/15.
  */
-public class TagIntArray extends Tag {
-    private final Integer[] values;
+public class TagLongArray extends Tag {
+    private final Long[] values;
 
-    public TagIntArray(String name, Integer[] values) {
+    public TagLongArray(String name, Long[] values) {
         super(name);
         this.values = values;
     }
 
     @Override
-    public Integer[] getValue() {
+    public Long[] getValue() {
         return this.values;
     }
 
     public byte[] toBytes(boolean doHeader) {
         byte[] header = new byte[0];
         if (doHeader) {
-            header = super.getHeader(NBTType.INT_ARRAY.getValue());
+            header = super.getHeader(NBTType.LONG_ARRAY.getValue());
         }
-        ByteBuffer bb = ByteBuffer.allocate(header.length + 4 + (values.length * 4));
+        ByteBuffer bb = ByteBuffer.allocate(header.length + 4 + (values.length * 8));
         int size = values.length;
         bb.putInt(size);
-        for (Integer value : values) {
-            bb.putInt(value);
+        for (Long value : values) {
+            bb.putLong(value);
         }
         bb.rewind();
         return bb.array();
@@ -41,8 +41,8 @@ public class TagIntArray extends Tag {
         if (!this.getName().isEmpty()) {
             output.append(String.format("@name=%s ",this.getName()));
         }
-        output.append(String.format("@size=%d IntArray: {\n",this.values.length));
-        for (Integer entry : values) {
+        output.append(String.format("@size=%d LongArray: {\n",this.values.length));
+        for (Long entry : values) {
             output.append(String.format("%d",entry)).append("\n");
         }
         output.append("}");

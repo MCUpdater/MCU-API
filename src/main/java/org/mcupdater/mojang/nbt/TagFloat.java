@@ -1,5 +1,7 @@
 package org.mcupdater.mojang.nbt;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,15 +22,27 @@ public class TagFloat extends Tag {
     }
 
     @Override
-    public List<Byte> toBytes(boolean doHeader) {
-        List<Byte> bytes = new ArrayList<>();
-        if (doHeader) { bytes.addAll(super.getHeader((byte) 0x05)); }
-        int bits = Float.floatToIntBits(value);
-        bytes.add((byte)((bits >> 24) & 0xff));
-        bytes.add((byte)((bits >> 16) & 0xff));
-        bytes.add((byte)((bits >> 8) & 0xff));
-        bytes.add((byte)(bits & 0xff));
-        return bytes;
+    public byte[] toBytes(boolean doHeader) {
+        byte[] header = new byte[0];
+        if (doHeader) {
+            header = super.getHeader(NBTType.FLOAT.getValue());
+        }
+        ByteBuffer bb = ByteBuffer.allocate(header.length + 4);
+        bb.order(ByteOrder.BIG_ENDIAN);
+        bb.put(header);
+        bb.putFloat(value);
+        bb.rewind();
+        return bb.array();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder output = new StringBuilder();
+        if (!this.getName().isEmpty()) {
+            output.append(String.format("@name=%s ",this.getName()));
+        }
+        output.append(String.format("Float: %f",this.value));
+        return output.toString();
     }
 
 }

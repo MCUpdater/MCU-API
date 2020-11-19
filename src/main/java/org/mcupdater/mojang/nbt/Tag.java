@@ -1,5 +1,7 @@
 package org.mcupdater.mojang.nbt;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,22 +22,19 @@ public abstract class Tag {
 
     public abstract Object getValue();
 
-    public abstract List<Byte> toBytes(boolean doHeader);
+    public abstract byte[] toBytes(boolean doHeader);
 
-    public List<Byte> getHeader(byte type) {
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(type);
-        bytes.add((byte)((getName().getBytes().length >> 8) & 0xFF));
-        bytes.add((byte)(getName().getBytes().length & 0xFF));
-        bytes.addAll(stringToList(getName()));
-        return bytes;
+    public byte[] getHeader(byte type) {
+        ByteBuffer bb = ByteBuffer.allocate(3 + getName().getBytes().length);
+        bb.order(ByteOrder.BIG_ENDIAN);
+        bb.put(type);
+        bb.putShort((short) getName().getBytes().length);
+        bb.put(getName().getBytes(StandardCharsets.UTF_8));
+        bb.rewind();
+        return bb.array();
     }
 
-    protected List<Byte> stringToList(String in) {
-        List<Byte> bytes = new ArrayList<>();
-        for (byte b : in.getBytes(StandardCharsets.UTF_8)) {
-            bytes.add(b);
-        }
-        return bytes;
+    public void add(Tag child) throws Exception {
+        throw new Exception("TagType does not support children");
     }
 }

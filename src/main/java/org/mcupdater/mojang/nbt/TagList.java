@@ -1,5 +1,7 @@
 package org.mcupdater.mojang.nbt;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,9 +10,9 @@ import java.util.List;
  */
 public class TagList extends Tag {
     private final List<Tag> values;
-    private final Type type;
+    private final NBTType type;
 
-    public TagList(String name, Type type) {
+    public TagList(String name, NBTType type) {
         super(name);
         this.type = type;
         this.values = new ArrayList<>();
@@ -22,44 +24,46 @@ public class TagList extends Tag {
     }
 
     @Override
-    public List<Byte> toBytes(boolean doHeader) {
-        List<Byte> bytes = new ArrayList<>();
-        if (doHeader) { bytes.addAll(super.getHeader((byte) 0x09)); }
-        bytes.add(type.getValue());
-        bytes.add((byte)((values.size() >> 24) & 0xFF));
-        bytes.add((byte)((values.size() >> 16) & 0xFF));
-        bytes.add((byte)((values.size() >> 8) & 0xFF));
-        bytes.add((byte)(values.size() & 0xFF));
-        for (Tag entry : values) {
-            bytes.addAll(entry.toBytes(false));
+    public byte[] toBytes(boolean doHeader) {
+        byte[] header = new byte[0];
+        if (doHeader) {
+            header = super.getHeader(NBTType.LIST.getValue());
         }
-        return bytes;
+        List<byte[]> children = new ArrayList<>();
+        int totalBytes = header.length + 5;
+        for (Tag entry : values) {
+            byte[] child = entry.toBytes(false);
+            totalBytes += child.length;
+            children.add(child);
+        }
+        ByteBuffer bb = ByteBuffer.allocate(totalBytes);
+        bb.order(ByteOrder.BIG_ENDIAN);
+        bb.put(header);
+        bb.put(type.getValue());
+        bb.putInt(values.size());
+        for (byte[] child : children) {
+            bb.put(child);
+        }
+        bb.rewind();
+        return bb.array();
     }
 
+    @Override
     public void add(Tag entry) {
         values.add(entry);
     }
 
-    public enum Type {
-        Byte ((byte) 0x01),
-        Short ((byte) 0x02),
-        Integer ((byte) 0x03),
-        Long ((byte) 0x04),
-        Float ((byte) 0x05),
-        Double ((byte) 0x06),
-        Byte_Array ((byte) 0x07),
-        String ((byte) 0x08),
-        List ((byte) 0x09),
-        Compound ((byte) 0x0a),
-        Int_Array ((byte) 0x0b);
-
-        private final byte value;
-        Type(byte value) {
-            this.value = value;
+    @Override
+    public String toString() {
+        StringBuilder output = new StringBuilder();
+        if (!this.getName().isEmpty()) {
+            output.append(String.format("@name=%s ",this.getName()));
         }
-
-        public byte getValue() {
-            return value;
+        output.append(String.format("@type=%s @size=%d List: {",this.type.name(),this.values.size())).append("\n");
+        for (Tag child : values) {
+            output.append(child.toString()).append("\n");
         }
+        output.append("}");
+        return output.toString();
     }
 }

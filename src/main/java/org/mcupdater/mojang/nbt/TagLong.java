@@ -1,5 +1,7 @@
 package org.mcupdater.mojang.nbt;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,18 +22,27 @@ public class TagLong extends Tag {
     }
 
     @Override
-    public List<Byte> toBytes(boolean doHeader) {
-        List<Byte> bytes = new ArrayList<>();
-        if (doHeader) { bytes.addAll(super.getHeader((byte) 0x04)); }
-        bytes.add((byte)((value >> 56) & 0xff));
-        bytes.add((byte)((value >> 48) & 0xff));
-        bytes.add((byte)((value >> 40) & 0xff));
-        bytes.add((byte)((value >> 32) & 0xff));
-        bytes.add((byte)((value >> 24) & 0xff));
-        bytes.add((byte)((value >> 16) & 0xff));
-        bytes.add((byte)((value >> 8) & 0xff));
-        bytes.add((byte)(value & 0xff));
-        return bytes;
+    public byte[] toBytes(boolean doHeader) {
+        byte[] header = new byte[0];
+        if (doHeader) {
+            header = super.getHeader(NBTType.LONG.getValue());
+        }
+        ByteBuffer bb = ByteBuffer.allocate(header.length + 8);
+        bb.order(ByteOrder.BIG_ENDIAN);
+        bb.put(header);
+        bb.putLong(value);
+        bb.rewind();
+        return bb.array();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder output = new StringBuilder();
+        if (!this.getName().isEmpty()) {
+            output.append(String.format("@name=%s ",this.getName()));
+        }
+        output.append(String.format("Long: %d",this.value));
+        return output.toString();
     }
 
 }

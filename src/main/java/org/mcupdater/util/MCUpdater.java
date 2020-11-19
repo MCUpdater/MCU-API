@@ -22,10 +22,7 @@ import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
 import org.mcupdater.mojang.*;
 import org.mcupdater.mojang.AssetIndex.Asset;
-import org.mcupdater.mojang.nbt.TagByte;
-import org.mcupdater.mojang.nbt.TagCompound;
-import org.mcupdater.mojang.nbt.TagList;
-import org.mcupdater.mojang.nbt.TagString;
+import org.mcupdater.mojang.nbt.*;
 
 import javax.swing.*;
 import java.awt.image.BufferedImage;
@@ -752,7 +749,7 @@ public class MCUpdater {
 		*/
 
 		TagCompound root = new TagCompound("");
-		TagList servers = new TagList("servers", TagList.Type.Compound);
+		TagList servers = new TagList("servers", NBTType.COMPOUND);
 		TagCompound entry = new TagCompound("");
 		entry.add(new TagByte("hideAddress", (byte) 1));
 		String symbol = new String(new byte[]{(byte) 0xc2, (byte) 0xa7}, StandardCharsets.UTF_8);
@@ -760,8 +757,7 @@ public class MCUpdater {
 		entry.add(new TagString("ip",ip));
 		servers.add(entry);
 		root.add(servers);
-		List<Byte> bytes = root.toBytes(true);
-		byte[] full = ArrayUtils.toPrimitive(bytes.toArray(new Byte[bytes.size()]));
+		byte[] full = root.toBytes(true);;
 		File serverFile = installPath.resolve("servers.dat").toFile();
 		try {
 			serverFile.createNewFile();
