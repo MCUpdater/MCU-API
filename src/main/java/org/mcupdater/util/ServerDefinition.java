@@ -377,10 +377,12 @@ public class ServerDefinition {
 					if (configName.toLowerCase().contains(mod.getId().toLowerCase().substring(0, mod.getId().length() < 3 ? mod.getId().length() : 3))) {
 						newDistance -= 1;
 					}
-					if (snd.soundex(mod.getId()).equals(snd.soundex(configName))) {
-						newDistance -= 10;
-					} else if (snd.soundex(mod.getName()).equals(snd.soundex(configName))) {
-						newDistance -= 10;
+					if (StringUtils.isAsciiPrintable(configName)) {
+						if (snd.soundex(mod.getId()).equals(snd.soundex(configName))) {
+							newDistance -= 10;
+						} else if (StringUtils.isAsciiPrintable(mod.getName()) && snd.soundex(mod.getName()).equals(snd.soundex(configName))) {
+							newDistance -= 10;
+						}
 					}
 					if (newDistance <= 5 || debug) {
 						System.out.println("   >" + mod.getId() + " - " + newDistance + " (potential)");

@@ -60,7 +60,7 @@ public class ServerStatus {
 				try
 				{
 					Class.forName("com.sun.jndi.dns.DnsContextFactory");
-					Hashtable<String, String> hashtable = new Hashtable();
+					Hashtable<String, String> hashtable = new Hashtable<>();
 					hashtable.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
 					hashtable.put("java.naming.provider.url", "dns:");
 					hashtable.put("com.sun.jndi.dns.timeout.retries", "1");
@@ -68,7 +68,7 @@ public class ServerStatus {
 					Attributes attributes = dircontext.getAttributes("_minecraft._tcp." + host, new String[] {"SRV"});
 					String[] astring = attributes.get("srv").get().toString().split(" ", 4);
 					host = astring[3];
-					port = Integer.valueOf(astring[2]);
+					port = Integer.parseInt(astring[2]);
 				}
 				catch (Exception e)
 				{
