@@ -32,6 +32,7 @@ public class CurseImporter {
 			System.out.println( "[import] no such file, attempting download" );
 			try {
 				final URL url = new URL(importURL);
+				System.out.println("[import] downloading " + importURL);
 				tmp = File.createTempFile("import", "zip");			
 				DownloadUtil.get(url, tmp);
 				System.out.println( "[import] downloaded "+Files.size(tmp.toPath())+" bytes...");

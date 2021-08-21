@@ -62,8 +62,8 @@ public class Module extends GenericModule {
 				tmp = File.createTempFile("import", ".jar");
 				finalUrl = new URL(url.getUrl());
 				System.out.println("Temp file: " + tmp.getAbsolutePath());
-				Downloadable downloadable = new Downloadable("import.jar", tmp.getAbsolutePath(), "force", 0, new ArrayList<>(Collections.singleton(finalUrl)));
-				downloadable.download(tmp.getParentFile().getParentFile(), MCUpdater.getInstance().getArchiveFolder().resolve("cache").toFile());
+				Downloadable downloadable = new Downloadable("import.jar", tmp.getName(), "force", 0, new ArrayList<>(Collections.singleton(finalUrl)));
+				downloadable.download(tmp.getParentFile(), MCUpdater.getInstance().getArchiveFolder().resolve("cache").toFile());
 				tmp.deleteOnExit();
 				path = tmp.toPath();
 				if (Files.size(path) == 0) {

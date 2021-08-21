@@ -2,6 +2,7 @@ package org.mcupdater.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.Charsets;
@@ -20,6 +21,7 @@ import org.mcupdater.downloadlib.TaskableExecutor;
 import org.mcupdater.instance.FileInfo;
 import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
+import org.mcupdater.model.metadata.ProjectData;
 import org.mcupdater.mojang.*;
 import org.mcupdater.mojang.AssetIndex.Asset;
 import org.mcupdater.mojang.nbt.TagByte;
@@ -181,6 +183,26 @@ public class MCUpdater {
 			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
 		*/
+	}
+
+	public static List<ProjectData> loadProjectData(Path lookupFile) {
+		Gson gson = new Gson();
+		try {
+			InputStream in = new FileInputStream(lookupFile.toFile());
+			JsonReader reader = new JsonReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+			List<ProjectData> projects = new ArrayList<>();
+			reader.beginArray();
+			while (reader.hasNext()) {
+				ProjectData project = gson.fromJson(reader, ProjectData.class);
+				projects.add(project);
+			}
+			reader.endArray();
+			reader.close();
+			return projects;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public MCUApp getParent() {
