@@ -16,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.downloadlib.DownloadUtil;
 import org.mcupdater.model.*;
+import org.mcupdater.model.Module;
 import org.mcupdater.model.curse.manifest.Manifest;
 import org.mcupdater.model.curse.manifest.Minecraft;
 import org.mcupdater.model.curse.manifest.ModLoader;

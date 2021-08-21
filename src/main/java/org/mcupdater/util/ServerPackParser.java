@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
+import org.mcupdater.model.Module;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -89,7 +90,7 @@ public class ServerPackParser {
 		return null;
 	}
 
-	public static ServerList parseDocument(Document dom, String serverId, Map<String,Module> modList, String hierarchy, String version) throws Exception {
+	public static ServerList parseDocument(Document dom, String serverId, Map<String, Module> modList, String hierarchy, String version) throws Exception {
 		//Map<String,Module> modList = new HashMap<>();
 		Element parent = dom.getDocumentElement();
 		ServerEntry server = getServerEntry(serverId, parent, version);

@@ -21,6 +21,7 @@ import org.mcupdater.downloadlib.TaskableExecutor;
 import org.mcupdater.instance.FileInfo;
 import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
+import org.mcupdater.model.Module;
 import org.mcupdater.model.metadata.ProjectData;
 import org.mcupdater.mojang.*;
 import org.mcupdater.mojang.AssetIndex.Asset;
