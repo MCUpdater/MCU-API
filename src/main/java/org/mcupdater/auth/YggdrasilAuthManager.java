@@ -8,6 +8,7 @@ import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.SettingsManager;
+import org.mcupdater.settings.YggdrasilProfile;
 
 import java.net.Proxy;
 import java.util.HashMap;
@@ -22,29 +23,33 @@ public class YggdrasilAuthManager extends AuthManager {
 	}
 
 	@Override
-	public String getSessionKey(Profile profile) throws Exception {
+	public String getSessionKey(Profile profileParam) throws Exception {
 		//System.out.println("old-> " + profile.getAccessToken() + ": " + profile.getClientToken());
-		UserAuthentication auth = new YggdrasilUserAuthentication(authService, Agent.MINECRAFT);
-		Map<String, Object> credentials = new HashMap<>();
-		credentials.put("accessToken", profile.getAccessToken());
-		credentials.put("username", profile.getUsername());
-		credentials.put("userid", profile.getUserId());
-		credentials.put("uuid", profile.getUUID());
-		credentials.put("displayName", profile.getName());
-		auth.loadFromStorage(credentials);
-		auth.logIn();
-		if (auth.isLoggedIn()) {
-			profile.setAccessToken(auth.getAuthenticatedToken());
-			profile.setUserId(auth.getUserID());
-			profile.setLegacy(UserType.LEGACY == auth.getUserType());
+		if (profileParam instanceof YggdrasilProfile profile) {
+			UserAuthentication auth = new YggdrasilUserAuthentication(authService, Agent.MINECRAFT);
+			Map<String, Object> credentials = new HashMap<>();
+			credentials.put("accessToken", profile.getAuthAccessToken());
+			credentials.put("username", profile.getUsername());
+			credentials.put("userid", profile.getUserId());
+			credentials.put("uuid", profile.getUUID());
+			credentials.put("displayName", profile.getName());
+			auth.loadFromStorage(credentials);
+			auth.logIn();
+			if (auth.isLoggedIn()) {
+				profile.setAccessToken(auth.getAuthenticatedToken());
+				profile.setUserId(auth.getUserID());
+				profile.setLegacy(UserType.LEGACY == auth.getUserType());
 
-			SettingsManager.getInstance().getSettings().addOrReplaceProfile(profile);
-			if (!SettingsManager.getInstance().isDirty()) {
-				System.out.println("Saving settings");
-				SettingsManager.getInstance().saveSettings();
+				SettingsManager.getInstance().getSettings().addOrReplaceProfile(profile);
+				if (!SettingsManager.getInstance().isDirty()) {
+					System.out.println("Saving settings");
+					SettingsManager.getInstance().saveSettings();
+				}
 			}
+			return "token:" + auth.getAuthenticatedToken() + ":" + auth.getSelectedProfile().getId().toString().replace("-", "");
+		} else {
+			throw new Exception("Profile is not an Yggdrasil profile");
 		}
-		return "token:" + auth.getAuthenticatedToken() + ":" + auth.getSelectedProfile().getId().toString().replace("-","");
 	}
 
 	@Override

@@ -1,28 +1,23 @@
 package org.mcupdater.settings;
 
+import com.google.gson.*;
 import org.mcupdater.MCUApp;
 import org.mcupdater.model.JSON;
 
-import java.util.logging.Level;
+import java.lang.reflect.Type;
 
 @JSON
-public class Profile {
-	private String style;
-	private String name;
-	private String username;
-	private String sessionKey;
-	private String accessToken;
-	private String lastInstance;
-	private String uuid;
-	private String userId;
-	private boolean legacy;
+public abstract class Profile {
+	protected String style;
+	protected String name;
+	protected String uuid;
+	protected String lastInstance;
+
+	public abstract String getSessionKey(MCUApp caller) throws Exception;
+	public abstract String getAuthAccessToken();
 
 	public String getStyle() {
 		return style;
-	}
-
-	public void setStyle(String style) {
-		this.style = style;
 	}
 
 	public String getName() {
@@ -31,49 +26,6 @@ public class Profile {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getSessionKey(MCUApp caller) throws Exception {
-		String currentSessionKey = null;
-		if (this.sessionKey == null || this.sessionKey.isEmpty()) {
-			if (this.style.equals("Yggdrasil")) {
-				try {
-					currentSessionKey = caller.getAuthManager().getSessionKey(this);
-				} catch (Exception e) {
-					Profile newProfile = caller.requestLogin(this.username);
-					SettingsManager.getInstance().getSettings().addOrReplaceProfile(newProfile);
-					if (!SettingsManager.getInstance().isDirty()) {
-						SettingsManager.getInstance().saveSettings();
-					}
-					currentSessionKey = newProfile.getSessionKey(caller);
-					caller.baseLogger.log(Level.INFO, "A full login request occurred due to the following exception", e);
-					caller.baseLogger.finer("Session key: " + currentSessionKey);
-				}
-			}
-		} else {
-			currentSessionKey = this.sessionKey;
-		}
-		return currentSessionKey;
-	}
-
-	public void setSessionKey(String sessionKey) {
-		this.sessionKey = sessionKey;
-	}
-
-	public String getAccessToken() {
-		return accessToken;
-	}
-
-	public void setAccessToken(String accessToken) {
-		this.accessToken = accessToken;
 	}
 
 	public String getLastInstance() {
@@ -90,22 +42,36 @@ public class Profile {
 
 	public void setUUID(String uuid) { this.uuid = uuid; }
 
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-
-	public boolean isLegacy() {
-		return legacy;
-	}
-
-	public void setLegacy(boolean legacy) {
-		this.legacy = legacy;
-	}
-
 	@Override
 	public String toString() { return this.getName(); }
+
+	public abstract boolean refresh();
+
+	public static class ProfileJsonHandler implements JsonDeserializer<Profile>, JsonSerializer<Profile> {
+
+		@Override
+		public Profile deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+			JsonObject jsonObject = json.getAsJsonObject();
+			switch (jsonObject.get("style").getAsString()) {
+				case "Yggdrasil":
+					return context.deserialize(jsonObject, YggdrasilProfile.class);
+				case "MSA":
+					return context.deserialize(jsonObject, MSAProfile.class);
+				default:
+					return context.deserialize(jsonObject, BasicProfile.class);
+			}
+		}
+
+		@Override
+		public JsonElement serialize(Profile src, Type typeOfSrc, JsonSerializationContext context) {
+			switch (src.getStyle()) {
+				case "Yggdrasil":
+					return context.serialize(src, YggdrasilProfile.class);
+				case "MSA":
+					return context.serialize(src, MSAProfile.class);
+				default:
+					return context.serialize(src, BasicProfile.class);
+			}
+		}
+	}
 }

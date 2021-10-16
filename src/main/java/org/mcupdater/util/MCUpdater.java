@@ -17,7 +17,6 @@ import org.mcupdater.certs.SSLExpansion;
 import org.mcupdater.database.DatabaseManager;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
-import org.mcupdater.downloadlib.TaskableExecutor;
 import org.mcupdater.instance.FileInfo;
 import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
@@ -47,10 +46,9 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class MCUpdater {
 	private final Path MCFolder;
-	private DatabaseManager dbManager;
+	//private DatabaseManager dbManager;
 	private Path archiveFolder;
 	private Path instanceRoot;
 	private MCUApp parent;
@@ -68,11 +66,11 @@ public class MCUpdater {
 	public static MCUpdater getInstance(File file) {
 		if( INSTANCE == null ) {
 			INSTANCE = new MCUpdater(file);
-            if( file == null ) {
-                apiLogger.finest("MCUpdater intialized without path");
-            } else {
-                apiLogger.finest("MCUpdater intialized with path: " + file.getAbsolutePath());
-            }
+			if( file == null ) {
+				apiLogger.finest("MCUpdater intialized without path");
+			} else {
+				apiLogger.finest("MCUpdater intialized with path: " + file.getAbsolutePath());
+			}
 		}
 		return INSTANCE;
 	}
@@ -94,21 +92,16 @@ public class MCUpdater {
 		}
 	}
 	
-	private MCUpdater(File desiredRoot)
-	{
+	private MCUpdater(File desiredRoot) {
 		apiLogger = Logger.getLogger("MCU-API");
 		apiLogger.setLevel(Level.ALL);
-		if(System.getProperty("os.name").startsWith("Windows"))
-		{
+		if(System.getProperty("os.name").startsWith("Windows")) {
 			MCFolder = new File(System.getenv("APPDATA")).toPath().resolve(".minecraft");
 			archiveFolder = new File(System.getenv("APPDATA")).toPath().resolve(".MCUpdater");
-		} else if(System.getProperty("os.name").startsWith("Mac"))
-		{
+		} else if(System.getProperty("os.name").startsWith("Mac")) {
 			MCFolder = new File(System.getProperty("user.home")).toPath().resolve("Library").resolve("Application Support").resolve("minecraft");
 			archiveFolder = new File(System.getProperty("user.home")).toPath().resolve("Library").resolve("Application Support").resolve("MCUpdater");
-		}
-		else
-		{
+		} else {
 			MCFolder = new File(System.getProperty("user.home")).toPath().resolve(".minecraft");
 			archiveFolder = new File(System.getProperty("user.home")).toPath().resolve(".MCUpdater");
 		}
@@ -155,7 +148,7 @@ public class MCUpdater {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		dbManager = new DatabaseManager(archiveFolder);
+		//dbManager = new DatabaseManager(archiveFolder);
 		/*
 		try {
 			long start = System.currentTimeMillis();
@@ -214,8 +207,7 @@ public class MCUpdater {
 		this.parent = parent;
 	}
 
-	public Path getMCFolder()
-	{
+	public Path getMCFolder() {
 		return MCFolder;
 	}
 
@@ -306,19 +298,16 @@ public class MCUpdater {
 		return false;
 	}
 
-	private List<File> recurseFolder(File folder, boolean includeFolders)
-	{
+	private List<File> recurseFolder(File folder, boolean includeFolders) {
 		List<File> output = new ArrayList<>();
 		List<File> input = new ArrayList<>(Arrays.asList(folder.listFiles()));
 		Iterator<File> fi = input.iterator();
 		if(includeFolders) {
 			output.add(folder);
 		}
-		while(fi.hasNext())
-		{
+		while(fi.hasNext()) {
 			File entry = fi.next();
-			if(entry.isDirectory())
-			{
+			if(entry.isDirectory()) {
 				List<File> subfolder = recurseFolder(entry, includeFolders);
 				output.addAll(subfolder);
 			} else {
@@ -334,10 +323,8 @@ public class MCUpdater {
 			// Sort mod list for InJar
 			Collections.sort(toInstall, new ModuleComparator(ModuleComparator.Mode.IMPORTANCE));
 		}
-		//final Path instancePath = instanceRoot.resolve(server.getServerId());
 		Path binPath = instancePath.resolve("bin");
 		final Path productionJar;
-		//File jar = null;
 		final File tmpFolder = instancePath.resolve("temp" + Integer.toString((new Random()).nextInt(100))).toFile();
 		tmpFolder.mkdirs();
 		Set<Downloadable> jarMods = new HashSet<>();
@@ -352,17 +339,82 @@ public class MCUpdater {
 		Downloadable baseJar = null;
 		final MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
 		List<URL> jarUrl = new ArrayList<>();
-        Set<Downloadable> libSet = new HashSet<>();
+		Set<Downloadable> libSet = new HashSet<>();
 		DownloadInfo downloadInfo;
 		switch (side) {
-		case CLIENT:
-            System.out.println("Overrides: " + server.getLibOverrides().size());
-			assetsQueue = parent.submitAssetsQueue("Assets", server.getServerId(), version);
-            for (Map.Entry<String,String> entry : server.getLibOverrides().entrySet()) {
-                System.out.println(entry.getKey() + ": " + entry.getValue());
-            }
-			for (Library lib : version.getLibraries()) {
-				String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"),0,2),":");
+			case CLIENT -> {
+				System.out.println("Overrides: " + server.getLibOverrides().size());
+				assetsQueue = parent.submitAssetsQueue("Assets", server.getServerId(), version);
+				for (Map.Entry<String, String> entry : server.getLibOverrides().entrySet()) {
+					System.out.println(entry.getKey() + ": " + entry.getValue());
+				}
+				for (Library lib : version.getLibraries()) {
+					String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"), 0, 2), ":");
+					System.out.println(lib.getName() + " - " + key);
+					if (server.getLibOverrides().containsKey(key)) {
+						lib.setName(server.getLibOverrides().get(key));
+						System.out.println(" - Replaced: " + lib.getName());
+					}
+					if (lib.validForOS()) {
+						List<URL> urls = new ArrayList<>();
+						try {
+							urls.add(new URL(lib.getDownloadUrl()));
+						} catch (MalformedURLException e) {
+							apiLogger.log(Level.SEVERE, "Bad URL", e);
+						}
+						Downloadable entry = new Downloadable(lib.getName(), lib.getFilename(), "", 100000, urls);
+						libSet.add(entry);
+						if (lib.hasNatives()) {
+							libExtract.add(lib.getFilename());
+						}
+					}
+				}
+				downloadInfo = version.getDownloadInfo(DownloadType.CLIENT);
+				productionJar = binPath.resolve("minecraft.jar");
+				try {
+					if (downloadInfo != null) {
+						jarUrl.add(downloadInfo.getUrl());
+					}
+					// Add legacy URL to fall back to
+					jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/" + server.getVersion() + ".jar"));
+				} catch (MalformedURLException e2) {
+					apiLogger.log(Level.SEVERE, "Bad URL", e2);
+				}
+				if (downloadInfo != null) {
+					baseJar = new Downloadable("Minecraft jar", "0.jar", Downloadable.HashAlgorithm.SHA1, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrl);
+				} else {
+					baseJar = new Downloadable("Minecraft jar", "0.jar", "", 3000000, jarUrl);
+				}
+				keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
+			}
+			case SERVER -> {
+				downloadInfo = version.getDownloadInfo(DownloadType.SERVER);
+				productionJar = instancePath.resolve("minecraft_server." + server.getVersion() + ".jar");
+				try {
+					if (downloadInfo != null) {
+						jarUrl.add(downloadInfo.getUrl());
+					}
+					// Add legacy URLs to fall back to
+					jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/minecraft_server." + server.getVersion() + ".jar"));
+					jarUrl.add(new URL("http://assets.minecraft.net/" + server.getVersion().replace(".", "_") + "/minecraft_server.jar"));
+				} catch (MalformedURLException e2) {
+					apiLogger.log(Level.SEVERE, "Bad URL", e2);
+				}
+				if (downloadInfo != null) {
+					baseJar = new Downloadable("Server Jar", "0.jar", Downloadable.HashAlgorithm.SHA1, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrl);
+				} else {
+					baseJar = new Downloadable("Server jar", "0.jar", "", 3000000, jarUrl);
+				}
+				keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
+				Library lib = new Library();
+				lib.setName("net.sf.jopt-simple:jopt-simple:4.5");
+				if (Version.requestedFeatureLevel(server.getVersion(), "1.8")) {
+					lib.setName("net.sf.jopt-simple:jopt-simple:4.6");
+					if (Version.requestedFeatureLevel(server.getVersion(), "1.12")) {
+						lib.setName("net.sf.jopt-simple:jopt-simple:5.0.3");
+					}
+				}
+				String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"), 0, 2), ":");
 				System.out.println(lib.getName() + " - " + key);
 				if (server.getLibOverrides().containsKey(key)) {
 					lib.setName(server.getLibOverrides().get(key));
@@ -375,85 +427,19 @@ public class MCUpdater {
 					} catch (MalformedURLException e) {
 						apiLogger.log(Level.SEVERE, "Bad URL", e);
 					}
-					Downloadable entry = new Downloadable(lib.getName(),lib.getFilename(),"",100000,urls);
+					Downloadable entry = new Downloadable(lib.getName(), lib.getFilename(), "", 100000, urls);
 					libSet.add(entry);
 					if (lib.hasNatives()) {
 						libExtract.add(lib.getFilename());
 					}
 				}
 			}
-			downloadInfo = version.getDownloadInfo(DownloadType.CLIENT);
-			productionJar = binPath.resolve("minecraft.jar");
-			try {
-				if (downloadInfo != null) {
-					jarUrl.add(downloadInfo.getUrl());
-				}
-				// Add legacy URL to fall back to
-				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/" + server.getVersion() + ".jar"));
-			} catch (MalformedURLException e2) {
-				apiLogger.log(Level.SEVERE, "Bad URL", e2);
+			default -> {
+				apiLogger.severe("Invalid API call to MCUpdater.installMods! (side cannot be " + side.toString() + ")");
+				return false;
 			}
-			if (downloadInfo != null) {
-				baseJar = new Downloadable("Minecraft jar", "0.jar", Downloadable.HashAlgorithm.SHA, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrl);
-			} else {
-				baseJar = new Downloadable("Minecraft jar", "0.jar", "", 3000000, jarUrl);
-			}
-			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
-			break;
-		case SERVER:
-			downloadInfo = version.getDownloadInfo(DownloadType.SERVER);
-			productionJar = instancePath.resolve("minecraft_server." + server.getVersion() + ".jar");
-			try {
-				if (downloadInfo != null) {
-					jarUrl.add(downloadInfo.getUrl());
-				}
-				// Add legacy URLs to fall back to
-				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/minecraft_server." + server.getVersion() + ".jar"));
-				jarUrl.add(new URL("http://assets.minecraft.net/" + server.getVersion().replace(".", "_") + "/minecraft_server.jar"));
-			} catch (MalformedURLException e2) {
-				apiLogger.log(Level.SEVERE, "Bad URL", e2);
-			}
-			if (downloadInfo != null) {
-				baseJar = new Downloadable("Server Jar", "0.jar", Downloadable.HashAlgorithm.SHA, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrl);
-			} else {
-				baseJar = new Downloadable("Server jar", "0.jar", "", 3000000, jarUrl);
-			}
-			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
-
-            Library lib = new Library();
-			lib.setName("net.sf.jopt-simple:jopt-simple:4.5");
-			if (Version.requestedFeatureLevel(server.getVersion(), "1.8")) {
-				lib.setName("net.sf.jopt-simple:jopt-simple:4.6");
-				if (Version.requestedFeatureLevel(server.getVersion(), "1.12")) {
-					lib.setName("net.sf.jopt-simple:jopt-simple:5.0.3");
-				}
-			}
-            String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"),0,2),":");
-            System.out.println(lib.getName() + " - " + key);
-            if (server.getLibOverrides().containsKey(key)) {
-                lib.setName(server.getLibOverrides().get(key));
-                System.out.println(" - Replaced: " + lib.getName());
-            }
-            if (lib.validForOS()) {
-                List<URL> urls = new ArrayList<>();
-                try {
-                    urls.add(new URL(lib.getDownloadUrl()));
-                } catch (MalformedURLException e) {
-                    apiLogger.log(Level.SEVERE, "Bad URL", e);
-                }
-                Downloadable entry = new Downloadable(lib.getName(),lib.getFilename(),"",100000,urls);
-                libSet.add(entry);
-                if (lib.hasNatives()) {
-                    libExtract.add(lib.getFilename());
-                }
-            }
-
-			break;
-		default:
-			apiLogger.severe("Invalid API call to MCUpdater.installMods! (side cannot be " + side.toString() + ")");
-			return false;
 		}
-        libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("libraries").toFile(), DownloadCache.getDir());
+		libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("libraries").toFile(), DownloadCache.getDir());
 		Boolean updateJar = clearExisting;
 		if (side == ModSide.CLIENT) {
 			if (!productionJar.toFile().exists()) {
@@ -496,19 +482,15 @@ public class MCUpdater {
 				instancePath.resolve(entry.getFilename()).toFile().delete();
 			}
 		}
-		instData.setJarMods(new ArrayList<FileInfo>());
-		instData.setInstanceFiles(new ArrayList<FileInfo>());
+		instData.setJarMods(new ArrayList<>());
+		instData.setInstanceFiles(new ArrayList<>());
 		jarModCount = 0;
-		apiLogger.info("Instance path: " + instancePath.toString());
+		apiLogger.info("Instance path: " + instancePath);
 		List<File> contents = recurseFolder(instancePath.toFile(), true);
 		if (clearExisting){
 			parent.setStatus("Clearing existing configuration");
 			parent.log("Clearing existing configuration...");
-			for (File entry : new ArrayList<>(contents)) {
-				if (getExcludedNames(entry.getPath(), true)) {
-					contents.remove(entry);
-				}
-			}
+			contents.removeIf(entry -> getExcludedNames(entry.getPath(), true));
 			ListIterator<File> liClear = contents.listIterator(contents.size());
 			while(liClear.hasPrevious()) { 
 				File entry = liClear.previous();
@@ -523,8 +505,7 @@ public class MCUpdater {
 		
 		int modCount = toInstall.size();
 		int modsLoaded = 0;
-		int errorCount = 0;
-		
+
 		while(itMods.hasNext()) {
 			GenericModule entry = itMods.next();
 			parent.log("Mod: "+entry.getName());
@@ -564,25 +545,22 @@ public class MCUpdater {
 
 		generalQueue = parent.submitNewQueue("Instance files", server.getServerId(), generalFiles, instancePath.toFile(), DownloadCache.getDir());
 		jarQueue = parent.submitNewQueue("Jar build files", server.getServerId(), jarMods, tmpFolder, DownloadCache.getDir());
-		TaskableExecutor libExecutor = new TaskableExecutor(2, new Runnable(){
-
-			@Override
-			public void run() {
-				parent.log("Extracting library files");
-				for (String entry : libExtract){
-					Archive.extractZip(instancePath.resolve("libraries").resolve(entry).toFile(), instancePath.resolve("libraries").resolve("natives").toFile(), false);
-				}
-				parent.log("Library file extraction complete");
-				server.getLoaders().sort(new OrderComparator());
-				for (Loader loader : server.getLoaders()) {
-					loader.getILoader().install(instancePath, side);
-				}
-			}});
-        if (libraryQueue != null) {
-            libraryQueue.processQueue(libExecutor);
-        }
+		Runnable postProcessLibraries = () -> {
+			parent.log("Extracting library files");
+			for (String entry : libExtract){
+				Archive.extractZip(instancePath.resolve("libraries").resolve(entry).toFile(), instancePath.resolve("libraries").resolve("natives").toFile(), false);
+			}
+			parent.log("Library file extraction complete");
+			server.getLoaders().sort(new OrderComparator());
+			for (Loader loader : server.getLoaders()) {
+				loader.getILoader().install(instancePath, side);
+			}
+		};
+		if (libraryQueue != null) {
+			libraryQueue.processQueue(2,postProcessLibraries);
+		}
 		File branding = new File(tmpFolder, "fmlbranding.properties");
-        boolean doBranding = false;
+		boolean doBranding = false;
 		if (!Version.requestedFeatureLevel(server.getVersion(),"1.13")) {
 			try {
 				doBranding = true;
@@ -596,149 +574,132 @@ public class MCUpdater {
 		}
 		final boolean doJarUpdate = updateJar;
 		final boolean finalDoBranding = doBranding;
-		TaskableExecutor jarExecutor = new TaskableExecutor(2, new Runnable() {
-			
-			@Override
-			public void run() {
-				if (!doJarUpdate && finalDoBranding) {
-					parent.log("Updating FML branding");
+		Runnable postProcessJar = () -> {
+			if (!doJarUpdate && finalDoBranding) {
+				parent.log("Updating FML branding");
+				try {
+					Archive.updateArchive(productionJar.toFile(), new File[]{ branding });
+				} catch (IOException e1) {
+					apiLogger.log(Level.SEVERE, "I/O Error", e1);
+				}
+				parent.log("FML branding complete");
+			} else {
+				parent.log("Extracting files for jar insertion");
+				for (Map.Entry<String,Boolean> entry : keepMeta.entrySet()) {
+					File entryFile = new File(tmpFolder,entry.getKey());
+					Archive.extractZip(entryFile, tmpFolder, entry.getValue());
+					entryFile.delete();
+				}
+				try {
+					buildJar.createNewFile();
+				} catch (IOException e) {
+					apiLogger.log(Level.SEVERE, "I/O Error", e);
+				}
+				boolean doManifest = true;
+				List<File> buildList = recurseFolder(tmpFolder,true);
+				for (File entry : new ArrayList<>(buildList)) {
+					if (entry.getPath().contains("META-INF")) {
+						doManifest = false;
+					}
+				}
+				if (tmpFolder.listFiles().length > 0) {
+					parent.log("Packaging updated jar...");
 					try {
-						Archive.updateArchive(productionJar.toFile(), new File[]{ branding });
+						Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep, doManifest);
 					} catch (IOException e1) {
+						parent.log("Failed to create jar!");
 						apiLogger.log(Level.SEVERE, "I/O Error", e1);
 					}
-					parent.log("FML branding complete");
-				} else {
-					parent.log("Extracting files for jar insertion");
-					for (Map.Entry<String,Boolean> entry : keepMeta.entrySet()) {
-						File entryFile = new File(tmpFolder,entry.getKey());
-						Archive.extractZip(entryFile, tmpFolder, entry.getValue());
-						entryFile.delete();
-					}
 					try {
-						buildJar.createNewFile();
+						Files.createDirectories(productionJar.getParent());
+						Files.copy(buildJar.toPath(), productionJar, StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
-						apiLogger.log(Level.SEVERE, "I/O Error", e);
+						apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
 					}
-					boolean doManifest = true;
-					List<File> buildList = recurseFolder(tmpFolder,true);
-					for (File entry : new ArrayList<>(buildList)) {
-						if (entry.getPath().contains("META-INF")) {
-							doManifest = false;
-						}
-					}
-					if (tmpFolder.listFiles().length > 0) {
-						parent.log("Packaging updated jar...");
-						try {
-							Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep, doManifest);
-						} catch (IOException e1) {
-							parent.log("Failed to create jar!");
-							apiLogger.log(Level.SEVERE, "I/O Error", e1);
-						}
-						try {
-							Files.createDirectories(productionJar.getParent());
-							Files.copy(buildJar.toPath(), productionJar, StandardCopyOption.REPLACE_EXISTING);
-						} catch (IOException e) {
-							apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
-						}
-					}
-					parent.log("Jar build/update complete");
 				}
-				List<File> tempFiles = recurseFolder(tmpFolder,true);
-				ListIterator<File> li = tempFiles.listIterator(tempFiles.size());
-				while(li.hasPrevious()) { 
-					File entry = li.previous();
-					entry.delete();
-				}
-				if (server.isGenerateList() && side != ModSide.SERVER) { writeMCServerFile(instancePath, server.getName(), server.getAddress()); }
-				instData.setMCVersion(server.getVersion());
-				instData.setRevision(server.getRevision());
-				instData.setPackName(server.getName());
-				instData.setPackId(server.getServerId());
-				String jsonOut = gson.toJson(instData);
-				try {
-					BufferedWriter writer = Files.newBufferedWriter(instancePath.resolve("instance.json"), StandardCharsets.UTF_8);
-					writer.append(jsonOut);
-					writer.close();
-				} catch (IOException e) {
-					apiLogger.log(Level.SEVERE, "I/O error", e);
-				}		
+				parent.log("Jar build/update complete");
 			}
-		});
-		jarQueue.processQueue(jarExecutor);
-		TaskableExecutor genExecutor = new TaskableExecutor(12, new Runnable(){
+			List<File> tempFiles = recurseFolder(tmpFolder,true);
+			ListIterator<File> li = tempFiles.listIterator(tempFiles.size());
+			while(li.hasPrevious()) {
+				File entry = li.previous();
+				entry.delete();
+			}
+			if (server.isGenerateList() && side != ModSide.SERVER) { writeMCServerFile(instancePath, server.getName(), server.getAddress()); }
+			instData.setMCVersion(server.getVersion());
+			instData.setRevision(server.getRevision());
+			instData.setPackName(server.getName());
+			instData.setPackId(server.getServerId());
+			String jsonOut = gson.toJson(instData);
+			try {
+				BufferedWriter writer = Files.newBufferedWriter(instancePath.resolve("instance.json"), StandardCharsets.UTF_8);
+				writer.append(jsonOut);
+				writer.close();
+			} catch (IOException e) {
+				apiLogger.log(Level.SEVERE, "I/O error", e);
+			}
+		};
+		jarQueue.processQueue(2, postProcessJar);
+		Runnable postProcessGeneral = () -> {
+			parent.log("Performing needed extractions");
+			for (Map.Entry<String,Boolean> entry : modExtract.entrySet()) {
+				if (entry.getValue()) {
+					Archive.extractZip(instancePath.resolve(entry.getKey()).toFile(), instancePath.toFile());
+				} else {
+					Archive.extractZip(instancePath.resolve(entry.getKey()).toFile(), instancePath.resolve("mods").toFile());
+				}
+				instancePath.resolve(entry.getKey()).toFile().delete();
+			}
+			parent.log("Extractions complete");
+		};
+		//generalQueue.processQueue(genExecutor);
+		generalQueue.processQueue(12,postProcessGeneral);
+		Runnable postProcessAssets = () -> {
+			//check virtual
+			Gson gson = new Gson();
+			String indexName = version.getAssets();
+			if (indexName == null) {
+				indexName = "legacy";
+			}
+			File indexesPath = archiveFolder.resolve("assets").resolve("indexes").toFile();
+			File indexFile = new File(indexesPath, indexName + ".json");
+			String json;
+			try {
+				json = FileUtils.readFileToString(indexFile);
+				AssetIndex index = gson.fromJson(json, AssetIndex.class);
+				parent.log("Assets virtual: " + index.isVirtual());
+				if (index.isVirtual()) {
+					//Test symlink support
+					boolean doLinks = true;
+					try {
+						Files.createSymbolicLink(archiveFolder.resolve("linktest"), archiveFolder.resolve("MCUpdater.log.0"));
+						archiveFolder.resolve("linktest").toFile().delete();
+					} catch (Exception e) {
+						doLinks = false;
+					}
+					Path assetsPath = archiveFolder.resolve("assets");
+					Path virtualPath = assetsPath.resolve("virtual");
+					for (Map.Entry<String, Asset> entry : index.getObjects().entrySet()) {
+						Path target = virtualPath.resolve(entry.getKey());
+						Path original = assetsPath.resolve("objects").resolve(entry.getValue().getHash().substring(0,2)).resolve(entry.getValue().getHash());
 
-			@Override
-			public void run() {
-				parent.log("Performing needed extractions");
-				for (Map.Entry<String,Boolean> entry : modExtract.entrySet()) {
-					if (entry.getValue()) {
-						Archive.extractZip(instancePath.resolve(entry.getKey()).toFile(), instancePath.toFile());
-					} else {
-						Archive.extractZip(instancePath.resolve(entry.getKey()).toFile(), instancePath.resolve("mods").toFile());
-					}
-					instancePath.resolve(entry.getKey()).toFile().delete();
-				}
-				parent.log("Extractions complete");
-			}
-			
-		});
-		generalQueue.processQueue(genExecutor);
-		TaskableExecutor assetsExecutor = new TaskableExecutor(8, new Runnable(){
-			
-			@Override
-			public void run() {
-				//check virtual
-				Gson gson = new Gson();
-				String indexName = version.getAssets();
-				if (indexName == null) {
-					indexName = "legacy";
-				}
-				File indexesPath = archiveFolder.resolve("assets").resolve("indexes").toFile();
-				File indexFile = new File(indexesPath, indexName + ".json");
-				String json;
-				try {
-					json = FileUtils.readFileToString(indexFile);
-					AssetIndex index = gson.fromJson(json, AssetIndex.class);
-					parent.log("Assets virtual: " + index.isVirtual());
-					if (index.isVirtual()) {
-						//Test symlink support
-						boolean doLinks = true;
-						try {
-							java.nio.file.Files.createSymbolicLink(archiveFolder.resolve("linktest"), archiveFolder.resolve("MCUpdater.log.0"));
-							archiveFolder.resolve("linktest").toFile().delete();
-						} catch (Exception e) {
-							doLinks = false;
-						}
-						Path assetsPath = archiveFolder.resolve("assets");
-						Path virtualPath = assetsPath.resolve("virtual");
-						for (Map.Entry<String, Asset> entry : index.getObjects().entrySet()) {
-							Path target = virtualPath.resolve(entry.getKey());
-							Path original = assetsPath.resolve("objects").resolve(entry.getValue().getHash().substring(0,2)).resolve(entry.getValue().getHash());
-							
-							if (!Files.exists(target)) {
-								Files.createDirectories(target.getParent());
-								if (doLinks) {
-									Files.createSymbolicLink(target, original);
-								} else {
-									Files.copy(original, target);
-								}
+						if (!Files.exists(target)) {
+							Files.createDirectories(target.getParent());
+							if (doLinks) {
+								Files.createSymbolicLink(target, original);
+							} else {
+								Files.copy(original, target);
 							}
 						}
 					}
-				} catch (IOException e) {
-					parent.baseLogger.log(Level.SEVERE, "Assets exception! " + e.getMessage());
 				}
-
+			} catch (IOException e) {
+				parent.baseLogger.log(Level.SEVERE, "Assets exception! " + e.getMessage());
 			}
-			
-		});
-        if (assetsQueue != null) {
-            assetsQueue.processQueue(assetsExecutor);
-        }
-		if( errorCount > 0 ) {
-			parent.baseLogger.severe("Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
-			return false;
+		};
+		if (assetsQueue != null) {
+			//assetsQueue.processQueue(assetsExecutor);
+			assetsQueue.processQueue(8, postProcessAssets);
 		}
 		return true;
 	}
@@ -828,9 +789,12 @@ public class MCUpdater {
 		return values;
 	}
 
+	/*
 	public DatabaseManager getDbManager() {
 		return dbManager;
 	}
+
+	 */
 
 }
 
