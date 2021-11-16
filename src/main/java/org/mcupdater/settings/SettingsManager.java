@@ -17,7 +17,7 @@ public class SettingsManager {
 
 	private static SettingsManager instance;
 	private final List<SettingsListener> listeners = new CopyOnWriteArrayList<>();
-	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	private final Gson gson = new GsonBuilder().registerTypeAdapter(Profile.class, new Profile.ProfileJsonHandler()).setPrettyPrinting().create();
 	private Settings settings;
 	private final Path configFile = MCUpdater.getInstance().getArchiveFolder().resolve("config.json");
 	private boolean dirty = false;
@@ -53,6 +53,10 @@ public class SettingsManager {
 				this.settings.setJrePath(System.getProperty("java.home"));
 				MCUpdater.getInstance().getParent().alert("Java was not found at: " + jrePath.toString() + " JRE path has automatically been changed to: " + this.settings.getJrePath() + ".");
 				saveSettings();
+			}
+			Path instancePath = Paths.get(this.settings.getInstanceRoot());
+			if (!instancePath.toFile().exists()) {
+				instancePath.toFile().mkdirs();
 			}
 			this.dirty=false;
 			fireStateUpdate();
@@ -160,6 +164,7 @@ public class SettingsManager {
 			writer.close();
 			this.dirty = false;
 			fireStateUpdate();
+			fireSettingsUpdate();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		

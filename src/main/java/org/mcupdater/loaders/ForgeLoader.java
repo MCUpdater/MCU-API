@@ -27,6 +27,7 @@ import static java.lang.Thread.sleep;
 public class ForgeLoader implements ILoader {
 
 	private final String FORGE_BASE = "http://files.minecraftforge.net/maven/net/minecraftforge/forge/";
+	private final String[] LOADERS = {"MCU-LegacyForgeLoader.jar", "MCU-ForgeLoader.jar", "MCU-ForgeLoaderV2.jar"};
 	private final Loader loader;
 
 	public ForgeLoader(Loader loader) {
@@ -64,7 +65,13 @@ public class ForgeLoader implements ILoader {
 			args.add(javaPath.toString());
 			args.add("-cp");
 			String loaderLib;
-			loaderLib = (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "14.23.5.2851")) ? "MCU-ForgeLoader.jar" : "MCU-LegacyForgeLoader.jar";
+			int loaderVersion = 0;
+			if (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.17") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "36.1.33")) {
+				loaderVersion = 2;
+			} else if (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "14.23.5.2851")) {
+				loaderVersion = 1;
+			}
+			loaderLib = LOADERS[loaderVersion];
 			args.add(mcuPath.resolve("lib").resolve(loaderLib).toString() + System.getProperty("path.separator") + tmp.getAbsolutePath());
 			args.add("org.mcupdater.forgeloader.ForgeLoader");
 			args.add(installPath.toAbsolutePath().toString());
@@ -111,7 +118,9 @@ public class ForgeLoader implements ILoader {
 	}
 
 	private String getVersionFilename() {
-		return (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "14.23.5.2851")) ? this.loader.getVersion().replace("-","-forge-") : this.loader.getVersion().split("-")[0] + "-forge" + this.loader.getVersion();
+		return (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "14.23.5.2851")) ?
+				this.loader.getVersion().replace("-","-forge-") :
+				this.loader.getVersion().split("-")[0] + "-forge" + this.loader.getVersion();
 	}
 
 	@Override

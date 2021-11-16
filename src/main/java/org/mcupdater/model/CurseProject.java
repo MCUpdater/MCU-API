@@ -2,15 +2,10 @@ package org.mcupdater.model;
 
 public class CurseProject {
 	public enum ReleaseType {
-		ALPHA(0),BETA(1),RELEASE(2);
-		public final int val;
-		
-		ReleaseType(int val) {
-			this.val = val;
-		}
-		
+		ALPHA,BETA,RELEASE;
+
 		public boolean worseThan(ReleaseType that) {
-			return this.val < that.val;
+			return this.ordinal() < that.ordinal();
 		}
 		
 		public static ReleaseType parse(String typeStr) {

@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.mcupdater.model.*;
+import org.mcupdater.model.Module;
 import org.tomlj.Toml;
 import org.tomlj.TomlParseResult;
 import org.tomlj.TomlArray;
@@ -297,7 +298,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 				id = server.modExceptions.get(id);
 			}
 			List<PrioritizedURL> urls = new ArrayList<>();
-			urls.add(new PrioritizedURL(downloadURL,0));
+			urls.add(new PrioritizedURL(downloadURL,1));
 			Module newMod = new Module(name,id,urls,null,size,depends,required,modType,order,false,false,true,md5,new ArrayList<ConfigFile>(),side.name(),null,mapMeta,"","",new ArrayList<Submodule>(),"");
 			if (modType.equals(ModType.Extract)) {
 				newMod.setInRoot(true);

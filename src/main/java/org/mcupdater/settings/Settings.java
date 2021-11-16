@@ -77,10 +77,12 @@ public class Settings {
 		this.maxMemory = maxMemory;
 	}
 
+	@Deprecated
 	public String getPermGen() {
 		return permGen;
 	}
 
+	@Deprecated
 	public void setPermGen(String permGen) {
 		this.permGen = permGen;
 	}
@@ -109,10 +111,12 @@ public class Settings {
 		this.fullScreen = fullScreen;
 	}
 
+	@Deprecated
 	public String getJrePath() {
 		return jrePath;
 	}
 
+	@Deprecated
 	public void setJrePath(String jrePath) {
 		this.jrePath = jrePath;
 	}

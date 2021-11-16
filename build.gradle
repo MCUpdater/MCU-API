@@ -1,0 +1,36 @@
+import org.apache.tools.ant.filters.*
+
+plugins {
+    id 'workspace.java-library-conventions'
+}
+
+version = sharedVersion
+
+dependencies {
+    implementation project(':MCU-DownloadLib')
+    implementation 'com.mojang:authlib:1.6.25'
+    implementation 'org.tomlj:tomlj:1.0.0'
+    implementation group: 'org.apache.derby', name: 'derby', version: '10.15.2.0'
+    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.21'
+    implementation 'org.hibernate:hibernate-core:5.5.5.Final'
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.1'
+    implementation 'org.jsoup:jsoup:1.14.2'
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from(sourceSets*.resources.srcDirs) {
+        include '**/*.properties'
+        filter(ReplaceTokens, tokens: [verMajor: Integer.toString(sharedVersion.major), verMinor: Integer.toString(sharedVersion.minor), verBuild: Integer.toString(sharedVersion.buildNum)])
+    }
+    from(sourceSets*.resources.srcDirs) {
+        exclude '**/*.properties'
+    }
+}
+
+repositories {
+    maven {
+        url 'https://repo.maven.apache.org/maven2'
+        name 'Maven Central'
+    }
+}

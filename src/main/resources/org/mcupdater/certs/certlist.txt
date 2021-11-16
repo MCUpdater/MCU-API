@@ -1,2 +1,4 @@
+isrgrootx1.pem
+isrg-root-x2.pem
 dst_root_ca_x3.pem
 startssl.pem

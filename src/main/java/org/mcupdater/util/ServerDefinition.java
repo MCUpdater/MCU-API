@@ -3,10 +3,9 @@ package org.mcupdater.util;
 import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
+import org.mcupdater.model.Module;
 import org.mcupdater.model.*;
-import org.mcupdater.mojang.nbt.TagCompound;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

@@ -1,5 +1,6 @@
 package org.mcupdater.mojang;
 
+import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.downloadlib.TrackerListener;
@@ -18,6 +19,9 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TestClass {
 
@@ -27,6 +31,13 @@ public class TestClass {
 	 */
 	public static void main(String[] args) throws MalformedURLException {
 		MCUpdater.getInstance();
+		// Establish logger
+		Logger logger = Logger.getLogger("MCU-Test");
+		logger.setLevel(Level.ALL);
+		ConsoleHandler handler = new ConsoleHandler();
+		handler.setFormatter(new FMLStyleFormatter());
+		logger.addHandler(handler);
+		///
 		String versionNum = "1.6.2";
 		MinecraftVersion version = MinecraftVersion.loadVersion(versionNum);
 		
@@ -62,16 +73,16 @@ public class TestClass {
 				}
 			}
 		}
-		DownloadQueue q2 = new DownloadQueue("Libraries", "Test", listener, libSet, new File(base, "lib"), null);
+		DownloadQueue q2 = new DownloadQueue("Libraries", "Test", listener, libSet, new File(base, "lib"), null, logger);
 		HashSet<Downloadable> jar = new HashSet<>();
 		List<URL> jarUrl = new ArrayList<>();
 		jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + versionNum + "/" + versionNum + ".jar"));
 		jar.add(new Downloadable("Minecraft Jar", "mc-" + versionNum +".jar", "", 0, jarUrl));
-		DownloadQueue q3 = new DownloadQueue("Main", "Test", listener, jar, base, null);
+		DownloadQueue q3 = new DownloadQueue("Main", "Test", listener, jar, base, null, logger);
 		ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 8, 500, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		// q1.processQueue(executor);
-		q2.processQueue(executor);
-		q3.processQueue(executor);
+		q2.processQueue(8, ()->{});
+		q3.processQueue(8, ()->{});
 		while (!( /* q1.isFinished() && */q2.isFinished() && q3.isFinished() )) {
 			try {
 				Thread.sleep(500);

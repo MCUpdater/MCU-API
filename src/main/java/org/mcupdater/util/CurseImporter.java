@@ -16,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.downloadlib.DownloadUtil;
 import org.mcupdater.model.*;
+import org.mcupdater.model.Module;
 import org.mcupdater.model.curse.manifest.Manifest;
 import org.mcupdater.model.curse.manifest.Minecraft;
 import org.mcupdater.model.curse.manifest.ModLoader;
@@ -32,6 +33,7 @@ public class CurseImporter {
 			System.out.println( "[import] no such file, attempting download" );
 			try {
 				final URL url = new URL(importURL);
+				System.out.println("[import] downloading " + importURL);
 				tmp = File.createTempFile("import", "zip");			
 				DownloadUtil.get(url, tmp);
 				System.out.println( "[import] downloaded "+Files.size(tmp.toPath())+" bytes...");

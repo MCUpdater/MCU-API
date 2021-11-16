@@ -3,8 +3,8 @@ package org.mcupdater.model;
 import java.util.*;
 
 public class ServerList extends Server {
-    private Map<String,Module> modules = new HashMap<>();
-    private List<Loader> loaders = new ArrayList<>();
+	private Map<String,Module> modules = new HashMap<>();
+	private List<Loader> loaders = new ArrayList<>();
 
 	private State state = State.UNKNOWN;
 	private boolean stylesheet;
@@ -32,12 +32,12 @@ public class ServerList extends Server {
 		this.setFakeServer(fakeServer);
 		this.setMainClass(mainClass);
 	}
-	
-    public Map<String, Module> getModules() {
+
+	public Map<String, Module> getModules() {
         return modules;
     }
 
-    public void setModules(Map<String, Module> modules) {
+	public void setModules(Map<String, Module> modules) {
         this.modules = modules;
     }
 

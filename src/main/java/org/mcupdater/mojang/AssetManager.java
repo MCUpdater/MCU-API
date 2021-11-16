@@ -19,7 +19,7 @@ import java.util.Set;
 
 public class AssetManager {
 	public static DownloadQueue downloadAssets(String queueName, String parent, File baseDirectory, TrackerListener listener, MinecraftVersion version) {
-		DownloadQueue queue = new DownloadQueue(queueName, parent, listener, getAssets(baseDirectory, version), baseDirectory, null);
+		DownloadQueue queue = new DownloadQueue(queueName, parent, listener, getAssets(baseDirectory, version), baseDirectory, null, MCUpdater.apiLogger);
 		return queue;
 	}
 	
@@ -48,14 +48,14 @@ public class AssetManager {
 				String assetName = object.getHash().substring(0, 2) + "/" + object.getHash();
 				File asset = new File(objectsPath, assetName);
 				if ((!asset.isFile()) || (FileUtils.sizeOf(asset) != object.getSize())) {
-	    			List<URL> urls = new ArrayList<>();
-	    			File localAsset = MCUpdater.getInstance().getMCFolder().resolve("assets").resolve("objects").resolve(object.getHash().substring(0, 2)).resolve(object.getHash()).toFile();
-	    			if ((localAsset.isFile()) && (FileUtils.sizeOf(localAsset) == object.getSize())) {
-	    				urls.add(new URL(localUrl + "objects" + "/" + assetName));
-	    			} else {
-	    				urls.add(new URL(resourceUrl + assetName));
-	    			}
-					Downloadable download = new Downloadable(object.getHash(),"objects" + "/" + assetName, HashAlgorithm.SHA, object.getHash(), object.getSize(),urls);
+					List<URL> urls = new ArrayList<>();
+					File localAsset = MCUpdater.getInstance().getMCFolder().resolve("assets").resolve("objects").resolve(object.getHash().substring(0, 2)).resolve(object.getHash()).toFile();
+					if ((localAsset.isFile()) && (FileUtils.sizeOf(localAsset) == object.getSize())) {
+						urls.add(new URL(localUrl + "objects" + "/" + assetName));
+					} else {
+						urls.add(new URL(resourceUrl + assetName));
+					}
+					Downloadable download = new Downloadable(object.getHash(),"objects" + "/" + assetName, HashAlgorithm.SHA1, object.getHash(), object.getSize(),urls);
 					assets.add(download);
 				}
 			}

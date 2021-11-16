@@ -97,7 +97,7 @@ public class ServerStatus {
 			if (dis.read() != 255) throw new IOException("Bad message");
 			
 			short strLength = dis.readShort();
-			if (strLength < 0 || strLength > 64) throw new IOException("invalid string length");
+		//	if (strLength < 0 || strLength > 128) throw new IOException("invalid string length");
 
 			StringBuilder sb = new StringBuilder();
 			for(int i=0; i<strLength; ++i) sb.append(dis.readChar());
