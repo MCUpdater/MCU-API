@@ -16,7 +16,7 @@ public class PackList {
 		MCUpdater.getInstance();
 		List<Module> mods;
 		mods = new ArrayList<>(ServerPackParser.loadFromURL(args[0],args[1]).getModules().values());
-        Collections.sort(mods, new ModuleComparator(ModuleComparator.Mode.HIERARCHY));
+		Collections.sort(mods, new ModuleComparator(ModuleComparator.Mode.HIERARCHY));
 		for (Module x : mods) {
 			System.out.println(x.getParent() + "\t" + x.getName() + "\t" + x.getId() + "\t" + x.getUrls().get(0) + "\t" + x.getMeta().get("version"));
 			if (x.hasSubmodules()) {

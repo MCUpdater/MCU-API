@@ -152,13 +152,14 @@ public class ServerStatusV2 {
 
 
     public class StatusResponse {
-        private String description;
+        private Description description;
         private Players players;
         private Version version;
         private String favicon;
+        private ForgeData forgeData;
         private int time;
 
-        public String getDescription() {
+        public Description getDescription() {
             return description;
         }
 
@@ -182,6 +183,9 @@ public class ServerStatusV2 {
             this.time = time;
         }
 
+        public ForgeData getForgeData() {
+            return forgeData;
+        }
     }
 
     public class Players {
@@ -226,6 +230,68 @@ public class ServerStatusV2 {
 
         public String getProtocol() {
             return protocol;
+        }
+    }
+
+    public class Description {
+        private String text;
+
+        public String getText() {
+            return text;
+        }
+    }
+
+    public class ForgeData {
+        private List<Channel> channels;
+        private List<Mod> mods;
+        private Integer fmlNetworkVersion;
+        private Boolean truncated;
+
+        public List<Channel> getChannels() {
+            return channels;
+        }
+
+        public List<Mod> getMods() {
+            return mods;
+        }
+
+        public Integer getFmlNetworkVersion() {
+            return fmlNetworkVersion;
+        }
+
+        public Boolean getTruncated() {
+            return truncated;
+        }
+    }
+
+    public class Channel {
+        private String res;
+        private String version;
+        private Boolean required;
+
+        public String getRes() {
+            return res;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public Boolean getRequired() {
+            return required;
+        }
+    }
+
+    public class Mod {
+        private String modId;
+        private String modmarker;
+
+        public String getModId() {
+            return modId;
+        }
+
+        public String getModmarker() {
+            return modmarker;
         }
     }
 }

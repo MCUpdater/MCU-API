@@ -99,6 +99,19 @@ public class MinecraftVersion {
 		return null;
 	}
 
+	public String getJVMArguments() {
+		if (this.arguments != null) {
+			StringBuilder argBuilder = new StringBuilder();
+			for (JsonElement entry : this.arguments.getJvm()) {
+				if (entry.isJsonPrimitive()) {
+					argBuilder.append(entry.getAsString()).append(" ");
+				}
+			}
+			return argBuilder.toString().trim();
+		}
+		return "";
+	}
+
 	public String getEffectiveArguments() {
 		if (this.minecraftArguments != null) {
 			return this.minecraftArguments;
