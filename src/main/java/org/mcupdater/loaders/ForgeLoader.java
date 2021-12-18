@@ -77,6 +77,7 @@ public class ForgeLoader implements ILoader {
 			args.add(installPath.toAbsolutePath().toString());
 			args.add(side.toString());
 			final ProcessBuilder pb = new ProcessBuilder(args);
+			MCUpdater.apiLogger.info("Args: " + args);
 			pb.directory(installPath.toFile());
 			pb.redirectErrorStream(true);
 			final File instancePath = installPath.toFile();
