@@ -12,6 +12,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SettingsManager {
 
@@ -20,7 +22,22 @@ public class SettingsManager {
 	private final Gson gson = new GsonBuilder().registerTypeAdapter(Profile.class, new Profile.ProfileJsonHandler()).setPrettyPrinting().create();
 	private Settings settings;
 	private final Path configFile = MCUpdater.getInstance().getArchiveFolder().resolve("config.json");
-	private boolean dirty = false;
+	private AtomicBoolean dirty = new AtomicBoolean(false);
+	private AtomicInteger delayCountdown = new AtomicInteger(0);
+	private final Thread saveDelay = new Thread(() -> {
+		while (true) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if (dirty.get()) {
+				if (delayCountdown.decrementAndGet() == 0) {
+					saveSettings();
+				}
+			}
+		}
+	});
 	
 	public SettingsManager() {
 		if (!configFile.toFile().exists()) {
@@ -38,6 +55,8 @@ public class SettingsManager {
 		}
 		System.out.println("Loading config");
 		loadSettings();
+		saveDelay.setDaemon(true);
+		saveDelay.start();
 	}
 
 	public void loadSettings() {
@@ -58,17 +77,10 @@ public class SettingsManager {
 			if (!instancePath.toFile().exists()) {
 				instancePath.toFile().mkdirs();
 			}
-			this.dirty=false;
-			fireStateUpdate();
+			this.dirty.set(false);
 			fireSettingsUpdate();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
-
-	private void fireStateUpdate() {
-		for (SettingsListener listener : listeners) {
-			listener.stateChanged(this.isDirty());
 		}
 	}
 
@@ -162,8 +174,7 @@ public class SettingsManager {
 			BufferedWriter writer = Files.newBufferedWriter(configFile, StandardCharsets.UTF_8);
 			writer.append(jsonOut);
 			writer.close();
-			this.dirty = false;
-			fireStateUpdate();
+			this.dirty.set(false);
 			fireSettingsUpdate();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -171,15 +182,16 @@ public class SettingsManager {
 	}
 
 	public boolean isDirty() {
-		return this.dirty;
+		return this.dirty.get();
 	}
 	
 	public void setDirty() {
-		this.dirty = true;
-		fireStateUpdate();
+		delayCountdown.set(10);
+		this.dirty.set(true);
 	}
 
 	public void addListener(SettingsListener listener) {
+		MCUpdater.apiLogger.finer(String.format("Added settings listener: %s%n",listener.getClass().toString()));
 		listeners.add(listener);
 	}
 

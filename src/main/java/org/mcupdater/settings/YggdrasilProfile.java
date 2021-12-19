@@ -27,9 +27,7 @@ public class YggdrasilProfile extends Profile {
 				} catch (Exception e) {
 					Profile newProfile = caller.requestLogin(this.username);
 					SettingsManager.getInstance().getSettings().addOrReplaceProfile(newProfile);
-					if (!SettingsManager.getInstance().isDirty()) {
-						SettingsManager.getInstance().saveSettings();
-					}
+					SettingsManager.getInstance().setDirty();
 					currentSessionKey = newProfile.getSessionKey(caller);
 					caller.baseLogger.log(Level.INFO, "A full login request occurred due to the following exception", e);
 					caller.baseLogger.finer("Session key: " + currentSessionKey);

@@ -9,6 +9,7 @@ import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.settings.YggdrasilProfile;
+import org.mcupdater.util.MCUpdater;
 
 import java.net.Proxy;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ public class YggdrasilAuthManager extends AuthManager {
 	private final YggdrasilAuthenticationService authService;
 
 	public YggdrasilAuthManager() {
+		MCUpdater.apiLogger.info("Client token: " + SettingsManager.getInstance().getSettings().getClientToken().toString());
 		this.authService = new YggdrasilAuthenticationService(Proxy.NO_PROXY, SettingsManager.getInstance().getSettings().getClientToken().toString());
 	}
 
@@ -41,10 +43,7 @@ public class YggdrasilAuthManager extends AuthManager {
 				profile.setLegacy(UserType.LEGACY == auth.getUserType());
 
 				SettingsManager.getInstance().getSettings().addOrReplaceProfile(profile);
-				if (!SettingsManager.getInstance().isDirty()) {
-					System.out.println("Saving settings");
-					SettingsManager.getInstance().saveSettings();
-				}
+				SettingsManager.getInstance().setDirty();
 			}
 			return "token:" + auth.getAuthenticatedToken() + ":" + auth.getSelectedProfile().getId().toString().replace("-", "");
 		} else {
