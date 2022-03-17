@@ -2,6 +2,10 @@ package org.mcupdater.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,10 +14,12 @@ import org.jsoup.select.Elements;
 import org.mcupdater.api.Version;
 import org.mcupdater.downloadlib.DownloadUtil;
 import org.mcupdater.model.CurseProject;
+import org.mcupdater.model.curse.feed.Project;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -27,11 +33,15 @@ public enum CurseModCache {
 	
 	private static final String DOWNLOAD = "/download/";
 	private static final String FILE = "/file";
+	@Deprecated
 	private static final String BASE_URL = "https://minecraft.curseforge.com/projects/";
+	@Deprecated
 	private static final String BASE_URL2 = "https://www.curseforge.com/minecraft/mc-mods/";
+	private static final String API_BASE = "https://addons-ecs.forgesvc.net/api/v2/addon/";
 	private static final Map<String,Integer> versions = new HashMap<>();
 	private static final String GAMEVERSIONS_URL = "https://minecraft.curseforge.com/api/game/versions?token=a98e4aa8-f43e-4c6a-b245-70327d9c2f85";
 	private static Pattern md5Pattern = Pattern.compile("[a-fA-F0-9]{32}"); // regex pattern to match MD5 strings
+	private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
 	private CurseModCache() {
 		// TODO: handle a serialized data cache location (possibly lean on DownloadCache here?)
@@ -207,6 +217,7 @@ public enum CurseModCache {
 	}
 	
 	public static String getTextID(long modID) {
+		/*
 		final String origURL = BASE_URL+modID;
 		try {
 			URL sourceURL = new URL(origURL);
@@ -214,17 +225,31 @@ public enum CurseModCache {
 			conn.setUseCaches(false);
 			conn.setInstanceFollowRedirects(false);
 			String newURL = "";
-			if (conn.getResponseCode() / 100 == 3) {
+			int respCode = conn.getResponseCode();
+			MCUpdater.apiLogger.log(Level.INFO, String.format("%s : %d",origURL,respCode));
+			if (respCode / 100 == 3) {
 				newURL = conn.getHeaderField("Location");
 				if (newURL.startsWith("//")) { //Handling of schemeless URLs - protocol comes from context.
 					newURL = sourceURL.getProtocol() + ":" + newURL;
 				}
 			}
 			final String textID = newURL.substring(newURL.lastIndexOf('/')+1);
-			MCUpdater.apiLogger.log(Level.FINE, "Found text ID '"+textID+"' for curse:"+modID);
+			MCUpdater.apiLogger.log(Level.FINE, String.format("Found text ID '%s' for curse: %s (%s)", textID, modID, newURL));
 			return textID;
 		} catch (IOException e) {
 			MCUpdater.apiLogger.log(Level.WARNING, "Unable to find text ID for curse:"+modID, e);
+			return Long.toString(modID);
+		}
+		 */
+		try {
+			CloseableHttpClient client = HttpClientBuilder.create().build();
+			String lookupURL = new String(API_BASE + modID);
+			HttpGet get = new HttpGet(lookupURL);
+			HttpResponse getResponse = client.execute(get);
+			Project project = gson.fromJson(new InputStreamReader(getResponse.getEntity().getContent(), "UTF-8"), Project.class);
+			return project.getName();
+		} catch (Exception e) {
+			MCUpdater.apiLogger.log(Level.WARNING, String.format("Unable to find text ID for curse: %d",modID));
 			return Long.toString(modID);
 		}
 	}

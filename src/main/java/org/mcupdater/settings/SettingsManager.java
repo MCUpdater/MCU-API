@@ -67,12 +67,14 @@ public class SettingsManager {
 			if(this.settings.getJvmOpts().equals("")) {
 				this.settings.setJvmOpts(MCUpdater.defaultJVMArgs);
 			}
+			/* Setting no longer used
 			Path jrePath = Paths.get(this.settings.getJrePath());
 			if (!jrePath.toFile().exists()) {
 				this.settings.setJrePath(System.getProperty("java.home"));
 				MCUpdater.getInstance().getParent().alert("Java was not found at: " + jrePath.toString() + " JRE path has automatically been changed to: " + this.settings.getJrePath() + ".");
 				saveSettings();
 			}
+			 */
 			Path instancePath = Paths.get(this.settings.getInstanceRoot());
 			if (!instancePath.toFile().exists()) {
 				instancePath.toFile().mkdirs();

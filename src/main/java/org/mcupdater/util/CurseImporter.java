@@ -3,8 +3,10 @@ package org.mcupdater.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -13,6 +15,10 @@ import java.util.HashMap;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.mcupdater.api.Version;
 import org.mcupdater.downloadlib.DownloadUtil;
 import org.mcupdater.model.*;
@@ -25,7 +31,8 @@ import com.google.gson.Gson;
 
 public class CurseImporter {
 	private File tmp;
-	
+	private final String API_BASE = "https://addons-ecs.forgesvc.net/api/v2/addon/";
+
 	public CurseImporter(String importURL) {
 		tmp = new File(importURL);
 		if( !tmp.exists() ) {
@@ -120,18 +127,20 @@ public class CurseImporter {
 					
 					// get mods
 					for( org.mcupdater.model.curse.manifest.File modData : manifest.getFiles() ) {
-						Module mod = Module.createBlankModule();
-						System.out.println("[import] Project ID: " + modData.getProjectID());
-						final String projId = CurseModCache.getTextID(modData.getProjectID());
-						CurseProject proj = new CurseProject(projId, mcVersion);
-						proj.setFile(modData.getFileID());
-						mod.setCurseProject(proj);
-						mod.setRequired(modData.getRequired());
-						
-						mod.setId(projId);
-						mod.setName(projId);
-						
-						definition.addModule(mod);
+						CloseableHttpClient client = HttpClientBuilder.create().build();
+						File temp2 = File.createTempFile("import",".jar");
+						String lookupUrl = String.format("%s%d/file/%d/download-url",API_BASE, modData.getProjectID(), modData.getFileID());
+						System.out.println(lookupUrl);
+						HttpGet get = new HttpGet(lookupUrl);
+						HttpResponse getResponse = client.execute(get);
+						String stringUrl = new String(getResponse.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+						System.out.println(stringUrl);
+						DownloadUtil.get(new URL(stringUrl), temp2);
+						temp2.deleteOnExit();
+						Module newModule = (Module) PathWalker.handleOneFile(new ServerDefinition(), temp2, stringUrl);
+						newModule.setRequired(modData.getRequired());
+						definition.addModule(newModule);
+						client.close();
 					}
 
 					// TODO: add overrides as special case unzip

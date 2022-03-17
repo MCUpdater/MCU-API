@@ -17,9 +17,11 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 import static java.lang.Thread.sleep;
@@ -65,13 +67,23 @@ public class ForgeLoader implements ILoader {
 			args.add(javaPath.toString());
 			args.add("-cp");
 			String loaderLib;
-			int loaderVersion = 0;
-			if (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.17") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "36.1.33")) {
-				loaderVersion = 2;
-			} else if (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "14.23.5.2851")) {
-				loaderVersion = 1;
+			{
+				String[] forgeVersion = loader.getVersion().split("-");
+				int loaderVersion = 0;
+				if (
+						Version.requestedFeatureLevel(forgeVersion[0], "1.17") ||
+								Version.requestedFeatureLevel(forgeVersion[1], "36.1.33") ||
+								(forgeVersion[0].equals("1.12.2") && Version.requestedFeatureLevel(forgeVersion[1], "14.23.5.2856")) ||
+								(forgeVersion[0].equals("1.13.2") && Version.requestedFeatureLevel(forgeVersion[1], "25.0.222")) ||
+								(forgeVersion[0].equals("1.14.4") && Version.requestedFeatureLevel(forgeVersion[1], "28.2.25")) ||
+								(forgeVersion[0].equals("1.15.2") && Version.requestedFeatureLevel(forgeVersion[1], "31.2.52"))
+				) {
+					loaderVersion = 2;
+				} else if (Version.requestedFeatureLevel(forgeVersion[0], "1.13") || Version.requestedFeatureLevel(forgeVersion[1], "14.23.5.2851")) {
+					loaderVersion = 1;
+				}
+				loaderLib = LOADERS[loaderVersion];
 			}
-			loaderLib = LOADERS[loaderVersion];
 			args.add(mcuPath.resolve("lib").resolve(loaderLib).toString() + System.getProperty("path.separator") + tmp.getAbsolutePath());
 			args.add("org.mcupdater.forgeloader.ForgeLoader");
 			args.add(installPath.toAbsolutePath().toString());
@@ -144,14 +156,19 @@ public class ForgeLoader implements ILoader {
 	}
 
 	private Path getJava() throws Exception {
-		Path javaFile;
-		if (System.getProperty("os.name").startsWith("Win")) {
-			javaFile = new File(SettingsManager.getInstance().getSettings().getJrePath()).toPath().resolve("bin").resolve("javaw.exe");
-		} else {
-			javaFile = new File(SettingsManager.getInstance().getSettings().getJrePath()).toPath().resolve("bin").resolve("java");
+		AtomicReference<Path> javaFile = new AtomicReference<>(null);
+		ProcessHandle.current().info().command().ifPresent(
+				cmd -> javaFile.set(Paths.get(cmd)));
+		if (javaFile.get() != null) {
+			return javaFile.get();
 		}
-		if (Files.exists(javaFile)) {
-			return javaFile;
+		if (System.getProperty("os.name").startsWith("Win")) {
+			javaFile.set(new File(SettingsManager.getInstance().getSettings().getJrePath()).toPath().resolve("bin").resolve("javaw.exe"));
+		} else {
+			javaFile.set(new File(SettingsManager.getInstance().getSettings().getJrePath()).toPath().resolve("bin").resolve("java"));
+		}
+		if (Files.exists(javaFile.get())) {
+			return javaFile.get();
 		} else {
 			throw new Exception("Java executable not found at specified JRE path!");
 		}
