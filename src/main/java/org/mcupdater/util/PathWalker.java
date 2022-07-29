@@ -5,11 +5,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.mcupdater.model.*;
 import org.mcupdater.model.Module;
+import org.mcupdater.model.*;
 import org.tomlj.Toml;
-import org.tomlj.TomlParseResult;
 import org.tomlj.TomlArray;
+import org.tomlj.TomlParseResult;
 
 import java.io.*;
 import java.nio.file.FileVisitResult;
@@ -157,7 +157,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		try {
 			name = name.substring(0,name.lastIndexOf("."));
 		} catch (StringIndexOutOfBoundsException e) {
-			System.out.println("Unable to process filename without '.' Skipping:" + name);
+			MCUpdater.apiLogger.warning("[PathWalker] Unable to process filename without '.' Skipping:" + name);
 			return null;
 		}
 		id = name.replace(" ", "");
@@ -168,7 +168,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		id = id.replaceAll( "(client|server|universal)$", "");
 		try {
 			ZipFile zf = new ZipFile(file.toFile());
-			System.out.println(file.toString() + ": " + zf.size() + " entries in file.");
+			MCUpdater.apiLogger.finer("[PathWalker] " + file.toString() + ": " + zf.size() + " entries in file.");
 			if (modType.equals(ModType.Litemod)) {
 				if (zf.getEntry("litemod.json") != null) {
 					BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zf.getEntry("litemod.json"))));
@@ -191,11 +191,11 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 					String whichFile = "META-INF/mods.toml";
 					BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zf.getEntry(whichFile))));
 					TomlParseResult parsed = Toml.parse(reader);
-					System.out.println("TOML:");
+					MCUpdater.apiLogger.fine("[PathWalker] TOML:");
 					parsed.dottedKeySet().stream().forEach(entry -> {
-						System.out.println("\t" + entry + " : " + parsed.get(entry).getClass().getCanonicalName());
+						MCUpdater.apiLogger.fine("[PathWalker] \t" + entry + " : " + parsed.get(entry).getClass().getCanonicalName());
 						if (parsed.isArray(entry)) {
-							System.out.println("\t\t" + parsed.getArray(entry).get(0).getClass().getCanonicalName());
+							MCUpdater.apiLogger.fine("[PathWalker] \t\t" + parsed.getArray(entry).get(0).getClass().getCanonicalName());
 						}
 					});
 					name = parsed.getArray("mods").getTable(0).getString("displayName");
@@ -289,7 +289,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 			}
 			zf.close();
 		} catch (ZipException e) {
-		    System.out.println("Unable to process, not a zipfile? Skipping:" + name);
+			MCUpdater.apiLogger.severe("[PathWalker] Unable to process, not a zipfile? Skipping:" + name);
 		    return null;
 		} catch (Exception e) {
 			e.printStackTrace();

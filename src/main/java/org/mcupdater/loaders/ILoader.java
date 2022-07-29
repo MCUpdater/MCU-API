@@ -14,5 +14,7 @@ public interface ILoader {
 
 	String getArguments(File instancePath);
 
+	String getJVMArguments(File instancePath);
+
 	String getMainClassClient();
 }

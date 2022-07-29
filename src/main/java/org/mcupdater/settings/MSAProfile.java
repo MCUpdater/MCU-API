@@ -35,6 +35,7 @@ public class MSAProfile extends Profile {
             this.setAuthAccessToken(mcToken.getAccessToken());
             this.setName(mcProfile.getName());
             this.setUUID(mcProfile.getId());
+            System.out.println("XUID: " + token.getUserId());
             return true;
         } else {
             return false;

@@ -155,6 +155,12 @@ public class ForgeLoader implements ILoader {
 		return " " + forgeVersion.getEffectiveArguments();
 	}
 
+	@Override
+	public String getJVMArguments(File instancePath) {
+		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, getVersionFilename());
+		return forgeVersion.getJVMArguments();
+	}
+
 	private Path getJava() throws Exception {
 		AtomicReference<Path> javaFile = new AtomicReference<>(null);
 		ProcessHandle.current().info().command().ifPresent(
