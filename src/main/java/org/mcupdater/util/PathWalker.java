@@ -20,6 +20,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -53,7 +54,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 				return walker.handleFile(file.toPath(), downloadUrl);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			MCUpdater.apiLogger.log(Level.WARNING, "Exception while handling file", e);
 		}
 		return null;
 	}
@@ -65,6 +66,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 	}
 	
 	public IPackElement handleFile(Path file, String downloadURL) throws IOException {
+		MCUpdater.apiLogger.info(String.format("[PackBuilder] Processing file: %s with URL: %s",file.toString(), downloadURL));
 		Path relativePath = rootPath.relativize(file);
 		long size = Files.size(file);
 		InputStream is = Files.newInputStream(file);
@@ -292,7 +294,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 			MCUpdater.apiLogger.severe("[PathWalker] Unable to process, not a zipfile? Skipping:" + name);
 		    return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			MCUpdater.apiLogger.log(Level.SEVERE, "[PathWalker] Exception while parsing file: " + name, e);
 		} finally {
 			if (server.modExceptions.containsKey(id)) {
 				id = server.modExceptions.get(id);
