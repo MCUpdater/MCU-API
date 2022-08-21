@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
 import org.mcupdater.model.Module;
 import org.mcupdater.model.*;
 import org.tomlj.Toml;
@@ -18,9 +19,13 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -171,6 +176,13 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		try {
 			ZipFile zf = new ZipFile(file.toFile());
 			MCUpdater.apiLogger.finer("[PathWalker] " + file.toString() + ": " + zf.size() + " entries in file.");
+			/*
+			Enumeration<? extends ZipEntry> entries = zf.entries();
+			while (entries.hasMoreElements()) {
+				ZipEntry entry = entries.nextElement();
+				MCUpdater.apiLogger.finest(String.format("[PathWalker] %s: ZipEntry %s",file.toString(), entry.getName()));
+			}
+			*/
 			if (modType.equals(ModType.Litemod)) {
 				if (zf.getEntry("litemod.json") != null) {
 					BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zf.getEntry("litemod.json"))));
@@ -188,11 +200,17 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 					reader.close();
 				}
 			} else {
-				if (zf.getEntry("META-INF/mods.toml") != null) {
+				boolean metadataFound = false;
+				ZipEntry zipEntry = zf.getEntry("META-INF/mods.toml");
+				if (zipEntry != null) {
+					MCUpdater.apiLogger.info("[PathWalker] Forge mod detected");
 					// Parse Forge mods.toml format
-					String whichFile = "META-INF/mods.toml";
-					BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zf.getEntry(whichFile))));
-					TomlParseResult parsed = Toml.parse(reader);
+					//BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zipEntry)));
+					File tmp = File.createTempFile("mods",".toml");
+					IOUtils.copy(zf.getInputStream(zipEntry),new FileOutputStream(tmp));
+					MCUpdater.apiLogger.finest("[PathWalker] Temp file: " + tmp.getAbsolutePath());
+					TomlParseResult parsed = Toml.parse(tmp.toPath());
+					tmp.delete();
 					MCUpdater.apiLogger.fine("[PathWalker] TOML:");
 					parsed.dottedKeySet().stream().forEach(entry -> {
 						MCUpdater.apiLogger.fine("[PathWalker] \t" + entry + " : " + parsed.get(entry).getClass().getCanonicalName());
@@ -202,7 +220,13 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 					});
 					name = parsed.getArray("mods").getTable(0).getString("displayName");
 					id = parsed.getArray("mods").getTable(0).getString("modId");
-					mapMeta.put("version", parsed.getArray("mods").getTable(0).getString("version"));
+					String version = parsed.getArray("mods").getTable(0).getString("version");
+					if (version.equals("${file.jarVersion}")) {
+						Manifest modManifest = new Manifest(zf.getInputStream(zf.getEntry("META-INF/MANIFEST.MF")));
+						Attributes modAttributes = modManifest.getMainAttributes();
+						version = modAttributes.getValue("Implementation-Version");
+					}
+					mapMeta.put("version", version);
 					mapMeta.put("authors", parsed.getArray("mods").getTable(0).getString("authors"));
 					mapMeta.put("description", parsed.getArray("mods").getTable(0).getString("description"));
 					if (parsed.contains("license")) {
@@ -213,16 +237,20 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 						TomlArray localDeps = parsed.getArray("dependencies." + id);
 						for (int index=0; index < localDeps.size(); index++) {
 							if (!localDeps.getTable(index).getString("modId").equals("forge") && !localDeps.getTable(index).getString("modId").equals("minecraft")) { // ignore forge and minecraft because they are not "normal" mods
-								deps.append(localDeps.getTable(index).getString("modId")).append(" ");
+								if (localDeps.getTable(index).getBoolean("mandatory")) {
+									deps.append(localDeps.getTable(index).getString("modId")).append(" ");
+								}
 							}
 						}
 						depends = deps.toString().trim();
 					}
-					reader.close();
+					//reader.close();
+					metadataFound = true;
 				}
-				if (zf.getEntry("fabric.mod.json") != null) {
-					String whichFile = "fabric.mod.json";
-					BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zf.getEntry(whichFile))));
+				zipEntry = zf.getEntry("fabric.mod.json");
+				if (zipEntry != null) {
+					MCUpdater.apiLogger.info("[PathWalker] Fabric mod detected");
+					BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zipEntry)));
 					FabricModInfo info;
 					JsonParser parser = new JsonParser();
 					JsonElement rootElement = parser.parse(reader);
@@ -241,6 +269,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 						name = id;
 					}
 					reader.close();
+					metadataFound = true;
 				}
 				if (zf.getEntry("mcmod.info") != null || zf.getEntry("neimod.info") != null || zf.getEntry("cccmod.info") != null) {
 					String whichFile = "mcmod.info";
@@ -287,6 +316,10 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 						name = id;
 					}
 					reader.close();
+					metadataFound = true;
+				}
+				if (!metadataFound) {
+					MCUpdater.apiLogger.warning("[PathWalker] No metadata found");
 				}
 			}
 			zf.close();
