@@ -38,7 +38,7 @@ public class Library {
 	}
 
 	public String getLibraryPath(String classifier) {
-		String[] parts = this.name.split(":",0);
+		String[] parts = this.name.split(":",3);
 		return String.format("%s/%s/%s/%s-%s%s.jar", parts[0].replaceAll("\\.", "/"),parts[1],parts[2],parts[1],parts[2], (classifier == null ? "" : "-" + classifier)).replace("${arch}", System.getProperty("sun.arch.data.model"));
 	}
 	
@@ -55,7 +55,7 @@ public class Library {
 	
 	public String getFilename() {
 		String result;
-		String[] parts = this.name.split(":",0);
+		String[] parts = this.name.split(":",3);
 		if (this.natives != null) {
 			if (this.natives.containsKey(OperatingSystem.getCurrentPlatform())) {
 				result = String.format("%s/%s/%s/%s-%s-%s.jar", parts[0].replaceAll("\\.", "/"),parts[1],parts[2],parts[1], parts[2], natives.get(OperatingSystem.getCurrentPlatform()));
