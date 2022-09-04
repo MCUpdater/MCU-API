@@ -365,10 +365,21 @@ public class MCUpdater {
 						if (lib.getDownloads() == null) {
 							entry = new Downloadable(lib.getName(), lib.getFilename(), "", 100000, urls);
 						} else {
-							entry = new Downloadable(lib.getName(), lib.getFilename(), Downloadable.HashAlgorithm.SHA1, lib.getDownloads().getArtifact().getSha1(), lib.getDownloads().getArtifact().getSize(), urls);
+							if (lib.getDownloads().getClassifiers() != null && lib.getDownloads().getClassifiers().getNatives() != null) {
+								Artifact natives = lib.getDownloads().getClassifiers().getNatives();
+								try {
+									entry = new Downloadable(lib.getName() + "-natives", natives.getPath(), Downloadable.HashAlgorithm.SHA1, natives.getSha1(), natives.getSize(), Collections.singletonList(new URL(natives.getUrl())));
+								} catch (MalformedURLException e) {
+									apiLogger.log(Level.SEVERE, "Bad URL - natives", e);
+									entry = null;
+								}
+							} else {
+								entry = new Downloadable(lib.getName(), lib.getFilename(), Downloadable.HashAlgorithm.SHA1, lib.getDownloads().getArtifact().getSha1(), lib.getDownloads().getArtifact().getSize(), urls);
+							}
 						}
 						libSet.add(entry);
-						if (lib.hasNatives() || lib.getFilename().contains("natives")) {
+						if (entry.getFriendlyName().contains("natives")) {
+							apiLogger.info(String.format("Will extract: %s",entry.getFilename()));
 							libExtract.add(lib.getFilename());
 						}
 					}
