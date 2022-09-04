@@ -14,7 +14,6 @@ import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
 import org.mcupdater.api.Version;
 import org.mcupdater.certs.SSLExpansion;
-import org.mcupdater.database.DatabaseManager;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.instance.FileInfo;
@@ -362,9 +361,14 @@ public class MCUpdater {
 						} catch (MalformedURLException e) {
 							apiLogger.log(Level.SEVERE, "Bad URL", e);
 						}
-						Downloadable entry = new Downloadable(lib.getName(), lib.getFilename(), "", 100000, urls);
+						Downloadable entry;
+						if (lib.getDownloads() == null) {
+							entry = new Downloadable(lib.getName(), lib.getFilename(), "", 100000, urls);
+						} else {
+							entry = new Downloadable(lib.getName(), lib.getFilename(), Downloadable.HashAlgorithm.SHA1, lib.getDownloads().getArtifact().getSha1(), lib.getDownloads().getArtifact().getSize(), urls);
+						}
 						libSet.add(entry);
-						if (lib.hasNatives()) {
+						if (lib.hasNatives() || lib.getFilename().contains("natives")) {
 							libExtract.add(lib.getFilename());
 						}
 					}

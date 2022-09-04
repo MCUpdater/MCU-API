@@ -12,6 +12,7 @@ public class Library {
 	private List<Rule> rules;
 	private Map<OperatingSystem, String> natives;
 	private Extract extract;
+	private Downloads downloads;
 	private String url;
 	
 	public String getName(){ return name; }
@@ -21,6 +22,9 @@ public class Library {
 	public String getUrl(){ return url; }
 	
 	public String getDownloadUrl() {
+		if (this.downloads != null) {
+			return this.downloads.getArtifact().getUrl();
+		}
 		if (this.url != null) {
 			return this.url;
 		} else {
@@ -38,8 +42,17 @@ public class Library {
 	}
 
 	public String getLibraryPath(String classifier) {
-		String[] parts = this.name.split(":",3);
-		return String.format("%s/%s/%s/%s-%s%s.jar", parts[0].replaceAll("\\.", "/"),parts[1],parts[2],parts[1],parts[2], (classifier == null ? "" : "-" + classifier)).replace("${arch}", System.getProperty("sun.arch.data.model"));
+		if (this.downloads != null) {
+			return this.downloads.getArtifact().getPath();
+		}
+		String[] parts = this.name.split(":");
+		if (parts.length > 3) {
+			System.out.printf("%s\n  0: %s\n  1: %s\n  2: %s\n  3: %s\n", this.name, parts[0], parts[1], parts[2], parts[3]);
+			return String.format("%s/%s/%s/%s-%s.jar", parts[0].replaceAll("\\.", "/"), parts[1], parts[2], parts[1], parts[2], parts[3]);
+		} else {
+			System.out.printf("%s\n  0: %s\n  1: %s\n  2: %s\n", this.name, parts[0], parts[1], parts[2]);
+			return String.format("%s/%s/%s/%s-%s%s.jar", parts[0].replaceAll("\\.", "/"), parts[1], parts[2], parts[1], parts[2], (classifier == null ? "" : "-" + classifier)).replace("${arch}", System.getProperty("sun.arch.data.model"));
+		}
 	}
 	
 	public boolean validForOS() {
@@ -55,15 +68,19 @@ public class Library {
 	
 	public String getFilename() {
 		String result;
-		String[] parts = this.name.split(":",3);
-		if (this.natives != null) {
-			if (this.natives.containsKey(OperatingSystem.getCurrentPlatform())) {
-				result = String.format("%s/%s/%s/%s-%s-%s.jar", parts[0].replaceAll("\\.", "/"),parts[1],parts[2],parts[1], parts[2], natives.get(OperatingSystem.getCurrentPlatform()));
-			} else {
-				result = String.format("%s/%s/%s/%s-%s.jar", parts[0].replaceAll("\\.", "/"),parts[1],parts[2],parts[1], parts[2]);
-			}
+		String[] parts = this.name.split(":");
+		if (parts.length > 3) {
+			result = String.format("%s/%s/%s/%s-%s-%s.jar", parts[0].replaceAll("\\.", "/"), parts[1], parts[2], parts[1], parts[2], parts[3]);
 		} else {
-			result = String.format("%s/%s/%s/%s-%s.jar", parts[0].replaceAll("\\.", "/"),parts[1],parts[2],parts[1], parts[2]);
+			if (this.natives != null) {
+				if (this.natives.containsKey(OperatingSystem.getCurrentPlatform())) {
+					result = String.format("%s/%s/%s/%s-%s-%s.jar", parts[0].replaceAll("\\.", "/"), parts[1], parts[2], parts[1], parts[2], natives.get(OperatingSystem.getCurrentPlatform()));
+				} else {
+					result = String.format("%s/%s/%s/%s-%s.jar", parts[0].replaceAll("\\.", "/"), parts[1], parts[2], parts[1], parts[2]);
+				}
+			} else {
+				result = String.format("%s/%s/%s/%s-%s.jar", parts[0].replaceAll("\\.", "/"), parts[1], parts[2], parts[1], parts[2]);
+			}
 		}
 		return result.replace("${arch}",System.getProperty("sun.arch.data.model"));
 	}
@@ -74,5 +91,9 @@ public class Library {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Downloads getDownloads() {
+		return this.downloads;
 	}
 }
