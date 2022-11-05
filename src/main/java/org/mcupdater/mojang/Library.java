@@ -22,7 +22,7 @@ public class Library {
 	public String getUrl(){ return url; }
 	
 	public String getDownloadUrl() {
-		if (this.downloads != null) {
+		if (this.downloads != null && this.downloads.getArtifact() != null) {
 			return this.downloads.getArtifact().getUrl();
 		}
 		if (this.url != null) {
@@ -42,7 +42,7 @@ public class Library {
 	}
 
 	public String getLibraryPath(String classifier) {
-		if (this.downloads != null) {
+		if (this.downloads != null && this.downloads.getArtifact() != null) {
 			return this.downloads.getArtifact().getPath();
 		}
 		String[] parts = this.name.split(":");

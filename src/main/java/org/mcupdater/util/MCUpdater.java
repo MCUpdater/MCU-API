@@ -347,7 +347,8 @@ public class MCUpdater {
 				for (Map.Entry<String, String> entry : server.getLibOverrides().entrySet()) {
 					System.out.println(entry.getKey() + ": " + entry.getValue());
 				}
-				for (Library lib : version.getLibraries()) {
+				List<Library> libraries = version.getLibraries();
+				for (Library lib : libraries) {
 					String key = StringUtils.join(Arrays.copyOfRange(lib.getName().split(":"), 0, 2), ":");
 					System.out.println(lib.getName() + " - " + key);
 					if (server.getLibOverrides().containsKey(key)) {
@@ -361,26 +362,30 @@ public class MCUpdater {
 						} catch (MalformedURLException e) {
 							apiLogger.log(Level.SEVERE, "Bad URL", e);
 						}
-						Downloadable entry;
+						Downloadable entry = null;
 						if (lib.getDownloads() == null) {
 							entry = new Downloadable(lib.getName(), lib.getFilename(), "", 100000, urls);
 						} else {
 							if (lib.getDownloads().getClassifiers() != null && lib.getDownloads().getClassifiers().getNatives() != null) {
 								Artifact natives = lib.getDownloads().getClassifiers().getNatives();
-								try {
-									entry = new Downloadable(lib.getName() + "-natives", natives.getPath(), Downloadable.HashAlgorithm.SHA1, natives.getSha1(), natives.getSize(), Collections.singletonList(new URL(natives.getUrl())));
-								} catch (MalformedURLException e) {
-									apiLogger.log(Level.SEVERE, "Bad URL - natives", e);
-									entry = null;
+								if (natives != null) {
+									try {
+										entry = new Downloadable(lib.getName() + "-natives", natives.getPath(), Downloadable.HashAlgorithm.SHA1, natives.getSha1(), natives.getSize(), Collections.singletonList(new URL(natives.getUrl())));
+									} catch (MalformedURLException e) {
+										apiLogger.log(Level.SEVERE, "Bad URL - natives", e);
+										entry = null;
+									}
 								}
 							} else {
-								entry = new Downloadable(lib.getName(), lib.getFilename(), Downloadable.HashAlgorithm.SHA1, lib.getDownloads().getArtifact().getSha1(), lib.getDownloads().getArtifact().getSize(), urls);
+								if (lib.getDownloads() != null && lib.getDownloads().getArtifact() != null)	entry = new Downloadable(lib.getName(), lib.getFilename(), Downloadable.HashAlgorithm.SHA1, lib.getDownloads().getArtifact().getSha1(), lib.getDownloads().getArtifact().getSize(), urls);
 							}
 						}
-						libSet.add(entry);
-						if (entry.getFriendlyName().contains("natives")) {
-							apiLogger.info(String.format("Will extract: %s",entry.getFilename()));
-							libExtract.add(lib.getFilename());
+						if (entry != null) {
+							libSet.add(entry);
+							if (entry.getFriendlyName().contains("natives")) {
+								apiLogger.info(String.format("Will extract: %s", entry.getFilename()));
+								libExtract.add(lib.getFilename());
+							}
 						}
 					}
 				}

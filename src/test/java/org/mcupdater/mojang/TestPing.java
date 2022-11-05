@@ -13,7 +13,9 @@ public class TestPing {
 		try {
 			//ServerStatus status = ServerStatus.getStatus("173.183.121.152");
 			ServerStatusV2 status = new ServerStatusV2();
-			status.setAddress(new InetSocketAddress("50.92.234.84",25565));
+			String hostname = "imaginescape.tk"; // "50.92.234.84"
+			int port = 25565;
+			status.setAddress(new InetSocketAddress(hostname,port));
 			ServerStatusV2.StatusResponse response = status.fetchData();
 			System.out.printf("%s (%d/%d)\n",response.getDescription().getText(),response.getPlayers().getOnline(),response.getPlayers().getMax());
 			response.getForgeData().getMods().stream().sorted((Comparator.comparing(ServerStatusV2.Mod::getModId))).forEach(mod -> {System.out.printf("%s (%s)\n",mod.getModId(),mod.getModmarker());});
