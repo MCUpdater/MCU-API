@@ -131,9 +131,15 @@ public class ForgeLoader implements ILoader {
 	}
 
 	private String getVersionFilename() {
-		return (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "14.23.5.2851")) ?
-				this.loader.getVersion().replace("-","-forge-") :
-				this.loader.getVersion().split("-")[0] + "-forge" + this.loader.getVersion();
+		String versionFilename = "";
+		if (Version.requestedFeatureLevel(loader.getVersion().split("-")[0], "1.13") || Version.requestedFeatureLevel(loader.getVersion().split("-")[1], "14.23.5.2851")) {
+			versionFilename = this.loader.getVersion().replace("-", "-forge-");
+		} else if (loader.getVersion().split("-")[0].equals("1.7.10")) {
+			versionFilename = this.loader.getVersion().replace("1.7.10-","1.7.10-Forge");
+		} else {
+			versionFilename = this.loader.getVersion().split("-")[0] + "-forge" + this.loader.getVersion();
+		}
+		return versionFilename;
 	}
 
 	@Override
@@ -141,9 +147,11 @@ public class ForgeLoader implements ILoader {
 		List<String> libs = new ArrayList<>();
 		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, getVersionFilename());
 		System.out.println(forgeVersion);
-		for (Library lib : forgeVersion.getLibraries()) {
-			if (lib.validForOS() && !lib.hasNatives()) {
-				libs.add("libraries/" + lib.getFilename());
+		if (forgeVersion != null) {
+			for (Library lib : forgeVersion.getLibraries()) {
+				if (lib.validForOS() && !lib.hasNatives()) {
+					libs.add("libraries/" + lib.getFilename());
+				}
 			}
 		}
 		return libs;
@@ -152,13 +160,14 @@ public class ForgeLoader implements ILoader {
 	@Override
 	public String getArguments(File instancePath) {
 		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, getVersionFilename());
-		return " " + forgeVersion.getEffectiveArguments();
+		return forgeVersion != null ? " " + forgeVersion.getEffectiveArguments() : "";
 	}
 
 	@Override
 	public String getJVMArguments(File instancePath) {
-		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, getVersionFilename());
-		return forgeVersion.getJVMArguments();
+		String versionFilename = getVersionFilename();
+		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, versionFilename);
+		return forgeVersion != null ? forgeVersion.getJVMArguments() : "";
 	}
 
 	private Path getJava() throws Exception {
