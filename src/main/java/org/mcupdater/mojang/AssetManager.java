@@ -36,7 +36,7 @@ public class AssetManager {
 			File indexFile = new File(indexesPath, indexName + ".json");
 			URL indexUrl = version.getAssetIndex().getUrl();
 			//new URL("https://s3.amazonaws.com/Minecraft.Download/indexes/" + indexName + ".json");
-			URL resourceUrl = new URL("http://resources.download.minecraft.net/");
+			URL resourceUrl = new URL("https://resources.download.minecraft.net/");
 			URL localUrl = MCUpdater.getInstance().getMCFolder().resolve("assets").toFile().toURI().toURL();
 			
 			InputStream indexStream = indexUrl.openConnection().getInputStream();
