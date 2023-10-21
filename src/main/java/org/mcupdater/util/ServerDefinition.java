@@ -62,6 +62,7 @@ public class ServerDefinition {
 		configExceptions.put("DEPSAMarker.txt","draconicevolution");
 		configExceptions.put("WirelessCraftingTerminal.cfg","wct");
 		configExceptions.put("structures","reccomplex");
+		configExceptions.put("kubejs","kubejs");
 	}
 
 	public void writeServerPack(String stylesheet, Path outputFile, List<Module> moduleList, Boolean onlyOverrides) {

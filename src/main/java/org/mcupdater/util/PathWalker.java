@@ -101,6 +101,9 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 				case "lib":
 				case "libraries":
 				case "versions":
+				case "folder.jpg":
+				case "instance.json":
+				case "version.json":
 					return null;
 				//
 				case "instMods":
@@ -120,7 +123,9 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 					break;
 				}
 				case "config":
-                case "scripts":
+				case "defaultconfigs":
+				case "scripts":
+				case "kubejs":
 				case "resources":
 				case "structures":
 				{
