@@ -3,12 +3,12 @@ package org.mcupdater.model;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.loaders.ForgeLoader;
 import org.mcupdater.loaders.ILoader;
+import org.mcupdater.loaders.NeoForgeLoader;
 
-import java.util.Collections;
 import java.util.List;
 
 public class Loader implements IPackElement, Comparable<Loader> {
-	private static List<String> validTypes = Collections.singletonList("Forge");
+	private static List<String> validTypes = List.of("Forge","NeoForge");
 	private String type = "";
 	private String version = "";
 	private int loadOrder;
@@ -69,6 +69,8 @@ public class Loader implements IPackElement, Comparable<Loader> {
 		switch (type){
 			case "Forge":
 				return new ForgeLoader(this);
+			case "NeoForge":
+				return new NeoForgeLoader(this);
 			default:
 				return null;
 		}
