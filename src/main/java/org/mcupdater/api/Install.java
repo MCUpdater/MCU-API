@@ -1,5 +1,7 @@
 package org.mcupdater.api;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.MCUApp;
 import org.mcupdater.downloadlib.DownloadQueue;
@@ -7,40 +9,87 @@ import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
 import org.mcupdater.mojang.*;
+import org.mcupdater.util.Archive;
+import org.mcupdater.util.DownloadCache;
 import org.mcupdater.util.MCUpdater;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Install {
-
+	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final ServerList server;
 	private final List<GenericModule> installList;
 	private final List<ConfigFile> configList;
 	private final MinecraftVersion mcVersion;
-	private final MCUApp parent;
+	private final MCUApp parent = MCUpdater.getInstance().getParent();
 	private Path clientJar;
 	private Path serverJar;
+	private Path targetJar;
 	private DownloadQueue assetsQueue = null;
 	private DownloadQueue jarQueue = null;
 	private DownloadQueue generalQueue = null;
 	private DownloadQueue libraryQueue = null;
+	private Map<String,Boolean> metaRebuild = new TreeMap<>();
 	private Logger logger = MCUpdater.apiLogger;
+	private Downloadable baseJar;
+	private File tmpFolder;
+
+	Runnable postProcessJar = () -> {
+		File buildJar = MCUpdater.getInstance().getArchiveFolder().resolve("build.jar").toFile();
+		if (buildJar.exists()) buildJar.delete();
+		parent.log("Extracting files for jar insertion");
+		metaRebuild.entrySet().forEach(entry -> {
+			File entryFile = new File(tmpFolder,entry.getKey());
+			Archive.extractZip(entryFile, tmpFolder, entry.getValue());
+			entryFile.delete();
+		});
+		try {
+			buildJar.createNewFile();
+		} catch (IOException e) {
+			MCUpdater.apiLogger.log(Level.SEVERE, "I/O Error", e);
+		}
+		List<File> buildList = recurseFolder(tmpFolder, true);
+		boolean doManifest = buildList.stream().noneMatch(entry -> entry.getPath().contains("META-INF"));
+		if (tmpFolder.listFiles().length > 0) {
+			parent.log("Packaging updated jar...");
+			try {
+				Archive.createJar(buildJar, buildList, tmpFolder.getPath() + System.getProperty("file. separator"), doManifest);
+			} catch (IOException e) {
+				parent.log("Failed to create jar!");
+				MCUpdater.apiLogger.log(Level.SEVERE, "I/O Error", e);
+			}
+			try {
+				Files.createDirectories(targetJar.getParent());
+				Files.copy(buildJar.toPath(), targetJar, StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				MCUpdater.apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
+			}
+			parent.log("Jar build/update complete");
+		}
+		recurseFolder(tmpFolder, true).stream().forEach(file -> file.delete());
+	};
 
 	public Install(ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs) {
 		this.server = server;
 		this.installList = toInstall;
 		this.configList = configs;
 		this.mcVersion = MinecraftVersion.loadVersion(server.getVersion());
-		this.parent = MCUpdater.getInstance().getParent();
 	}
 
 	public boolean doInstall(Path instancePath, boolean clearExisting, Instance instData, ModSide side) throws Exception {
+		tmpFolder = instancePath.resolve("temp" + (new Random()).nextInt(100)).toFile();
+		tmpFolder.mkdirs();
 		if (side.equals(ModSide.BOTH)) {
 			logger.severe("Invalid API call: Side cannot be BOTH");
 			return false;
@@ -62,10 +111,40 @@ public class Install {
 			// Check: Does jar exist, does it match the necessary version, do any mods need to be inserted into the jar
 			if (jarBuildNeeded(clientJar, instData))  {
 				// Build Jar
+				// TODO - Implement
+				targetJar = clientJar;
+				DownloadInfo downloadInfo = mcVersion.getDownloadInfo(DownloadType.CLIENT);
+				List<URL> jarUrls = new ArrayList<>();
+				if (downloadInfo != null) {
+					jarUrls.add(downloadInfo.getUrl());
+					Set<Downloadable> jarFiles = new HashSet<>();
+					jarFiles.add(new Downloadable("Minecraft jar", "0.jar", Downloadable.HashAlgorithm.SHA1, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrls));
+					metaRebuild.put("0.jar", Version.requestedFeatureLevel(this.server.getVersion(), "1.6"));
+					installList.stream().filter(mod -> mod.getModType() == ModType.Jar).forEach(mod -> {
+						jarFiles.add(new Downloadable(mod.getName(), mod.getJarOrder() + "-" + cleanForFile(mod.getId()) + ".jar",mod.getMD5(),mod.getFilesize(),mod.getUrls()));
+						metaRebuild.put(mod.getJarOrder() + "-" + cleanForFile(mod.getId()) + ".jar", mod.getKeepMeta());
+						instData.addJarMod(mod.getId(), mod.getMD5());
+					});
+					jarQueue = parent.submitNewQueue("Jar build files", server.getServerId(), jarFiles, tmpFolder, DownloadCache.getDir());
+					jarQueue.processQueue(2, postProcessJar);
+				}
 			}
+			if (server.isGenerateList()) MCUpdater.getInstance().writeMCServerFile(instancePath, server.getName(), server.getAddress());
 		} else {
 			serverJar = instancePath.resolve("minecraft_server." + server.getVersion() + ".jar");
 			prepareServer(instancePath);
+		}
+		instData.setMCVersion(server.getVersion());
+		instData.setRevision(server.getRevision());
+		instData.setPackName(server.getName());
+		instData.setPackId(server.getServerId());
+		String jsonOut = gson.toJson(instData);
+		try {
+			BufferedWriter writer = Files.newBufferedWriter(instancePath.resolve("instance.json"), StandardCharsets.UTF_8);
+			writer.append(jsonOut);
+			writer.close();
+		} catch (IOException e) {
+			MCUpdater.apiLogger.log(Level.SEVERE, "I/O error", e);
 		}
 		return false;
 	}
@@ -95,14 +174,18 @@ public class Install {
 	}
 
 	private List<File> recurseFolder(File file, boolean includeFolders) {
+		//TODO - Implement
 		return null;
 	}
 
 	private boolean jarBuildNeeded(Path sourceJar, Instance instance) {
 		return (
-				!sourceJar.toFile().exists() || // Jar does not already exist
-				(instance.getMCVersion() == null || !instance.getMCVersion().equals(server.getVersion())) || // Jar does not match installed version
-				(this.installList.stream().anyMatch(mod -> mod.getModType() == ModType.Jar)) // Mods need to go in jar
+				!sourceJar.toFile().exists() || // Jar does not already exist or...
+				(instance.getMCVersion() == null || !instance.getMCVersion().equals(server.getVersion())) || // Jar does not match installed version or...
+				(
+						this.installList.stream().anyMatch(mod -> mod.getModType() == ModType.Jar) && // Mods need to go in jar ...and
+						instance.getJarMods().size() != this.installList.stream().filter(mod -> mod.getModType() == ModType.Jar).count() // the number does not match what is in the jar
+				)
 		);
 	}
 
@@ -123,14 +206,9 @@ public class Install {
 				}
 			}
 		});
-		DownloadInfo downloadInfo = mcVersion.getDownloadInfo(DownloadType.CLIENT);
-		List<URL> jarUrls = new ArrayList<>();
-		if (downloadInfo != null) {
-			jarUrls.add(downloadInfo.getUrl());
-			//baseJar = new Downloadable("Minecraft jar", "0.jar", Downloadable.HashAlgorithm.SHA1, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrls);
-		}
 	}
 	private void prepareServer(Path instancePath) {
+		//TODO - Implement
 	}
 
 	private Downloadable processLibrary(Library library) {
@@ -174,5 +252,8 @@ public class Install {
 		return null;
 	}
 
+	private String cleanForFile(String id) {
+		return id.replaceAll("[^a-zA-Z_0-9\\-.]", "_");
+	}
 
 }
