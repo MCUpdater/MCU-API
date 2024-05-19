@@ -68,7 +68,7 @@ public class Library {
 	
 	public String getFilename() {
 		String result;
-		String[] parts = this.name.split(":");
+		String[] parts = this.name.replace("@jar","").split(":");
 		if (parts.length > 3) {
 			result = String.format("%s/%s/%s/%s-%s-%s.jar", parts[0].replaceAll("\\.", "/"), parts[1], parts[2], parts[1], parts[2], parts[3]);
 		} else {

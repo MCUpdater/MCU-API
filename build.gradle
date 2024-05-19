@@ -14,7 +14,7 @@ dependencies {
     //implementation group: 'org.apache.derby', name: 'derby', version: '10.15.2.0'
     implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.26.1'
     implementation group: 'org.apache.httpcomponents', name: 'httpclient',version: '4.5.13'
-    //implementation 'org.hibernate:hibernate-core:5.5.5.Final'
+    implementation 'org.hibernate:hibernate-core:5.5.5.Final'
     //implementation 'org.xerial:sqlite-jdbc:3.36.0.1'
     implementation 'org.jsoup:jsoup:1.15.3'
 }
