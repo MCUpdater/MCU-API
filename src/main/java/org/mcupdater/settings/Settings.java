@@ -44,6 +44,7 @@ public class Settings {
 	private List<String> packURLs = new ArrayList<>();
 	private UUID clientToken = UUID.randomUUID();
 	private boolean professionalMode;
+	private String skynetApiKey;
 
 	public List<Profile> getProfiles() {
 		return profiles;
@@ -268,5 +269,11 @@ public class Settings {
 		this.professionalMode = professionalMode;
 	}
 
+	public String getSkynetApiKey() {
+		return skynetApiKey;
+	}
 
+	public void setSkynetApiKey(String skynetApiKey) {
+		this.skynetApiKey = skynetApiKey;
+	}
 }

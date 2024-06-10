@@ -3,7 +3,6 @@ package org.mcupdater.util;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
-import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
 import org.mcupdater.model.Module;
 import org.w3c.dom.Document;
@@ -28,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 import static org.mcupdater.util.MCUpdater.apiLogger;
@@ -300,6 +298,7 @@ public class ServerPackParser {
 			Element elType = (Element) el.getElementsByTagName("ModType").item(0);
 			if (elType == null) throw new MalformedModPackException(hierarchy, id, "Missing ModType");
 			boolean inRoot = parseBooleanWithDefault(elType.getAttribute("inRoot"), false);
+			boolean curseJar = parseBooleanWithDefault(elType.getAttribute("curseJar"), false);
 			int order = parseInt(elType.getAttribute("order"));
 			boolean keepMeta = parseBooleanWithDefault(elType.getAttribute("keepMeta"),false);
 			String launchArgs = elType.getAttribute("launchArgs");
@@ -339,7 +338,7 @@ public class ServerPackParser {
 				}
 			}
 			
-			Module out = new Module(name, id, urls, curse, size, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
+			Module out = new Module(name, id, urls, curse, size, depends, required, modType, order, keepMeta, inRoot, curseJar, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
 			out.setLoadPrefix(loadPrefix);
 			return out;
 		} catch (XPathExpressionException e) {
@@ -394,7 +393,7 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		return new Module(name, id, urls, null, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "", hierarchy);
+		return new Module(name, id, urls, null, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, false, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "", hierarchy);
 	}
 	
 	private static ConfigFile getConfigFileV1(Element cfEl)

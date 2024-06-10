@@ -68,7 +68,7 @@ public class ServerDefinition {
 	public void writeServerPack(String stylesheet, Path outputFile, List<Module> moduleList, Boolean onlyOverrides) {
 		try {
 			if (hasLitemods && !hasMod(moduleList, "liteloader")) {
-				moduleList.add(new Module("LiteLoader", "liteloader", Arrays.asList(new PrioritizedURL("http://dl.liteloader.com/versions/com/mumfrey/liteloader/" + this.getServerEntry().getVersion() + "/liteloader-" + this.getServerEntry().getVersion() + ".jar", 0)), null,100000, "", false, ModType.Library, 100, false, false, true, "", null, "CLIENT", "", null, "--tweakClass com.mumfrey.liteloader.launch.LiteLoaderTweaker", "", null, ""));
+				moduleList.add(new Module("LiteLoader", "liteloader", Arrays.asList(new PrioritizedURL("http://dl.liteloader.com/versions/com/mumfrey/liteloader/" + this.getServerEntry().getVersion() + "/liteloader-" + this.getServerEntry().getVersion() + ".jar", 0)), null,100000, "", false, ModType.Library, 100, false, false,false, true, "", null, "CLIENT", "", null, "--tweakClass com.mumfrey.liteloader.launch.LiteLoaderTweaker", "", null, ""));
 				moduleList = MCUpdater.getInstance().sortMods(moduleList);
 			}
 
@@ -170,6 +170,9 @@ public class ServerDefinition {
 					if (moduleEntry.getInRoot()) {
 						writer.write(" inRoot=\"true\"");
 					}
+					if (moduleEntry.getCurseJar()) {
+						writer.write(" curseJar=\"true\"");
+					}
 					if (moduleEntry.getJarOrder() > 0 && moduleEntry.getModType().equals(ModType.Jar)) {
 						writer.write(" order=\"" + moduleEntry.getJarOrder() + "\"");
 					}
@@ -232,6 +235,9 @@ public class ServerDefinition {
 						writer.write("\t\t\t\t<ModType");
 						if (submodule.getInRoot()) {
 							writer.write(" inRoot=\"true\"");
+						}
+						if (submodule.getCurseJar()) {
+							writer.write(" curseJar=\"true\"");
 						}
 						if (submodule.getJarOrder() > 0 && submodule.getModType().equals(ModType.Jar)) {
 							writer.write(" order=\"" + submodule.getJarOrder() + "\"");
@@ -422,7 +428,7 @@ public class ServerDefinition {
 
 	public void addForge(String mcVersion, String forgeVersion) {
 		this.addLoader(new Loader("Forge",forgeVersion,0));
-		this.addModule(new Module("Minecraft Forge", "forge-" + forgeVersion, new ArrayList<PrioritizedURL>(), null, 100000,"", true, ModType.Regular, 0, false, false, true, "", new ArrayList<ConfigFile>(), "BOTH", "", new HashMap<String, String>(), "", "", new ArrayList<Submodule>(), ""));
+		this.addModule(new Module("Minecraft Forge", "forge-" + forgeVersion, new ArrayList<PrioritizedURL>(), null, 100000,"", true, ModType.Regular, 0, false, false, false, true, "", new ArrayList<ConfigFile>(), "BOTH", "", new HashMap<String, String>(), "", "", new ArrayList<Submodule>(), ""));
 	}
 
 	public void addFabric(String mcVersion, String fabricVersion, String yarnVersion) {

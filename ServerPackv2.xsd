@@ -47,8 +47,8 @@
 		<xs:attribute name="type">
 			<xs:simpleType>
 				<xs:restriction base="xs:string">
-					<!-- Forge is the only supported one currently -->
 					<xs:enumeration value="Forge"/>
+					<xs:enumeration value="NeoForge"/>
 				</xs:restriction>
 			</xs:simpleType>
 		</xs:attribute>
@@ -115,6 +115,7 @@
 							<xs:attribute type="xs:boolean" name="keepMeta" />
 							<xs:attribute type="xs:string" name="launchArgs" />
 							<xs:attribute type="xs:string" name="jreArgs" />
+							<xs:attribute type="xs:boolean" name="curseJar" />
 						</xs:extension>
 					</xs:simpleContent>
 				</xs:complexType>

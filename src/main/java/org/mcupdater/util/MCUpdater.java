@@ -14,6 +14,7 @@ import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
 import org.mcupdater.api.Version;
 import org.mcupdater.certs.SSLExpansion;
+import org.mcupdater.database.DatabaseManager;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.instance.FileInfo;
@@ -47,7 +48,7 @@ import java.util.logging.Logger;
 
 public class MCUpdater {
 	private final Path MCFolder;
-	//private DatabaseManager dbManager;
+	private DatabaseManager dbManager;
 	private Path archiveFolder;
 	private Path instanceRoot;
 	private MCUApp parent;
@@ -147,7 +148,7 @@ public class MCUpdater {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		//dbManager = new DatabaseManager(archiveFolder);
+		dbManager = new DatabaseManager(archiveFolder);
 		/*
 		try {
 			long start = System.currentTimeMillis();
@@ -809,12 +810,9 @@ public class MCUpdater {
 		return values;
 	}
 
-	/*
 	public DatabaseManager getDbManager() {
 		return dbManager;
 	}
-
-	 */
 
 }
 
