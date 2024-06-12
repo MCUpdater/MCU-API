@@ -5,6 +5,7 @@ plugins {
 }
 
 version = sharedVersion
+sourceCompatibility = 16
 
 dependencies {
     implementation project(':MCU-DownloadLib')

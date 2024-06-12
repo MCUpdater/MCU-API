@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.util.ServerPackParser;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.util.*;
 
@@ -15,6 +17,7 @@ public abstract class Server implements Comparable<Server>, IPackElement{
 	String iconUrl;
 	String version;		// minecraft version
 	String mcuVersion;	// minimum version of MCU required to use this pack
+	String loaderVersion; // forge (or other loader) version, used when launching the pack
 	String address;
 	boolean generateList = true;
 	boolean autoConnect = true;
@@ -34,7 +37,8 @@ public abstract class Server implements Comparable<Server>, IPackElement{
 		newSL.setName(docEle.getAttribute("name"));
 		newSL.setNewsUrl(docEle.getAttribute("newsUrl"));
 		newSL.setIconUrl(docEle.getAttribute("iconUrl"));
-		newSL.setVersion(docEle.getAttribute("version"));
+		final String mcVersion = docEle.getAttribute("version");
+		newSL.setVersion(mcVersion);
 		newSL.setAddress(docEle.getAttribute("serverAddress"));
 		newSL.setGenerateList(ServerPackParser.parseBoolean(docEle.getAttribute("generateList"), true));
 		newSL.setAutoConnect(ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true));
@@ -43,7 +47,21 @@ public abstract class Server implements Comparable<Server>, IPackElement{
 		newSL.setMainClass(docEle.getAttribute("mainClass"));
 		newSL.setServerClass(docEle.getAttribute("serverClass"));
 		if (docEle.hasAttribute("launcherType")) {
-			newSL.setLauncherType(docEle.getAttribute("launcherType"));
+			final String launcherType = docEle.getAttribute("launcherType");
+			newSL.setLauncherType(launcherType);
+			// determine if we have a <Launcher/> child to parse a version number out of...
+			// NB: do this the hard way for now - is only going to work for forge atm
+			final NodeList nodes = docEle.getChildNodes();
+			for (int i = 0; i < nodes.getLength(); i++) {
+				final Node node = nodes.item(i);
+				if (node.getNodeName().equals("Loader") && node.getAttributes().getNamedItem("type").getNodeValue().equals(launcherType)) {
+					final String loaderVersion = node.getAttributes().getNamedItem("version").getNodeValue();
+					if (loaderVersion.contains("-")) {
+						int idx = loaderVersion.lastIndexOf("-");
+						newSL.loaderVersion = mcVersion + "-" + launcherType.toLowerCase() + loaderVersion.substring(idx);
+					}
+				}
+			}
 		} else {
 			if (Version.requestedFeatureLevel(mcuVersion,"3")) {
 				newSL.setLauncherType("Vanilla");
@@ -92,6 +110,10 @@ public abstract class Server implements Comparable<Server>, IPackElement{
 
 	public String getVersion() {
 		return version;
+	}
+
+	public String getLoaderVersion() {
+		return loaderVersion;
 	}
 
 	public void setVersion(String version) {
