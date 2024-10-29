@@ -1,6 +1,7 @@
 package org.mcupdater.util;
 
 import org.apache.commons.codec.language.Soundex;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.model.Module;
@@ -310,16 +311,7 @@ public class ServerDefinition {
 	}
 
 	private static String xmlEscape(String input) {
-		String result;
-		try {
-			if (input.isEmpty()) return input;
-			result = input.replace("&", "&amp;").replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;");
-		} catch (Exception e) {
-			result = "!!!! Error !!!!";
-			System.out.println(input);
-			e.printStackTrace();
-		}
-		return result;
+		return StringEscapeUtils.escapeXml11(input);
 	}
 
 	private void addLoader(Loader newLoader) { this.loaders.add(newLoader);	}
