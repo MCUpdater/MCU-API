@@ -13,8 +13,8 @@ public class TestPing {
 		try {
 			//ServerStatus status = ServerStatus.getStatus("173.183.121.152");
 			ServerStatusV2 status = new ServerStatusV2();
-			String hostname = "imaginescape.tk"; // "50.92.234.84"
-			int port = 25565;
+			String hostname = "50.92.234.84"; // "50.92.234.84"
+			int port = 25575;
 			status.setAddress(new InetSocketAddress(hostname,port));
 			ServerStatusV2.StatusResponse response = status.fetchData();
 			System.out.printf("%s (%d/%d)\n",response.getDescription().getText(),response.getPlayers().getOnline(),response.getPlayers().getMax());

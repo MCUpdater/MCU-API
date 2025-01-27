@@ -2,6 +2,7 @@ package org.mcupdater.api;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.MCUApp;
 import org.mcupdater.downloadlib.DownloadQueue;
@@ -23,16 +24,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Install {
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	private final ServerList server;
+	private ServerList server;
 	private final List<GenericModule> installList;
 	private final List<ConfigFile> configList;
-	private final MinecraftVersion mcVersion;
+	private MinecraftVersion mcVersion;
 	private final MCUApp parent = MCUpdater.getInstance().getParent();
+	private final List<String> toExtract = new ArrayList<>();
 	private Path clientJar;
 	private Path serverJar;
 	private Path targetJar;
@@ -44,6 +47,9 @@ public class Install {
 	private Logger logger = MCUpdater.apiLogger;
 	private Downloadable baseJar;
 	private File tmpFolder;
+	private Path instancePath;
+	private ModSide side;
+	private Map<String, Boolean> modExtract = new HashMap<>();
 
 	Runnable postProcessJar = () -> {
 		File buildJar = MCUpdater.getInstance().getArchiveFolder().resolve("build.jar").toFile();
@@ -77,7 +83,81 @@ public class Install {
 			}
 			parent.log("Jar build/update complete");
 		}
-		recurseFolder(tmpFolder, true).stream().forEach(file -> file.delete());
+		recurseFolder(tmpFolder, true).forEach(File::delete);
+	};
+
+	Runnable postProcessLibraries = () -> {
+		if (this.server != null) {
+			if (!toExtract.isEmpty()) {
+				logger.log(Level.INFO, "Extracting {0} library files", toExtract.size());
+				toExtract.forEach(entry -> Archive.extractZip(instancePath.resolve(entry).toFile(), instancePath.resolve("libraries").resolve("natives").toFile(), false));
+				logger.log(Level.INFO, "Library file extraction complete");
+			}
+			server.getLoaders().sort(new OrderComparator());
+			server.getLoaders().forEach(loader -> loader.getILoader().install(instancePath, side));
+		}
+	};
+
+	Runnable postProcessGeneral = () -> {
+		if (!modExtract.isEmpty()) {
+			logger.log(Level.INFO, "Performing {0} extraction(s)", modExtract.size());
+			modExtract.forEach((filename, inRoot) -> {
+				Archive.extractZip(instancePath.resolve(filename).toFile(), inRoot ? instancePath.toFile() : instancePath.resolve("mods").toFile());
+				boolean success = instancePath.resolve(filename).toFile().delete();
+				logger.log(Level.FINEST, "{0} deleted: {1}", new Object[]{filename, success});
+			});
+			logger.log(Level.INFO, "Extractions complete");
+		}
+	};
+
+	Runnable postProcessAssets = () -> {
+		if (mcVersion != null) {
+			Path mcuRoot = MCUpdater.getInstance().getArchiveFolder();
+			Gson gson = new Gson();
+			String indexName = mcVersion.getAssets();
+			if (indexName == null) indexName = "legacy";
+			File indexesPath = mcuRoot.resolve("assets").resolve("indexes").toFile();
+			File indexFile = new File(indexesPath, indexName + ".json");
+			String json;
+			try {
+				json = FileUtils.readFileToString(indexFile, StandardCharsets.UTF_8);
+				AssetIndex index = gson.fromJson(json, AssetIndex.class);
+				logger.log(Level.FINER, "Assets virtual: {0}", index.isVirtual());
+				if (index.isVirtual()) {
+					var reference = new Object() {
+						boolean doLinks = true;
+					};
+					try {
+						Files.createSymbolicLink(mcuRoot.resolve("linktest"), mcuRoot.resolve("MCUpdater.log.0"));
+						mcuRoot.resolve("linktest").toFile().delete();
+					} catch (Exception e) {
+						reference.doLinks = false;
+						logger.log(Level.WARNING, "Unable to use symbolic linking", e);
+					}
+					Path assetsPath = mcuRoot.resolve("assets");
+					Path virtualPath = assetsPath.resolve("virtual");
+					index.getObjects().forEach((name, asset) -> {
+						Path target = virtualPath.resolve(name);
+						Path original = assetsPath.resolve("objects").resolve(asset.getHash().substring(0,2)).resolve(asset.getHash());
+
+						if (!Files.exists(target)) {
+							try {
+								Files.createDirectories(target.getParent());
+								if (reference.doLinks) {
+									Files.createSymbolicLink(target, original);
+								} else {
+									Files.copy(original, target);
+								}
+							} catch (IOException e) {
+								logger.log(Level.SEVERE, "Assets exception!", e);
+							}
+						}
+					});
+				}
+			} catch (IOException e) {
+				logger.log(Level.SEVERE, "Assets exception!", e);
+			}
+		}
 	};
 
 	public Install(ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs) {
@@ -88,6 +168,8 @@ public class Install {
 	}
 
 	public boolean doInstall(Path instancePath, boolean clearExisting, Instance instData, ModSide side) throws Exception {
+		this.instancePath = instancePath;
+		this.side = side;
 		tmpFolder = instancePath.resolve("temp" + (new Random()).nextInt(100)).toFile();
 		tmpFolder.mkdirs();
 		if (side.equals(ModSide.BOTH)) {
@@ -105,34 +187,45 @@ public class Install {
 			});
 		}
 		Collections.sort(installList, new ModuleComparator(ModuleComparator.Mode.IMPORTANCE));
+		DownloadInfo downloadInfo = null;
 		if (side.equals(ModSide.CLIENT)) {
 			clientJar = instancePath.resolve("bin").resolve("minecraft.jar");
 			prepareClient(instancePath);
 			// Check: Does jar exist, does it match the necessary version, do any mods need to be inserted into the jar
 			if (jarBuildNeeded(clientJar, instData))  {
 				// Build Jar
-				// TODO - Implement
 				targetJar = clientJar;
-				DownloadInfo downloadInfo = mcVersion.getDownloadInfo(DownloadType.CLIENT);
-				List<URL> jarUrls = new ArrayList<>();
-				if (downloadInfo != null) {
-					jarUrls.add(downloadInfo.getUrl());
-					Set<Downloadable> jarFiles = new HashSet<>();
-					jarFiles.add(new Downloadable("Minecraft jar", "0.jar", Downloadable.HashAlgorithm.SHA1, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrls));
-					metaRebuild.put("0.jar", Version.requestedFeatureLevel(this.server.getVersion(), "1.6"));
-					installList.stream().filter(mod -> mod.getModType() == ModType.Jar).forEach(mod -> {
-						jarFiles.add(new Downloadable(mod.getName(), mod.getJarOrder() + "-" + cleanForFile(mod.getId()) + ".jar",mod.getMD5(),mod.getFilesize(),mod.getUrls()));
-						metaRebuild.put(mod.getJarOrder() + "-" + cleanForFile(mod.getId()) + ".jar", mod.getKeepMeta());
-						instData.addJarMod(mod.getId(), mod.getMD5());
-					});
-					jarQueue = parent.submitNewQueue("Jar build files", server.getServerId(), jarFiles, tmpFolder, DownloadCache.getDir());
-					jarQueue.processQueue(2, postProcessJar);
-				}
+				downloadInfo = mcVersion.getDownloadInfo(DownloadType.CLIENT);
 			}
 			if (server.isGenerateList()) MCUpdater.getInstance().writeMCServerFile(instancePath, server.getName(), server.getAddress());
 		} else {
 			serverJar = instancePath.resolve("minecraft_server." + server.getVersion() + ".jar");
 			prepareServer(instancePath);
+			targetJar = serverJar;
+			downloadInfo = mcVersion.getDownloadInfo(DownloadType.SERVER);
+		}
+		List<URL> jarUrls = new ArrayList<>();
+		if (downloadInfo != null) {
+			jarUrls.add(downloadInfo.getUrl());
+			Set<Downloadable> jarFiles = new HashSet<>();
+			jarFiles.add(new Downloadable("Minecraft jar", "0.jar", Downloadable.HashAlgorithm.SHA1, downloadInfo.getSha1(), downloadInfo.getSize(), jarUrls));
+			metaRebuild.put("0.jar", Version.requestedFeatureLevel(this.server.getVersion(), "1.6"));
+			installList.stream().filter(mod -> mod.getModType() == ModType.Jar).forEach(mod -> {
+				jarFiles.add(new Downloadable(mod.getName(), mod.getJarOrder() + "-" + cleanForFile(mod.getId()) + ".jar",mod.getMD5(),mod.getFilesize(),mod.getUrls()));
+				metaRebuild.put(mod.getJarOrder() + "-" + cleanForFile(mod.getId()) + ".jar", mod.getKeepMeta());
+				instData.addJarMod(mod.getId(), mod.getMD5());
+			});
+			jarQueue = parent.submitNewQueue("Jar build files", server.getServerId(), jarFiles, tmpFolder, DownloadCache.getDir());
+			jarQueue.processQueue(2, postProcessJar);
+		}
+		if (libraryQueue != null) {
+			libraryQueue.processQueue(2, postProcessLibraries);
+		}
+		Set<Downloadable> generalFiles = gatherInstallables(instData);
+		generalQueue = parent.submitNewQueue("Instance files", server.getServerId(), generalFiles, instancePath.toFile(), DownloadCache.getDir());
+		generalQueue.processQueue(12, postProcessGeneral);
+		if (assetsQueue != null) {
+			assetsQueue.processQueue(8, postProcessAssets);
 		}
 		instData.setMCVersion(server.getVersion());
 		instData.setRevision(server.getRevision());
@@ -147,6 +240,36 @@ public class Install {
 			MCUpdater.apiLogger.log(Level.SEVERE, "I/O error", e);
 		}
 		return false;
+	}
+
+	private Set<Downloadable> gatherInstallables(final Instance instData) {
+		Set<Downloadable> resultSet = new HashSet<>();
+		int modCount = installList.size();
+		AtomicInteger modsLoaded = new AtomicInteger();
+		this.installList.stream().filter(entry -> entry.getModType() != ModType.Jar).forEach(entry -> {
+			logger.log(Level.INFO, "Mod: {0}", entry.getName());
+			Collections.sort(entry.getPrioritizedUrls());
+			switch (entry.getModType()) {
+				case Extract:
+					resultSet.add(new Downloadable(entry.getName(), cleanForFile(entry.getId()) + ".zip", entry.getMD5(), entry.getFilesize(), entry.getUrls()));
+					modExtract.put(cleanForFile(entry.getId()) + ".zip", entry.getInRoot());
+					break;
+				case Option:
+					//TODO: Unimplemented
+					break;
+				default:
+					resultSet.add(new Downloadable(entry.getName(), entry.getFilename(), entry.getMD5(), entry.getFilesize(), entry.getUrls()));
+					instData.addMod(entry.getId(), entry.getMD5(), entry.getFilename());
+			}
+			modsLoaded.incrementAndGet();
+			logger.log(Level.INFO, "  Queued ({0}/{1})", new Integer[]{modsLoaded.get(), modCount});
+		});
+		configList.forEach(cfEntry -> {
+			final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();
+			if (!confFile.exists() || !cfEntry.isNoOverwrite())
+				resultSet.add(new Downloadable(cfEntry.getPath(), cfEntry.getPath(), cfEntry.getMD5(), 10000, cfEntry.getUrls()));
+		});
+		return resultSet;
 	}
 
 	private boolean checkExclusion(String path) {
@@ -173,9 +296,21 @@ public class Install {
 		return false;
 	}
 
-	private List<File> recurseFolder(File file, boolean includeFolders) {
-		//TODO - Implement
-		return null;
+	private List<File> recurseFolder(File sourceFolder, boolean includeFolders) {
+		List<File> output = new ArrayList<>();
+		List<File> input = Arrays.asList(Objects.requireNonNull(sourceFolder.listFiles()));
+		if (includeFolders) {
+			output.add(sourceFolder);
+		}
+		input.forEach(entry -> {
+			if (entry.isDirectory()) {
+				List<File> subfolder = recurseFolder(entry, includeFolders);
+				output.addAll(subfolder);
+			} else {
+				output.add(entry);
+			}
+		});
+		return output;
 	}
 
 	private boolean jarBuildNeeded(Path sourceJar, Instance instance) {
@@ -195,7 +330,6 @@ public class Install {
 		assetsQueue = parent.submitAssetsQueue("Assets", server.getServerId(), this.mcVersion);
 		List<Library> libraries = mcVersion.getLibraries();
 		Set<Downloadable> libDownloads = new HashSet<>();
-		final List<String> toExtract = new ArrayList<>();
 		libraries.forEach(library -> {
 			Downloadable entry = processLibrary(library);
 			if (entry != null) {
@@ -206,9 +340,24 @@ public class Install {
 				}
 			}
 		});
+		libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libDownloads, instancePath.resolve("libraries").toFile(), DownloadCache.getDir());
 	}
+
 	private void prepareServer(Path instancePath) {
-		//TODO - Implement
+		Set<Downloadable> libDownloads = new HashSet<>();
+		Library lib = new Library();
+		lib.setName("net.sf.jopt-simple:jopt-simple:4.5"); // inject command line processor (and override for newer versions)
+		if (Version.requestedFeatureLevel(server.getVersion(), "1.8")) lib.setName("net.sf.jopt-simple:jopt-simple:4.6");
+		if (Version.requestedFeatureLevel(server.getVersion(), "1.12")) lib.setName("net.sf.jopt-simple:jopt-simple:5.0.3");
+		Downloadable entry = processLibrary(lib);
+		if (entry != null) {
+			libDownloads.add(entry);
+			if (entry.getFriendlyName().contains("natives")) {
+				logger.info(String.format("Will extract: %s", entry.getFilename()));
+				toExtract.add(lib.getFilename());
+			}
+		}
+		libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libDownloads, instancePath.resolve("libraries").toFile(), DownloadCache.getDir());
 	}
 
 	private Downloadable processLibrary(Library library) {

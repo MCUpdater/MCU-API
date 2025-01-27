@@ -480,4 +480,8 @@ public class ServerDefinition {
 		this.addImport(new Import(baseUrl + "?yarn=" + yarnVersion + "&loader=" + fabricVersion, "fabric"));
 		this.getServerEntry().setMainClass(fabricMainClass);
 	}
+
+	public void addNeoForge(String mcVersion, String neoforgeVersion) {
+		this.addLoader(new Loader("NeoForge", neoforgeVersion,0));
+	}
 }

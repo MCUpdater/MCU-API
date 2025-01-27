@@ -20,7 +20,7 @@ public class CurseApi {
 		Gson gson = new Gson();
 		HttpClient client = HttpClient.newHttpClient();
 		HttpRequest request = HttpRequest.newBuilder()
-				.uri(URI.create(API_BASE + "/v1/mods/" + projectId + "/files/" + fileId + "/download-url"))
+				.uri(URI.create(API_BASE + "/v1/mods/" + projectId + "/files/" + fileId))
 				.header("x-api-key",API_KEY)
 				.GET()
 				.build();
@@ -30,8 +30,11 @@ public class CurseApi {
 		} catch (Exception e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "Failed to read from CurseForge", e);
 		}
-		DownloadUrl jsonResponse = gson.fromJson(response.body(), DownloadUrl.class);
-		return jsonResponse.getData();
+		CurseFile curseFile = gson.fromJson(response.body(), CurseFile.class);
+		if (curseFile.data().downloadUrl() == null) {
+			MCUpdater.apiLogger.warning(String.format("3rd party download restricted mod detected! Project: %d File: %d",projectId, fileId));
+		}
+		return curseFile.data().getDownloadUrl();
 	}
 
 	private static String deobf(int... a){

@@ -3,26 +3,26 @@ package org.mcupdater.api;
 import org.mcupdater.curse.CurseApi;
 import org.mcupdater.database.LocalCache;
 import org.mcupdater.skynet.SkynetApiV1;
-import org.mcupdater.util.MCUpdater;
-import java.util.logging.Level;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Lookup {
 	public static String getDownloadUrl(Platform platform, String fileId, String projectId) {
-		String url;
+		AtomicReference<String> url = new AtomicReference<>();
 		switch (platform) {
 			case CURSEFORGE:
 				Integer cfProject = Integer.valueOf(projectId);
 				Integer cfFile = Integer.valueOf(fileId);
-				url = LocalCache.lookupCF(cfFile);
-				if (!url.isEmpty()) return url;
-				url = SkynetApiV1.lookupCF(cfFile);
-				if (url.isEmpty()) {
-					url = CurseApi.getDownloadUrl(cfProject, cfFile);
+				url.set(LocalCache.lookupCF(cfFile));
+				if (!url.get().isEmpty()) return url.get();
+				SkynetApiV1.lookupCF(cfFile).ifPresent(skynet -> url.set(skynet.getUrl()));
+				if (url.get().isEmpty()) {
+					url.set(CurseApi.getDownloadUrl(cfProject, cfFile));
 				}
-				if (url.startsWith("http")) {
-					LocalCache.saveFileCF(cfFile, url);
+				if (url.get().startsWith("http")) {
+					LocalCache.saveFileCF(cfFile, url.get());
 				}
-				return url;
+				return url.get();
 
 			case MODRINTH:
 				// TODO: Handle Modrinth

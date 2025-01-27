@@ -206,7 +206,53 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 				}
 			} else {
 				boolean metadataFound = false;
-				ZipEntry zipEntry = zf.getEntry("META-INF/mods.toml");
+				ZipEntry zipEntry = zf.getEntry("META-INF/neoforge.mods.toml");
+				if (zipEntry != null) {
+					MCUpdater.apiLogger.info("[PathWalker] NeoForge mod detected");
+					// Parse Forge mods.toml format
+					//BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(zipEntry)));
+					File tmp = File.createTempFile("mods",".toml");
+					IOUtils.copy(zf.getInputStream(zipEntry),new FileOutputStream(tmp));
+					MCUpdater.apiLogger.finest("[PathWalker] Temp file: " + tmp.getAbsolutePath());
+					TomlParseResult parsed = Toml.parse(tmp.toPath());
+					tmp.delete();
+					MCUpdater.apiLogger.fine("[PathWalker] TOML:");
+					parsed.dottedKeySet().stream().forEach(entry -> {
+						MCUpdater.apiLogger.fine("[PathWalker] \t" + entry + " : " + parsed.get(entry).getClass().getCanonicalName());
+						if (parsed.isArray(entry)) {
+							MCUpdater.apiLogger.fine("[PathWalker] \t\t" + parsed.getArray(entry).get(0).getClass().getCanonicalName());
+						}
+					});
+					name = parsed.getArray("mods").getTable(0).getString("displayName");
+					id = parsed.getArray("mods").getTable(0).getString("modId");
+					String version = parsed.getArray("mods").getTable(0).getString("version");
+					if (version.equals("${file.jarVersion}")) {
+						Manifest modManifest = new Manifest(zf.getInputStream(zf.getEntry("META-INF/MANIFEST.MF")));
+						Attributes modAttributes = modManifest.getMainAttributes();
+						version = modAttributes.getValue("Implementation-Version");
+					}
+					mapMeta.put("version", version);
+					mapMeta.put("authors", parsed.getArray("mods").getTable(0).getString("authors"));
+					mapMeta.put("description", parsed.getArray("mods").getTable(0).getString("description"));
+					if (parsed.contains("license")) {
+						mapMeta.put("license", parsed.getString("license"));
+					}
+					if (parsed.contains("dependencies." + id)) {
+						StringBuilder deps = new StringBuilder();
+						TomlArray localDeps = parsed.getArray("dependencies." + id);
+						for (int index=0; index < localDeps.size(); index++) {
+							if (!localDeps.getTable(index).getString("modId").equals("neoforge") && !localDeps.getTable(index).getString("modId").equals("minecraft")) { // ignore forge and minecraft because they are not "normal" mods
+								if (localDeps.getTable(index).getString("type").equals("required")) {
+									deps.append(localDeps.getTable(index).getString("modId")).append(" ");
+								}
+							}
+						}
+						depends = deps.toString().trim();
+					}
+					//reader.close();
+					metadataFound = true;
+				}
+				zipEntry = zf.getEntry("META-INF/mods.toml");
 				if (zipEntry != null) {
 					MCUpdater.apiLogger.info("[PathWalker] Forge mod detected");
 					// Parse Forge mods.toml format

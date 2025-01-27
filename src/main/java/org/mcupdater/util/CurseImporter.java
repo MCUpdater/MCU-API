@@ -9,9 +9,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -19,6 +17,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.mcupdater.api.Lookup;
+import org.mcupdater.api.Platform;
 import org.mcupdater.api.Version;
 import org.mcupdater.downloadlib.DownloadUtil;
 import org.mcupdater.model.*;
@@ -111,6 +111,10 @@ public class CurseImporter {
 							final String forgeVersion = mlId.substring(6);
 							definition.addForge(mcVersion, forgeVersion);
 							System.out.println("[import] Forge: "+forgeVersion);
+						} else if (mlId.startsWith("neoforge")) {
+							final String forgeVersion = mlId.substring(9);
+							definition.addNeoForge(mcVersion, forgeVersion);
+							System.out.println("[import] NeoForge: "+forgeVersion);
 						} else {
 							// TODO: support other modloaders...
 						}
@@ -126,20 +130,28 @@ public class CurseImporter {
 					System.out.println("[import] Pack: "+name+" v"+rev);
 					
 					// get mods
+					List<String> failures = new ArrayList<>();
 					for( org.mcupdater.model.curse.manifest.File modData : manifest.getFiles() ) {
 						CloseableHttpClient client = HttpClientBuilder.create().build();
-						File temp2 = File.createTempFile("import",".jar");
+						/*
 						String lookupUrl = String.format("%s%d/file/%d/download-url",API_BASE, modData.getProjectID(), modData.getFileID());
 						System.out.println(lookupUrl);
 						HttpGet get = new HttpGet(lookupUrl);
 						HttpResponse getResponse = client.execute(get);
 						String stringUrl = new String(getResponse.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
 						System.out.println(stringUrl);
-						DownloadUtil.get(new URL(stringUrl), temp2);
-						temp2.deleteOnExit();
-						Module newModule = (Module) PathWalker.handleOneFile(new ServerDefinition(), temp2, stringUrl);
-						newModule.setRequired(modData.getRequired());
-						definition.addModule(newModule);
+						 */
+						String stringUrl = Lookup.getDownloadUrl(Platform.CURSEFORGE,modData.getFileID().toString(),modData.getProjectID().toString());
+						File temp2 = File.createTempFile(stringUrl.substring(stringUrl.lastIndexOf("/")),"");
+						if (!stringUrl.isEmpty()) {
+							DownloadUtil.get(new URL(stringUrl), temp2);
+							temp2.deleteOnExit();
+							Module newModule = (Module) PathWalker.handleOneFile(new ServerDefinition(), temp2, stringUrl);
+							newModule.setRequired(modData.getRequired());
+							definition.addModule(newModule);
+						} else {
+							failures.add(String.format("Project: %d - File: %d",modData.getProjectID(),modData.getFileID()));
+						}
 						client.close();
 					}
 
@@ -164,7 +176,9 @@ public class CurseImporter {
 					modOverrides.setSide(ModSide.BOTH);
 
 					definition.addModule(modOverrides);
-					
+
+					failures.stream().forEach(line -> MCUpdater.apiLogger.warning(line));
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
