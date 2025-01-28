@@ -1,6 +1,5 @@
 package org.mcupdater.loaders;
 
-import org.mcupdater.api.Version;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.model.Loader;
 import org.mcupdater.model.ModSide;
@@ -28,8 +27,9 @@ import static java.lang.Thread.sleep;
 
 public class NeoForgeLoader implements ILoader {
 
-	private final String FORGE_BASE = "https://maven.neoforged.net/net/neoforged/forge/";
-	private final String[] LOADERS = {"MCU-ForgeLoaderV2.jar"};
+	private final String NEOFORGE_BASE = "https://maven.neoforged.net/releases/net/neoforged/neoforge/";
+	private final String NEOFORGE_LEGACY_BASE = "https://maven.neoforged.net/releases/net/neoforged/forge/";
+	private final String[] LOADERS = {"MCU-NeoForgeLoader.jar"};
 	private final Loader loader;
 
 	public NeoForgeLoader(Loader loader) {
@@ -43,7 +43,11 @@ public class NeoForgeLoader implements ILoader {
 			Path mcuPath = MCUpdater.getInstance().getArchiveFolder();
 			File tmp = null;
 			List<PrioritizedURL> downloadUrls = new ArrayList<>();
-			downloadUrls.add(new PrioritizedURL(FORGE_BASE + loader.getVersion() + "/forge-" + loader.getVersion() + "-installer.jar", 0));
+			if (loader.getVersion().startsWith("1.20.1")) {
+				downloadUrls.add(new PrioritizedURL(NEOFORGE_LEGACY_BASE + loader.getVersion() + "/forge-"+ loader.getVersion() + "-installer.jar", 0));
+			} else {
+				downloadUrls.add(new PrioritizedURL(NEOFORGE_BASE + loader.getVersion() + "/neoforge-" + loader.getVersion() + "-installer.jar", 0));
+			}
 			URL finalUrl;
 			for (PrioritizedURL url : downloadUrls) {
 				try {
@@ -87,7 +91,7 @@ public class NeoForgeLoader implements ILoader {
 				loaderLib = LOADERS[loaderVersion];
 			}
 			args.add(mcuPath.resolve("lib").resolve(loaderLib).toString() + System.getProperty("path.separator") + tmp.getAbsolutePath());
-			args.add("org.mcupdater.forgeloader.ForgeLoader");
+			args.add("org.mcupdater.neoforgeloader.NeoForgeLoader");
 			args.add(installPath.toAbsolutePath().toString());
 			args.add(side.toString());
 			final ProcessBuilder pb = new ProcessBuilder(args);
@@ -143,7 +147,11 @@ public class NeoForgeLoader implements ILoader {
 			versionFilename = this.loader.getVersion().split("-")[0] + "-forge" + this.loader.getVersion();
 		}
 		*/
-		versionFilename = this.loader.getVersion().replace("-", "-forge-");
+		if (this.loader.getVersion().startsWith("1.20.1")) {
+			versionFilename = this.loader.getVersion().replace("-", "-forge-");
+		} else {
+			versionFilename = "neoforge-" + this.loader.getVersion();
+		}
 		return versionFilename;
 	}
 

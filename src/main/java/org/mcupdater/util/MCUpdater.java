@@ -14,6 +14,7 @@ import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
 import org.mcupdater.api.Version;
 import org.mcupdater.certs.SSLExpansion;
+import org.mcupdater.database.DatabaseManager;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.instance.FileInfo;
@@ -47,7 +48,7 @@ import java.util.logging.Logger;
 
 public class MCUpdater {
 	private final Path MCFolder;
-	//private DatabaseManager dbManager;
+	private DatabaseManager dbManager;
 	private Path archiveFolder;
 	private Path instanceRoot;
 	private MCUApp parent;
@@ -106,6 +107,9 @@ public class MCUpdater {
 		}
 		if (!(desiredRoot == null)) {
 			archiveFolder = desiredRoot.toPath();
+			if (!archiveFolder.toFile().exists()) {
+				archiveFolder.toFile().mkdirs();
+			}
 		}
 		try {
 			FileHandler apiHandler = new FileHandler(archiveFolder.resolve("MCU-API.log").toString(), 0, 3);
@@ -147,7 +151,7 @@ public class MCUpdater {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		//dbManager = new DatabaseManager(archiveFolder);
+		dbManager = new DatabaseManager(archiveFolder);
 		/*
 		try {
 			long start = System.currentTimeMillis();
@@ -316,6 +320,7 @@ public class MCUpdater {
 		return output;
 	}
 
+	@Deprecated(forRemoval = true)
 	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, final Path instancePath, boolean clearExisting, final Instance instData, final ModSide side) throws FileNotFoundException {
 		//TODO: Divide code into logical sections for better analysis
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
@@ -809,12 +814,18 @@ public class MCUpdater {
 		return values;
 	}
 
-	/*
 	public DatabaseManager getDbManager() {
 		return dbManager;
 	}
 
-	 */
-
+	public void downloadLoaders() throws IOException {
+		Path libFolder = archiveFolder.resolve("lib");
+		Downloadable neoLoader = new Downloadable("MCU-NeoForgeLoader", "MCU-NeoForgeLoader.jar", "A8EB59EA1A7E932CAA680A59EA6514BA", 5880, List.of(new URL("https://files.mcupdater.com/lib/MCU-NeoForgeLoader.jar")));
+		neoLoader.download(libFolder.toFile(), archiveFolder.toFile());
+		Downloadable forgeLoader = new Downloadable("MCU-ForgeLoader", "MCU-ForgeLoader.jar", "3403C2A5509BE5BC759D569E569353CF", 4707, List.of(new URL("https://files.mcupdater.com/lib/MCU-ForgeLoader.jar")));
+		forgeLoader.download(libFolder.toFile(), archiveFolder.toFile());
+		Downloadable forgeLoaderV2 = new Downloadable("MCU-ForgeLoaderV2", "MCU-ForgeLoaderV2.jar", "EFBCA2D0E678E05B7EE5842A313AED17", 5013, List.of(new URL("https://files.mcupdater.com/lib/MCU-ForgeLoaderV2.jar")));
+		forgeLoaderV2.download(libFolder.toFile(), archiveFolder.toFile());
+	}
 }
 

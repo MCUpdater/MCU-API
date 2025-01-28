@@ -2,6 +2,7 @@ package org.mcupdater.settings;
 
 import org.mcupdater.MCUApp;
 import org.mcupdater.auth.*;
+import org.mcupdater.util.MCUpdater;
 
 public class MSAProfile extends Profile {
 
@@ -26,6 +27,9 @@ public class MSAProfile extends Profile {
     @Override
     public boolean refresh() {
         TokenResponse token = MicrosoftAuth.refreshAuthToken(getRefreshToken());
+        if (token == null) {
+            token = MCUpdater.getInstance().getParent().refreshAuth(this);
+        }
         XBLToken xblToken = MicrosoftAuth.getXBLAuth(token.getAccessToken());
         XBLToken xstsToken = MicrosoftAuth.getXSTSAuth(xblToken.getToken());
         MCToken mcToken = MicrosoftAuth.getMCToken(xstsToken.getDisplayClaims().getXui()[0].getUhs(), xstsToken.getToken());

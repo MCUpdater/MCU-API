@@ -3,7 +3,6 @@ package org.mcupdater.util;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
-import org.mcupdater.instance.Instance;
 import org.mcupdater.model.*;
 import org.mcupdater.model.Module;
 import org.w3c.dom.Document;
@@ -28,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 import static org.mcupdater.util.MCUpdater.apiLogger;
@@ -51,7 +49,7 @@ public class ServerPackParser {
 	public static Document readXmlFromFile(File packFile) throws Exception
 	{
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		
+
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(packFile);
@@ -62,7 +60,7 @@ public class ServerPackParser {
 		}
 		return null;
 	}
-	
+
 	public static Document readXmlFromUrl(String serverUrl) throws Exception
 	{
 		apiLogger.fine("readXMLFromUrl(" + serverUrl + ")");
@@ -99,79 +97,79 @@ public class ServerPackParser {
 		apiLogger.log(Level.FINE, serverId + ": format=" + server.packVersion);
 		NodeList nl;
 		switch (server.packVersion) {
-		case 2:
-			// Handle ServerPacks designed for MCUpdater 3.0 and later
-			assert server.serverElement != null;
-			nl = server.serverElement.getElementsByTagName("Import");
-			if(nl != null && nl.getLength() > 0) {
-				for(int i = 0; i < nl.getLength(); i++) {
-					Element el = (Element)nl.item(i);
-                    ServerList child = doImportV2(el, dom, sl, modList, hierarchy);
-                    sl.getLibOverrides().putAll(child.getLibOverrides());
-                    if (sl.getServerClass_Raw().isEmpty() && !child.getServerClass_Raw().isEmpty()) {
-                    	sl.setServerClass(child.getServerClass());
-                    }
-                    if (child.getLoaders().size() > 0) {
-                    	sl.getLoaders().addAll(child.getLoaders());
-                    }
-					//modList.putAll(child.getModules());
-				}
-			}
-			nl = server.serverElement.getElementsByTagName("Module");
-			if(nl != null && nl.getLength() > 0)
-			{
-				for(int i = 0; i < nl.getLength(); i++)
-				{
-					Element el = (Element)nl.item(i);
-					Module m = getModuleV2(el, sl.getVersion(), hierarchy);
-					if (m.getModType() == ModType.Removal) {
-						modList.remove(m.getId());
-					}
-					else if (m.getModType() == ModType.Override) {
-						if (modList.containsKey(m.getId())) { // If modList does not contain the mod, ignore it.
-							Module existing = modList.get(m.getId());
-							existing.getPrioritizedUrls().addAll(m.getPrioritizedUrls());
-							existing.getConfigs().addAll(m.getConfigs());
-							existing.getSubmodules().addAll(m.getSubmodules());
-							existing.setRequired(m.getRequired());
-							existing.setIsDefault(m.getIsDefault());
+			case 2:
+				// Handle ServerPacks designed for MCUpdater 3.0 and later
+				assert server.serverElement != null;
+				nl = server.serverElement.getElementsByTagName("Import");
+				if(nl != null && nl.getLength() > 0) {
+					for(int i = 0; i < nl.getLength(); i++) {
+						Element el = (Element)nl.item(i);
+						ServerList child = doImportV2(el, dom, sl, modList, hierarchy);
+						sl.getLibOverrides().putAll(child.getLibOverrides());
+						if (sl.getServerClass_Raw().isEmpty() && !child.getServerClass_Raw().isEmpty()) {
+							sl.setServerClass(child.getServerClass());
 						}
-					} else {
+						if (child.getLoaders().size() > 0) {
+							sl.getLoaders().addAll(child.getLoaders());
+						}
+						//modList.putAll(child.getModules());
+					}
+				}
+				nl = server.serverElement.getElementsByTagName("Module");
+				if(nl != null && nl.getLength() > 0)
+				{
+					for(int i = 0; i < nl.getLength(); i++)
+					{
+						Element el = (Element)nl.item(i);
+						Module m = getModuleV2(el, sl.getVersion(), hierarchy);
+						if (m.getModType() == ModType.Removal) {
+							modList.remove(m.getId());
+						}
+						else if (m.getModType() == ModType.Override) {
+							if (modList.containsKey(m.getId())) { // If modList does not contain the mod, ignore it.
+								Module existing = modList.get(m.getId());
+								existing.getPrioritizedUrls().addAll(m.getPrioritizedUrls());
+								existing.getConfigs().addAll(m.getConfigs());
+								existing.getSubmodules().addAll(m.getSubmodules());
+								existing.setRequired(m.getRequired());
+								existing.setIsDefault(m.getIsDefault());
+							}
+						} else {
+							modList.put(m.getId(), m);
+						}
+					}
+				}
+				sl.setModules(modList);
+				nl = server.serverElement.getElementsByTagName("Loader");
+				if(nl !=null && nl.getLength() > 0)
+				{
+					for(int i = 0; i < nl.getLength(); i++)
+					{
+						Element el = (Element)nl.item(i);
+						Loader l = getLoaderV2(el);
+						sl.getLoaders().add(l);
+					}
+				}
+				return sl;
+
+			case 1:
+				// Handle ServerPacks designed for MCUpdater 2.7 and earlier
+				assert server.serverElement != null;
+				nl = server.serverElement.getElementsByTagName("Module");
+				if(nl != null && nl.getLength() > 0)
+				{
+					for(int i = 0; i < nl.getLength(); i++)
+					{
+						Element el = (Element)nl.item(i);
+						Module m = getModuleV1(el, hierarchy);
 						modList.put(m.getId(), m);
 					}
 				}
-			}
-            sl.setModules(modList);
-			nl = server.serverElement.getElementsByTagName("Loader");
-			if(nl !=null && nl.getLength() > 0)
-			{
-				for(int i = 0; i < nl.getLength(); i++)
-				{
-					Element el = (Element)nl.item(i);
-					Loader l = getLoaderV2(el);
-					sl.getLoaders().add(l);
-				}
-			}
-			return sl;
-			
-		case 1:
-			// Handle ServerPacks designed for MCUpdater 2.7 and earlier
-			assert server.serverElement != null;
-			nl = server.serverElement.getElementsByTagName("Module");
-			if(nl != null && nl.getLength() > 0)
-			{
-				for(int i = 0; i < nl.getLength(); i++)
-				{
-					Element el = (Element)nl.item(i);
-					Module m = getModuleV1(el, hierarchy);
-					modList.put(m.getId(), m);
-				}
-			}
-            sl.setModules(modList);
-			return sl;
+				sl.setModules(modList);
+				return sl;
 
-		default:
-			return null;
+			default:
+				return null;
 		}
 	}
 
@@ -252,7 +250,7 @@ public class ServerPackParser {
 			String id = el.getAttribute("id");
 			String depends = el.getAttribute("depends");
 			String side = el.getAttribute("side");
-			
+
 			List<PrioritizedURL> urls = new ArrayList<>();
 			NodeList nl;
 			nl = (NodeList) xpath.evaluate("URL", el, XPathConstants.NODESET);
@@ -262,7 +260,7 @@ public class ServerPackParser {
 				int priority = parseInt(elURL.getAttribute("priority"));
 				urls.add(new PrioritizedURL(url, priority));
 			}
-			
+
 			CurseProject curse = null;
 			Element elCurse = (Element) el.getElementsByTagName("Curse").item(0);
 			if( elCurse != null ) {
@@ -276,16 +274,16 @@ public class ServerPackParser {
 					CurseModCache.getTextID(curse);
 				}
 			}
-			
+
 			String loadPrefix = (String) xpath.evaluate("LoadPrefix", el, XPathConstants.STRING);
 			String path = (String) xpath.evaluate("ModPath", el, XPathConstants.STRING);
-			
+
 			String sizeString = (String) xpath.evaluate("Size", el, XPathConstants.STRING);
 			if (sizeString.isEmpty()) {
 				sizeString = "100000";
 			}
 			long size = Long.parseLong(sizeString);
-			
+
 			Element elReq = (Element) el.getElementsByTagName("Required").item(0);
 			boolean required;
 			boolean isDefault;
@@ -296,22 +294,23 @@ public class ServerPackParser {
 				required = parseBooleanWithDefault(elReq.getTextContent(),true);
 				isDefault = parseBooleanWithDefault(elReq.getAttribute("isDefault"),false);
 			}
-			
+
 			Element elType = (Element) el.getElementsByTagName("ModType").item(0);
 			if (elType == null) throw new MalformedModPackException(hierarchy, id, "Missing ModType");
 			boolean inRoot = parseBooleanWithDefault(elType.getAttribute("inRoot"), false);
+			boolean curseJar = parseBooleanWithDefault(elType.getAttribute("curseJar"), false);
 			int order = parseInt(elType.getAttribute("order"));
 			boolean keepMeta = parseBooleanWithDefault(elType.getAttribute("keepMeta"),false);
 			String launchArgs = elType.getAttribute("launchArgs");
 			String jreArgs = elType.getAttribute("jreArgs");
 			ModType modType;
 			modType = ModType.valueOf(elType.getTextContent());
-			
+
 			String md5 = (String) xpath.evaluate("MD5", el, XPathConstants.STRING);
-			
+
 			List<ConfigFile> configs = new ArrayList<>();
 			nl = el.getElementsByTagName("ConfigFile");
-			for(int i = 0; i < nl.getLength(); i++) 
+			for(int i = 0; i < nl.getLength(); i++)
 			{
 				Element elConfig = (Element)nl.item(i);
 				ConfigFile cf = getConfigFileV1(elConfig);
@@ -326,7 +325,7 @@ public class ServerPackParser {
 				Submodule sm = new Submodule(getModuleV2(elSubmod, mcVersion, hierarchy));
 				submodules.add(sm);
 			}
-			
+
 			HashMap<String,String> mapMeta = new HashMap<>();
 			NodeList nlMeta = el.getElementsByTagName("Meta");
 			if (nlMeta.getLength() > 0){
@@ -338,8 +337,8 @@ public class ServerPackParser {
 					mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 				}
 			}
-			
-			Module out = new Module(name, id, urls, curse, size, depends, required, modType, order, keepMeta, inRoot, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
+
+			Module out = new Module(name, id, urls, curse, size, depends, required, modType, order, keepMeta, inRoot, curseJar, isDefault, md5, configs, side, path, mapMeta, launchArgs, jreArgs, submodules, hierarchy);
 			out.setLoadPrefix(loadPrefix);
 			return out;
 		} catch (XPathExpressionException e) {
@@ -377,7 +376,7 @@ public class ServerPackParser {
 		String md5 = getTextValue(modEl,"MD5");
 		List<ConfigFile> configs = new ArrayList<>();
 		NodeList nl = modEl.getElementsByTagName("ConfigFile");
-		for(int i = 0; i < nl.getLength(); i++) 
+		for(int i = 0; i < nl.getLength(); i++)
 		{
 			Element el = (Element)nl.item(i);
 			ConfigFile cf = getConfigFileV1(el);
@@ -394,9 +393,9 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		return new Module(name, id, urls, null, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "", hierarchy);
+		return new Module(name, id, urls, null, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, false, isDefault, coreMod, md5, configs, side, path, mapMeta, "", "", hierarchy);
 	}
-	
+
 	private static ConfigFile getConfigFileV1(Element cfEl)
 	{
 		try {
@@ -419,11 +418,11 @@ public class ServerPackParser {
 			return null;
 		}
 	}
-	
+
 	private static int getIntValue(Element ele, String tagName) {
 		return parseInt(getTextValue(ele,tagName));
 	}
-	
+
 	private static String getTextValue(Element ele, String tagName) {
 		String textVal = null;
 		NodeList nl = ele.getElementsByTagName(tagName);
@@ -436,7 +435,7 @@ public class ServerPackParser {
 		}
 		return textVal;
 	}
-	
+
 	private static String unescapeXML(String nodeValue) {
 		return nodeValue.replace("&amp;", "&").replace("&quot;", "\"").replace("&apos;","'").replace("&lt;", "<").replace("&gt;", ">");
 	}
@@ -465,7 +464,7 @@ public class ServerPackParser {
 			return null;
 		}
 	}
-	
+
 	public static ServerList loadFromURL(String serverUrl, String serverId)
 	{
 		return loadFromURL(serverUrl, serverId, null);

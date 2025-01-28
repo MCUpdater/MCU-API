@@ -1,9 +1,11 @@
 package org.mcupdater;
 
 import org.mcupdater.auth.AuthManager;
+import org.mcupdater.auth.TokenResponse;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.mojang.MinecraftVersion;
+import org.mcupdater.settings.MSAProfile;
 import org.mcupdater.settings.Profile;
 
 import java.io.File;
@@ -31,4 +33,6 @@ public abstract class MCUApp {
 	}
 
 	public abstract void alert(String msg);
+
+	public abstract TokenResponse refreshAuth(MSAProfile msaProfile);
 }

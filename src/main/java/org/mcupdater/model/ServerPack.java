@@ -5,8 +5,8 @@ import java.util.List;
 
 public class ServerPack implements IPackElement{
 	private String xsltPath;
-	private String version;
 	private List<Server> servers;
+	private String version;
 
 	public ServerPack(String xsltPath, String version) {
 		this.xsltPath = xsltPath;

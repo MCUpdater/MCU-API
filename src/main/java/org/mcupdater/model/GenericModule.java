@@ -20,6 +20,7 @@ public class GenericModule implements IPackElement {
 	protected int order = 1;
 	protected boolean keepMeta = false;
 	protected boolean inRoot = false;
+	protected boolean curseJar = false;
 	protected boolean isDefault = false;
 	protected String md5 = "";
 	protected ModSide side = ModSide.BOTH;
@@ -30,7 +31,7 @@ public class GenericModule implements IPackElement {
 	protected String loadPrefix = "";
 	protected long filesize = 100000;
 
-	public GenericModule(String name, String id, List<PrioritizedURL> url, CurseProject curse, long filesize, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent) {
+	public GenericModule(String name, String id, List<PrioritizedURL> url, CurseProject curse, long filesize, String depends, boolean required, ModType type, int jarOrder, boolean keepMeta, boolean inRoot, boolean curseJar, boolean isDefault, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent) {
 		this.setName(name);
 		this.setId(id);
 		this.setUrls(url);
@@ -43,6 +44,7 @@ public class GenericModule implements IPackElement {
 		this.setKeepMeta(keepMeta);
 		this.setIsDefault(isDefault);
 		this.setInRoot(inRoot);
+		this.setCurseJar(curseJar);
 		this.setMD5(md5);
 		this.setSide(side);
 		this.setPath(path);
@@ -63,8 +65,8 @@ public class GenericModule implements IPackElement {
 	}
 	 */
 
-	public GenericModule(String name, String id, List<PrioritizedURL> url, CurseProject curse, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent){
-		this(name, id, url, curse, 100000, depends, required, ModType.Regular, jarOrder, keepMeta, inRoot, isDefault, md5, side, path, meta, launchArgs, jreArgs, parent);
+	public GenericModule(String name, String id, List<PrioritizedURL> url, CurseProject curse, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean curseJar, boolean isDefault, boolean coreMod, String md5, String side, String path, HashMap<String, String> meta, String launchArgs, String jreArgs, String parent){
+		this(name, id, url, curse, 100000, depends, required, ModType.Regular, jarOrder, keepMeta, inRoot, curseJar, isDefault, md5, side, path, meta, launchArgs, jreArgs, parent);
 		if (inJar) {
 			this.setModType(ModType.Jar);
 		} else if (extract) {
@@ -150,7 +152,15 @@ public class GenericModule implements IPackElement {
 	public void setInRoot(boolean inRoot) {
 		this.inRoot = inRoot;
 	}
-	
+
+	public boolean getCurseJar() {
+		return curseJar;
+	}
+
+	public void setCurseJar(boolean curseJar) {
+		this.curseJar = curseJar;
+	}
+
 	public String getMD5() {
 		if (md5 == null || md5.isEmpty()) {
 			// look at curse first if we have it
