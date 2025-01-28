@@ -1,0 +1,38 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+if (ModSide is CLIENT or SERVER) then (no)
+    #red:return error;
+    kill
+else (yes)
+    if (Clear Existing) then (yes)
+        :Delete existing install;
+    else (no)
+    endif
+    :Sort mod list;
+    if (ModSide) then (CLIENT)
+    group Prepare Client
+    fork
+    :Download assets;
+    detach
+    fork again
+    :Preprocess libraries;
+    end fork
+    end group
+    if (Jar build needed?) then (yes)
+        :Download and build jar;
+    endif
+    if (Generate server list?) then (yes)
+        :Create servers.dat;
+    endif
+    else (SERVER)
+    group Prepare Server
+    #palegreen:TODO - Download jar;
+    end group
+    endif
+    :Write instance.json;
+    #palegreen:TODO - Everything else;
+endif
+end
+@enduml
