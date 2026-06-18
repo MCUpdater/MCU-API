@@ -33,7 +33,7 @@ public class DatabaseManager {
         } catch (SQLException e) {
             MCUpdater.apiLogger.log(Level.SEVERE, e.getMessage(), e);
         }
-        // Initialize classes that use database
+	    // Initialize classes that use database
         LocalCache.initDB(this);
     }
 

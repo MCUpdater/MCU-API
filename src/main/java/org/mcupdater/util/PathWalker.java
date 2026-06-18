@@ -6,8 +6,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
-import org.mcupdater.model.Module;
+import org.mcupdater.model.v2.*;
 import org.mcupdater.model.*;
+import org.mcupdater.model.v2.Module;
 import org.tomlj.Toml;
 import org.tomlj.TomlArray;
 import org.tomlj.TomlParseResult;
@@ -19,7 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.jar.Attributes;
@@ -42,15 +42,15 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		this.setRootPath(rootPath);
 		this.setUrlBase(urlBase);
 	}
-	
+
 	public static IPackElement handleOneFile(ServerDefinition server, File file, String downloadUrl) {
 		final Path searchPath;
 		if( file.getParent() == null ) {
 			searchPath = new File(".").toPath();
 		} else {
-			searchPath = file.getParentFile().toPath();	
+			searchPath = file.getParentFile().toPath();
 		}
-		
+
 		final PathWalker walker = new PathWalker(server,searchPath,(downloadUrl==null?"[PATH]":"[URL]"));
 		try {
 			if( downloadUrl == null ) {
@@ -69,7 +69,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		String downloadURL = urlBase + "/" + relativePath.toString().replace("\\","/").replace(" ", "%20");
 		return handleFile(file,downloadURL);
 	}
-	
+
 	public IPackElement handleFile(Path file, String downloadURL) throws IOException {
 		MCUpdater.apiLogger.info(String.format("[PackBuilder] Processing file: %s with URL: %s",file.toString(), downloadURL));
 		Path relativePath = rootPath.relativize(file);
@@ -83,7 +83,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		String depends = "";
 		Boolean required = true;
 		ModType modType = ModType.Regular;
-        ModSide side = ModSide.BOTH;
+		ModSide side = ModSide.BOTH;
 		HashMap<String,String> mapMeta = new HashMap<>();
 		//System.out.println(relativePath.toString());
 		if (relativePath.toString().contains(".DS_Store")) { return null; }
@@ -142,28 +142,28 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 				}
 				case "optional":
 					required = false;
-                    break;
-                case "client":
-                    required = false;
-                    side = ModSide.CLIENT;
-                    break;
-                case "server":
-                    side = ModSide.SERVER;
-                    break;
+					break;
+				case "client":
+					required = false;
+					side = ModSide.CLIENT;
+					break;
+				case "server":
+					side = ModSide.SERVER;
+					break;
 			}
-            if (relativePath.toString().endsWith("litemod")) {
-	            ServerDefinition.hasLitemods = true;
-	            modType = ModType.Litemod;
-            }
-            String cleanPath = relativePath.toString().replace("\\","/");
+			if (relativePath.toString().endsWith("litemod")) {
+				ServerDefinition.hasLitemods = true;
+				modType = ModType.Litemod;
+			}
+			String cleanPath = relativePath.toString().replace("\\","/");
 			if (cleanPath.contains("OpenTerrainGenerator/")) {
 				ConfigFile newConfig = new ConfigFile(downloadURL, cleanPath, false, md5);
 				//server.addConfig(newConfig);
 				return newConfig;
 			}
-            if (cleanPath.split("/")[1].matches("\\d+(\\.\\d+)*")) {
-                modPath = cleanPath.replaceAll("^(optional|client|server)", "mods");
-            }
+			if (cleanPath.split("/")[1].matches("\\d+(\\.\\d+)*")) {
+				modPath = cleanPath.replaceAll("^(optional|client|server)", "mods");
+			}
 
 		}
 		try {
@@ -215,6 +215,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 					IOUtils.copy(zf.getInputStream(zipEntry),new FileOutputStream(tmp));
 					MCUpdater.apiLogger.finest("[PathWalker] Temp file: " + tmp.getAbsolutePath());
 					TomlParseResult parsed = Toml.parse(tmp.toPath());
+
 					tmp.delete();
 					MCUpdater.apiLogger.fine("[PathWalker] TOML:");
 					parsed.dottedKeySet().stream().forEach(entry -> {
@@ -240,7 +241,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 					if (parsed.contains("dependencies." + id)) {
 						StringBuilder deps = new StringBuilder();
 						TomlArray localDeps = parsed.getArray("dependencies." + id);
-						for (int index=0; index < localDeps.size(); index++) {
+						for (int index = 0; index < localDeps.size(); index++) {
 							if (!localDeps.getTable(index).getString("modId").equals("neoforge") && !localDeps.getTable(index).getString("modId").equals("minecraft")) { // ignore forge and minecraft because they are not "normal" mods
 								if (localDeps.getTable(index).getString("type").equals("required")) {
 									deps.append(localDeps.getTable(index).getString("modId")).append(" ");
@@ -376,8 +377,8 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 			zf.close();
 		} catch (ZipException e) {
 			MCUpdater.apiLogger.severe("[PathWalker] Unable to process, not a zipfile? Skipping:" + name);
-		    return null;
-		} catch (Exception e) {
+			return null;
+		} catch (Throwable e) {
 			MCUpdater.apiLogger.log(Level.SEVERE, "[PathWalker] Exception while parsing file: " + name, e);
 		} finally {
 			if (server.modExceptions.containsKey(id)) {

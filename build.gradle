@@ -9,12 +9,15 @@ version = sharedVersion
 dependencies {
     implementation project(':MCU-DownloadLib')
     implementation 'com.mojang:authlib:1.6.25'
-    implementation 'org.tomlj:tomlj:1.0.0'
-    //implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.5'
-    implementation group: 'org.apache.derby', name: 'derby', version: '10.15.2.0'
-    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.26.1'
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient',version: '4.5.13'
-    implementation 'org.hibernate:hibernate-core:5.5.5.Final'
+    implementation 'org.tomlj:tomlj:1.1.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.5'
+    implementation 'tools.jackson.core:jackson-core:3.1.2'
+    implementation 'tools.jackson.core:jackson-databind:3.1.2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    implementation 'org.apache.derby:derby:10.15.2.0'
+    implementation 'org.apache.commons:commons-compress:1.26.1'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation 'org.hibernate.orm:hibernate-core:6.6.12.Final'
     //implementation 'org.xerial:sqlite-jdbc:3.36.0.1'
     implementation 'org.jsoup:jsoup:1.15.3'
 }

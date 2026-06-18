@@ -1,4 +1,4 @@
-package org.mcupdater.model;
+package org.mcupdater.model.v2;
 
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.util.CurseModCache;

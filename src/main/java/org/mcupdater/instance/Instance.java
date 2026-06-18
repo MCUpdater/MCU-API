@@ -1,20 +1,19 @@
 package org.mcupdater.instance;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Instance {
+
 	private String mcversion;
 	private String packName;
 	private String packId;
 	private String revision;
 	private String hash = "";
+	private String sourceUrl = "";
 	private List<FileInfo> instanceFiles = new ArrayList<>();
 	private List<FileInfo> jarMods = new ArrayList<>();
 	private Map<String, Boolean> optionalMods = new HashMap<>();
-	
+
 	public List<FileInfo> getInstanceFiles() {
 		return instanceFiles;
 	}
@@ -135,5 +134,13 @@ public class Instance {
 
 	public void setPackId(String packId) {
 		this.packId = packId;
+	}
+
+	public String getSourceUrl() {
+		return sourceUrl;
+	}
+
+	public void setSourceUrl(String sourceUrl) {
+		this.sourceUrl = sourceUrl;
 	}
 }

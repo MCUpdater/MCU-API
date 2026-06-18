@@ -8,7 +8,7 @@ import org.mcupdater.MCUApp;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.instance.Instance;
-import org.mcupdater.model.*;
+import org.mcupdater.model.v2.*;
 import org.mcupdater.mojang.*;
 import org.mcupdater.util.Archive;
 import org.mcupdater.util.DownloadCache;

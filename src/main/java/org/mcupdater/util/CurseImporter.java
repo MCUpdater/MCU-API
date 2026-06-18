@@ -3,31 +3,27 @@ package org.mcupdater.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.mcupdater.api.Lookup;
 import org.mcupdater.api.Platform;
 import org.mcupdater.api.Version;
 import org.mcupdater.downloadlib.DownloadUtil;
-import org.mcupdater.model.*;
-import org.mcupdater.model.Module;
+import org.mcupdater.model.v2.*;
 import org.mcupdater.model.curse.manifest.Manifest;
 import org.mcupdater.model.curse.manifest.Minecraft;
 import org.mcupdater.model.curse.manifest.ModLoader;
 
 import com.google.gson.Gson;
+import org.mcupdater.model.v2.Module;
 
 public class CurseImporter {
 	private File tmp;

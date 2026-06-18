@@ -3,8 +3,8 @@ package org.mcupdater.util;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
-import org.mcupdater.model.*;
-import org.mcupdater.model.Module;
+import org.mcupdater.model.v2.*;
+import org.mcupdater.model.v2.Module;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -91,85 +91,83 @@ public class ServerPackParser {
 	public static ServerList parseDocument(Document dom, String serverId, Map<String, Module> modList, String hierarchy, String version) throws Exception {
 		//Map<String,Module> modList = new HashMap<>();
 		Element parent = dom.getDocumentElement();
-		ServerEntry server = getServerEntry(serverId, parent, version);
-		ServerList sl = new ServerList();
-		ServerList.fromElement(server.mcuVersion, "", server.serverElement, sl);
-		apiLogger.log(Level.FINE, serverId + ": format=" + server.packVersion);
-		NodeList nl;
-		switch (server.packVersion) {
-			case 2:
-				// Handle ServerPacks designed for MCUpdater 3.0 and later
-				assert server.serverElement != null;
-				nl = server.serverElement.getElementsByTagName("Import");
-				if(nl != null && nl.getLength() > 0) {
-					for(int i = 0; i < nl.getLength(); i++) {
-						Element el = (Element)nl.item(i);
-						ServerList child = doImportV2(el, dom, sl, modList, hierarchy);
-						sl.getLibOverrides().putAll(child.getLibOverrides());
-						if (sl.getServerClass_Raw().isEmpty() && !child.getServerClass_Raw().isEmpty()) {
-							sl.setServerClass(child.getServerClass());
-						}
-						if (child.getLoaders().size() > 0) {
-							sl.getLoaders().addAll(child.getLoaders());
-						}
-						//modList.putAll(child.getModules());
-					}
-				}
-				nl = server.serverElement.getElementsByTagName("Module");
-				if(nl != null && nl.getLength() > 0)
-				{
-					for(int i = 0; i < nl.getLength(); i++)
-					{
-						Element el = (Element)nl.item(i);
-						Module m = getModuleV2(el, sl.getVersion(), hierarchy);
-						if (m.getModType() == ModType.Removal) {
-							modList.remove(m.getId());
-						}
-						else if (m.getModType() == ModType.Override) {
-							if (modList.containsKey(m.getId())) { // If modList does not contain the mod, ignore it.
-								Module existing = modList.get(m.getId());
-								existing.getPrioritizedUrls().addAll(m.getPrioritizedUrls());
-								existing.getConfigs().addAll(m.getConfigs());
-								existing.getSubmodules().addAll(m.getSubmodules());
-								existing.setRequired(m.getRequired());
-								existing.setIsDefault(m.getIsDefault());
+		if (Version.requestedFeatureLevel(parent.getAttribute("version"),"4.2")) {
+			// TODO: Redirect to new parser
+			return null;
+		} else {
+			ServerEntry server = getServerEntry(serverId, parent, version);
+			ServerList sl = new ServerList();
+			ServerList.fromElement(server.mcuVersion, "", server.serverElement, sl);
+			apiLogger.log(Level.FINE, serverId + ": format=" + server.packVersion);
+			NodeList nl;
+			switch (server.packVersion) {
+				case 2:
+					// Handle ServerPacks designed for MCUpdater 3.0 and later
+					assert server.serverElement != null;
+					nl = server.serverElement.getElementsByTagName("Import");
+					if (nl != null && nl.getLength() > 0) {
+						for (int i = 0; i < nl.getLength(); i++) {
+							Element el = (Element) nl.item(i);
+							ServerList child = doImportV2(el, dom, sl, modList, hierarchy);
+							sl.getLibOverrides().putAll(child.getLibOverrides());
+							if (sl.getServerClass_Raw().isEmpty() && !child.getServerClass_Raw().isEmpty()) {
+								sl.setServerClass(child.getServerClass());
 							}
-						} else {
+							if (child.getLoaders().size() > 0) {
+								sl.getLoaders().addAll(child.getLoaders());
+							}
+							//modList.putAll(child.getModules());
+						}
+					}
+					nl = server.serverElement.getElementsByTagName("Module");
+					if (nl != null && nl.getLength() > 0) {
+						for (int i = 0; i < nl.getLength(); i++) {
+							Element el = (Element) nl.item(i);
+							Module m = getModuleV2(el, sl.getVersion(), hierarchy);
+							if (m.getModType() == ModType.Removal) {
+								modList.remove(m.getId());
+							} else if (m.getModType() == ModType.Override) {
+								if (modList.containsKey(m.getId())) { // If modList does not contain the mod, ignore it.
+									Module existing = modList.get(m.getId());
+									existing.getPrioritizedUrls().addAll(m.getPrioritizedUrls());
+									existing.getConfigs().addAll(m.getConfigs());
+									existing.getSubmodules().addAll(m.getSubmodules());
+									existing.setRequired(m.getRequired());
+									existing.setIsDefault(m.getIsDefault());
+								}
+							} else {
+								modList.put(m.getId(), m);
+							}
+						}
+					}
+					sl.setModules(modList);
+					nl = server.serverElement.getElementsByTagName("Loader");
+					if (nl != null && nl.getLength() > 0) {
+						for (int i = 0; i < nl.getLength(); i++) {
+							Element el = (Element) nl.item(i);
+							Loader l = getLoaderV2(el);
+							sl.getLoaders().add(l);
+						}
+					}
+					return sl;
+
+				case 1:
+					// Handle ServerPacks designed for MCUpdater 2.7 and earlier
+					assert server.serverElement != null;
+					nl = server.serverElement.getElementsByTagName("Module");
+					if (nl != null && nl.getLength() > 0) {
+						for (int i = 0; i < nl.getLength(); i++) {
+							Element el = (Element) nl.item(i);
+							Module m = getModuleV1(el, hierarchy);
 							modList.put(m.getId(), m);
 						}
 					}
-				}
-				sl.setModules(modList);
-				nl = server.serverElement.getElementsByTagName("Loader");
-				if(nl !=null && nl.getLength() > 0)
-				{
-					for(int i = 0; i < nl.getLength(); i++)
-					{
-						Element el = (Element)nl.item(i);
-						Loader l = getLoaderV2(el);
-						sl.getLoaders().add(l);
-					}
-				}
-				return sl;
+					sl.setModules(modList);
+					return sl;
 
-			case 1:
-				// Handle ServerPacks designed for MCUpdater 2.7 and earlier
-				assert server.serverElement != null;
-				nl = server.serverElement.getElementsByTagName("Module");
-				if(nl != null && nl.getLength() > 0)
-				{
-					for(int i = 0; i < nl.getLength(); i++)
-					{
-						Element el = (Element)nl.item(i);
-						Module m = getModuleV1(el, hierarchy);
-						modList.put(m.getId(), m);
-					}
-				}
-				sl.setModules(modList);
-				return sl;
-
-			default:
-				return null;
+				default:
+					return null;
+			}
 		}
 	}
 

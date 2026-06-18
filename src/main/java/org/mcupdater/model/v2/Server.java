@@ -1,4 +1,4 @@
-package org.mcupdater.model;
+package org.mcupdater.model.v2;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;

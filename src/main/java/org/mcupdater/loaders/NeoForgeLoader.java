@@ -1,9 +1,9 @@
 package org.mcupdater.loaders;
 
 import org.mcupdater.downloadlib.Downloadable;
-import org.mcupdater.model.Loader;
-import org.mcupdater.model.ModSide;
-import org.mcupdater.model.PrioritizedURL;
+import org.mcupdater.model.v2.Loader;
+import org.mcupdater.model.v2.ModSide;
+import org.mcupdater.model.v2.PrioritizedURL;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.SettingsManager;

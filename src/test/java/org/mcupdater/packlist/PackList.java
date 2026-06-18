@@ -1,8 +1,8 @@
 package org.mcupdater.packlist;
 
-import org.mcupdater.model.GenericModule;
-import org.mcupdater.model.Module;
-import org.mcupdater.model.ModuleComparator;
+import org.mcupdater.model.v2.GenericModule;
+import org.mcupdater.model.v2.Module;
+import org.mcupdater.model.v2.ModuleComparator;
 import org.mcupdater.util.MCUpdater;
 import org.mcupdater.util.ServerPackParser;
 

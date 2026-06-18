@@ -1,6 +1,6 @@
 package org.mcupdater.loaders;
 
-import org.mcupdater.model.ModSide;
+import org.mcupdater.model.v2.ModSide;
 
 import java.io.File;
 import java.nio.file.Path;
