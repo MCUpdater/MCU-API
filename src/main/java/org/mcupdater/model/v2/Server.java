@@ -1,4 +1,4 @@
-package org.mcupdater.model;
+package org.mcupdater.model.v2;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.api.Version;
@@ -7,7 +7,7 @@ import org.w3c.dom.Element;
 
 import java.util.*;
 
-public abstract class Server implements Comparable<Server>, IPackElement{
+public abstract class Server implements Comparable<Server>, IPackElement {
 
 	protected String name;
 	String packUrl;

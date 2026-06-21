@@ -1,9 +1,9 @@
-package org.mcupdater.model;
+package org.mcupdater.model.v2;
 
 import java.util.*;
 
 public class ServerList extends Server {
-	private Map<String,Module> modules = new HashMap<>();
+	private Map<String, org.mcupdater.model.v2.Module> modules = new HashMap<>();
 	private List<Loader> loaders = new ArrayList<>();
 
 	private State state = State.UNKNOWN;
@@ -33,11 +33,11 @@ public class ServerList extends Server {
 		this.setMainClass(mainClass);
 	}
 
-	public Map<String, Module> getModules() {
+	public Map<String, org.mcupdater.model.v2.Module> getModules() {
         return modules;
     }
 
-	public void setModules(Map<String, Module> modules) {
+	public void setModules(Map<String, org.mcupdater.model.v2.Module> modules) {
         this.modules = modules;
     }
 
@@ -47,7 +47,7 @@ public class ServerList extends Server {
 
 	public Set<String> getDigests() {
 		Set<String> digests = new HashSet<>();
-		List<Module> mods = new ArrayList<>(this.getModules().values());
+		List<org.mcupdater.model.v2.Module> mods = new ArrayList<>(this.getModules().values());
 		for (Module mod : mods) {
 			if (!mod.getMD5().isEmpty()) {
 				digests.add(mod.getMD5());

@@ -1,4 +1,4 @@
-package org.mcupdater.model;
+package org.mcupdater.model.v2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +20,6 @@ public class Submodule extends GenericModule {
 	}
 
 	public static Submodule createBlankSubmodule() {
-		return new Submodule(new GenericModule("New Submodule","submod", new ArrayList<PrioritizedURL>(),null,100000,"",true,ModType.Regular, 0, false, false, false, true, "", "BOTH", "", new HashMap<String, String>(), "", "", ""));
+		return new Submodule(new GenericModule("New Submodule","submod", new ArrayList<PrioritizedURL>(),null,100000,"",true, ModType.Regular, 0, false, false, false, true, "", "BOTH", "", new HashMap<String, String>(), "", "", ""));
 	}
 }

@@ -9,11 +9,11 @@ import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.downloadlib.TrackerListener;
 import org.mcupdater.instance.Instance;
-import org.mcupdater.model.ConfigFile;
-import org.mcupdater.model.GenericModule;
-import org.mcupdater.model.ModSide;
-import org.mcupdater.model.Module;
-import org.mcupdater.model.ServerList;
+import org.mcupdater.model.v2.ConfigFile;
+import org.mcupdater.model.v2.GenericModule;
+import org.mcupdater.model.v2.ModSide;
+import org.mcupdater.model.v2.Module;
+import org.mcupdater.model.v2.ServerList;
 import org.mcupdater.mojang.AssetManager;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.MSAProfile;
@@ -30,7 +30,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.*;
 
-import static org.mcupdater.model.ModSide.CLIENT;
+import static org.mcupdater.model.v2.ModSide.CLIENT;
 
 public class TestClientInstall extends MCUApp implements TrackerListener {
 	// Configuration section

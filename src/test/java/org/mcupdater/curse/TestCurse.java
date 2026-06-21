@@ -1,13 +1,8 @@
 package org.mcupdater.curse;
 
 import org.apache.commons.io.IOUtils;
-import org.mcupdater.model.CurseProject;
-import org.mcupdater.util.CurseModCache;
-import org.mcupdater.util.MCUpdater;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 

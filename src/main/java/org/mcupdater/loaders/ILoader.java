@@ -1,16 +1,16 @@
 package org.mcupdater.loaders;
 
-import org.mcupdater.model.ModSide;
+import org.mcupdater.model.v2.ModSide;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Map;
 
 public interface ILoader {
 
 	boolean install(Path installPath, ModSide side);
 
-	List<String> getClasspathEntries(File instancePath);
+	Map<String,String> getClasspathEntries(File instancePath);
 
 	String getArguments(File instancePath);
 

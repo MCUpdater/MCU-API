@@ -8,7 +8,7 @@ import org.mcupdater.MCUApp;
 import org.mcupdater.downloadlib.DownloadQueue;
 import org.mcupdater.downloadlib.Downloadable;
 import org.mcupdater.instance.Instance;
-import org.mcupdater.model.*;
+import org.mcupdater.model.v2.*;
 import org.mcupdater.mojang.*;
 import org.mcupdater.util.Archive;
 import org.mcupdater.util.DownloadCache;
@@ -70,7 +70,7 @@ public class Install {
 		if (tmpFolder.listFiles().length > 0) {
 			parent.log("Packaging updated jar...");
 			try {
-				Archive.createJar(buildJar, buildList, tmpFolder.getPath() + System.getProperty("file. separator"), doManifest);
+				Archive.createJar(buildJar, buildList, tmpFolder.getPath() + System.getProperty("file.separator"), doManifest);
 			} catch (IOException e) {
 				parent.log("Failed to create jar!");
 				MCUpdater.apiLogger.log(Level.SEVERE, "I/O Error", e);
@@ -90,7 +90,7 @@ public class Install {
 		if (this.server != null) {
 			if (!toExtract.isEmpty()) {
 				logger.log(Level.INFO, "Extracting {0} library files", toExtract.size());
-				toExtract.forEach(entry -> Archive.extractZip(instancePath.resolve(entry).toFile(), instancePath.resolve("libraries").resolve("natives").toFile(), false));
+				toExtract.forEach(entry -> Archive.extractZip(instancePath.resolve("libraries").resolve(entry).toFile(), instancePath.resolve("libraries").resolve("natives").toFile(), false));
 				logger.log(Level.INFO, "Library file extraction complete");
 			}
 			server.getLoaders().sort(new OrderComparator());
@@ -328,6 +328,7 @@ public class Install {
 		logger.finer("Overrides: " + server.getLibOverrides().size());
 		server.getLibOverrides().forEach((key, value) -> logger.finer(key + ": " + value));
 		assetsQueue = parent.submitAssetsQueue("Assets", server.getServerId(), this.mcVersion);
+		logger.fine("Processing libraries (" + mcVersion.getLibraries().size() + ")");
 		List<Library> libraries = mcVersion.getLibraries();
 		Set<Downloadable> libDownloads = new HashSet<>();
 		libraries.forEach(library -> {
@@ -393,6 +394,9 @@ public class Install {
 					if (library.getDownloads() != null && library.getDownloads().getArtifact() != null)
 						entry = new Downloadable(library.getName(), library.getFilename(), Downloadable.HashAlgorithm.SHA1, library.getDownloads().getArtifact().getSha1(), library.getDownloads().getArtifact().getSize(), urls);
 				}
+			} else {
+				if (library.getDownloads() != null && library.getDownloads().getArtifact() != null)
+					entry = new Downloadable(library.getName(), library.getFilename(), Downloadable.HashAlgorithm.SHA1, library.getDownloads().getArtifact().getSha1(), library.getDownloads().getArtifact().getSize(), urls);
 			}
 		}
 		if (entry != null) {

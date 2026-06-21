@@ -54,7 +54,10 @@ public class XBLToken {
     }
 
     public class Xui {
+        private String agg;
+        private String gtg;
         private String uhs;
+        private String xid;
 
         public String getUhs() {
             return uhs;
@@ -63,5 +66,29 @@ public class XBLToken {
         public void setUhs(String uhs) {
             this.uhs = uhs;
         }
+
+	    public String getAgg() {
+		    return agg;
+	    }
+
+	    public void setAgg(String agg) {
+		    this.agg = agg;
+	    }
+
+	    public String getGtg() {
+		    return gtg;
+	    }
+
+	    public void setGtg(String gtg) {
+		    this.gtg = gtg;
+	    }
+
+	    public String getXid() {
+		    return xid;
+	    }
+
+	    public void setXid(String xid) {
+		    this.xid = xid;
+	    }
     }
 }

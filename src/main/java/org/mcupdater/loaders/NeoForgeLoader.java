@@ -1,9 +1,9 @@
 package org.mcupdater.loaders;
 
 import org.mcupdater.downloadlib.Downloadable;
-import org.mcupdater.model.Loader;
-import org.mcupdater.model.ModSide;
-import org.mcupdater.model.PrioritizedURL;
+import org.mcupdater.model.v2.Loader;
+import org.mcupdater.model.v2.ModSide;
+import org.mcupdater.model.v2.PrioritizedURL;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.SettingsManager;
@@ -17,9 +17,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
@@ -156,14 +154,14 @@ public class NeoForgeLoader implements ILoader {
 	}
 
 	@Override
-	public List<String> getClasspathEntries(File instancePath) {
-		List<String> libs = new ArrayList<>();
+	public Map<String, String> getClasspathEntries(File instancePath) {
+		Map<String,String> libs = new HashMap<>();
 		MinecraftVersion forgeVersion = MinecraftVersion.loadLocalVersion(instancePath, getVersionFilename());
 		System.out.println(forgeVersion);
 		if (forgeVersion != null) {
 			for (Library lib : forgeVersion.getLibraries()) {
 				if (lib.validForOS() && !lib.hasNatives()) {
-					libs.add("libraries/" + lib.getFilename());
+					libs.put(lib.getName(), "libraries/" + lib.getFilename());
 				}
 			}
 		}

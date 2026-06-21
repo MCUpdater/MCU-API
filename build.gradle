@@ -9,7 +9,7 @@ version = sharedVersion
 dependencies {
     implementation project(':MCU-DownloadLib')
     implementation 'com.mojang:authlib:1.6.25'
-    implementation 'org.tomlj:tomlj:1.0.0'
+    implementation 'org.tomlj:tomlj:1.1.1'
     //implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.5'
     implementation group: 'org.apache.derby', name: 'derby', version: '10.15.2.0'
     implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.26.1'

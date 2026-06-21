@@ -1,9 +1,9 @@
 package org.mcupdater.util;
 
 import org.mcupdater.api.Version;
-import org.mcupdater.model.Module;
-import org.mcupdater.model.PrioritizedURL;
-import org.mcupdater.model.ServerList;
+import org.mcupdater.model.v2.Module;
+import org.mcupdater.model.v2.PrioritizedURL;
+import org.mcupdater.model.v2.ServerList;
 import org.mcupdater.model.metadata.Downloadable;
 import org.mcupdater.model.metadata.ProjectData;
 
@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 public class FastPack {
 	public static ServerDefinition doFastPack(String sourcePack, String sourceId, String serverName, String serverId, String serverAddr, String mainClass, String newsURL, String iconURL, String revision, Boolean autoConnect, String MCVersion, Path searchPath, String baseURL, boolean debug, List<ProjectData> projects) {

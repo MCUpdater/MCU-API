@@ -1,9 +1,9 @@
-package org.mcupdater.model;
+package org.mcupdater.model.v2;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerPack implements IPackElement{
+public class ServerPack implements IPackElement {
 	private String xsltPath;
 	private List<Server> servers;
 	private String version;

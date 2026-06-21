@@ -1,4 +1,4 @@
-package org.mcupdater.model;
+package org.mcupdater.model.v2;
 
 public class PrioritizedURL implements Comparable<PrioritizedURL>{
 	private String url;

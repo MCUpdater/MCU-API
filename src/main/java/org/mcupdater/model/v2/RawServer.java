@@ -1,7 +1,4 @@
-package org.mcupdater.model;
-
-import org.mcupdater.api.Version;
-import org.mcupdater.util.ServerPackParser;
+package org.mcupdater.model.v2;
 
 import java.util.ArrayList;
 import java.util.List;
